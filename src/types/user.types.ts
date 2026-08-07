@@ -23,3 +23,16 @@ export type User = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type UserChangePasswordDto = {
+  newPassword: string;
+};
+
+export type UserDto = {
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  bio?: string;
+  imageUrl?: string;
+  timezone?: string;
+};
