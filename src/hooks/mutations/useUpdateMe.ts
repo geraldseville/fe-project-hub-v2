@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { authRegister } from '@/api/auth.api';
+import { updateMe } from '@/api/user.api';
 
-export function useRegister() {
+export function useUpdateMe() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: authRegister,
+    mutationFn: updateMe,
 
-    async onSuccess() {
-      await queryClient.invalidateQueries({
+    onSuccess() {
+      queryClient.invalidateQueries({
         queryKey: ['me'],
       });
     },

@@ -4,7 +4,7 @@ import { authMe } from '@/api/auth.api';
 
 export function useMe() {
   return useQuery({
-    queryKey: ['current-user'],
+    queryKey: ['me'],
     queryFn: async () => {
       const response = await authMe();
 

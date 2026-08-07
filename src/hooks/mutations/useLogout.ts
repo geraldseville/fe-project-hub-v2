@@ -10,7 +10,7 @@ export function useLogout() {
 
     async onSuccess() {
       queryClient.removeQueries({
-        queryKey: ['current-user'],
+        queryKey: ['me'],
       });
     },
   });

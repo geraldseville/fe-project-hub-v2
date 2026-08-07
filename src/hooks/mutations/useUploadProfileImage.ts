@@ -1,14 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { authLogin } from '@/api/auth.api';
+import { uploadUserProfileImage } from '@/api/images.api';
 
-export function useLogin() {
+export function useUploadUserProfileImage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: authLogin,
+    mutationFn: uploadUserProfileImage,
 
-    onSuccess: () => {
+    onSuccess() {
       queryClient.invalidateQueries({
         queryKey: ['me'],
       });

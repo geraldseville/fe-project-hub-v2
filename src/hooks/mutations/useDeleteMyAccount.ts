@@ -1,15 +1,15 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { authRegister } from '@/api/auth.api';
+import { deleteMyAccount } from '@/api/user.api';
 
-export function useRegister() {
+export function useDeleteMyAccount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: authRegister,
+    mutationFn: deleteMyAccount,
 
-    async onSuccess() {
-      await queryClient.invalidateQueries({
+    onSuccess: () => {
+      queryClient.removeQueries({
         queryKey: ['me'],
       });
     },
