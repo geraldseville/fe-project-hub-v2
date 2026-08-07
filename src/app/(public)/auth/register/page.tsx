@@ -11,7 +11,7 @@ import { useMe } from '@/hooks/queries/useMe';
 
 import { getPasswordRules, splitFullName } from '@/utils/auth.utils';
 
-import { validateRegister } from '@/validators/auth.validators';
+import { validateRegister } from '@/validators/auth.validator';
 
 import ErrorTextField from '@/components/elements/ErrorTextField';
 import InputCheckbox from '@/components/elements/InputCheckbox';

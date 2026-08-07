@@ -9,7 +9,7 @@ import clsx from 'clsx';
 import { useLogin } from '@/hooks/mutations/useLogin';
 import { useMe } from '@/hooks/queries/useMe';
 
-import { validateLogin } from '@/validators/auth.validators';
+import { validateLogin } from '@/validators/auth.validator';
 
 import ErrorTextField from '@/components/elements/ErrorTextField';
 import InputCheckbox from '@/components/elements/InputCheckbox';
