@@ -5,7 +5,7 @@ import clsx from 'clsx';
 
 import '@/app/globals.css';
 
-import { Providers } from '@/app/providers';
+import { QueryProvider } from '@/providers/QueryProvider';
 
 const fontHankenGrotesk = Hanken_Grotesk({
   variable: '--font-hanken-grotesk',
@@ -43,7 +43,7 @@ export default function RootLayout({
       lang="en"
     >
       <body className="flex flex-col min-h-full">
-        <Providers>{children}</Providers>
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );
