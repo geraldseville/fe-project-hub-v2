@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+
+:root {
+  --background: #f8f9ff;
+  --foreground: #171717;
+  --primary-color: #3730a3;
+  --secondary-color: #6366f1;
+  --tertiary-color: #752c00;
+  --neutral-color: #6474bb;
+
+  --placeholder-color: #6b6b6b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary-color);
+  --color-secondary: var(--secondary-color);
+  --color-tertiary: var(--tertiary-color);
+  --color-neutral: var(--neutral-color);
+
+  --color-placeholder: var(--placeholder-color);
+
+  --font-hanken-grotesk: var(--font-hanken-grotesk);
+  --font-inter: var(--font-inter);
+  --font-jetbrains-mono: var(--font-jetbrains-mono);
+}
+
+@layer base {
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1326;
+    --foreground: #ededed;
+    --primary-color: #6366f1;
+    --secondary-color: #38bdf8;
+    --tertiary-color: #b95f00;
+    --neutral-color: #0f172a;
+
+    --placeholder-color: #6b6b6b;
+  }
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  outline: none;
+}
+
+*:hover {
+  scrollbar-color: rgb(99 102 241 / 0.45) transparent;
+}
+
+/* Chromium (Chrome, Edge, Brave, Arc, Opera) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: rgb(68 71 78 / 0.45);
+  background-clip: content-box;
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: rgb(99 102 241 / 0.75);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+body {
+  color: var(--foreground);
+  font-family: var(--font-inter);
+  font-size: 14px;
+  background: var(--background);
+  user-select: none;
+}
+
+a,
+button,
+input[type='button'] {
+  cursor: pointer;
+}
+
+.is-disabled {
+  pointer-events: none;
+  opacity: 0.8;
+  user-select: none;
+  cursor: not-allowed;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
