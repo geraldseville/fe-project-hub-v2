@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 
 import Sidebar from '@/components/Sidebar';
+import Toast from '@/components/Toast';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -17,6 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         }}
       />
       {children}
+      <Toast />
     </div>
   );
 }
