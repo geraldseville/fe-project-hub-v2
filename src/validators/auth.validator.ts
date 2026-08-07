@@ -71,6 +71,27 @@ export type LoginInput = z.infer<typeof loginSchema>;
 
 export type ReigsterInput = z.infer<typeof registerSchema>;
 
+export const validateLogin = (values: LoginInput) => {
+  const result = loginSchema.safeParse(values);
+
+  if (result.success) {
+    return {
+      success: true,
+      errors: {},
+    };
+  }
+
+  const fieldErrors = result.error.flatten().fieldErrors;
+
+  return {
+    success: false,
+    errors: {
+      email: fieldErrors.email?.[0],
+      password: fieldErrors.password?.[0],
+    },
+  };
+};
+
 export const validateRegister = (values: ReigsterInput) => {
   const result = registerSchema.safeParse(values);
 
@@ -91,27 +112,6 @@ export const validateRegister = (values: ReigsterInput) => {
       password: fieldErrors.password?.[0],
       confirmPassword: fieldErrors.confirmPassword?.[0],
       agreeTerms: fieldErrors.agreeTerms?.[0],
-    },
-  };
-};
-
-export const validateLogin = (values: LoginInput) => {
-  const result = loginSchema.safeParse(values);
-
-  if (result.success) {
-    return {
-      success: true,
-      errors: {},
-    };
-  }
-
-  const fieldErrors = result.error.flatten().fieldErrors;
-
-  return {
-    success: false,
-    errors: {
-      email: fieldErrors.email?.[0],
-      password: fieldErrors.password?.[0],
     },
   };
 };
