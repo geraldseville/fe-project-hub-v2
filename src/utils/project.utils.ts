@@ -1,3 +1,5 @@
+import momentTimezone from 'moment-timezone';
+
 import { ProjectStatus, ProjectUrgency } from '@/types/project.types';
 
 export const PROJECT_STATUSES = [
@@ -60,3 +62,46 @@ export const PROJECT_URGENCY_COLORS: Record<ProjectUrgency, { hex: string }> = {
     hex: '#EF4444',
   },
 };
+
+export function getProjectTimeline(
+  startDate: string | Date,
+  endDate: string | Date,
+  timezone: string,
+): {
+  label: string;
+  value: string;
+} {
+  const now = momentTimezone.tz(timezone);
+
+  const start = momentTimezone.tz(startDate, timezone);
+
+  const end = momentTimezone.tz(endDate, timezone);
+
+  // Project hasn't started
+  if (now.isBefore(start, 'day')) {
+    const days = start.startOf('day').diff(now.startOf('day'), 'days');
+
+    return {
+      label: 'Starts In',
+      value: days === 0 ? 'Today' : `${days} day${days !== 1 ? 's' : ''}`,
+    };
+  }
+
+  // Project is active
+  if (now.isSameOrBefore(end, 'day')) {
+    const days = end.startOf('day').diff(now.startOf('day'), 'days');
+
+    return {
+      label: 'Days Remaining',
+      value: days === 0 ? 'Today' : `${days} day${days !== 1 ? 's' : ''}`,
+    };
+  }
+
+  // Project has ended
+  const days = now.startOf('day').diff(end.startOf('day'), 'days');
+
+  return {
+    label: 'Project Ended',
+    value: `${days} day${days !== 1 ? 's' : ''} ago`,
+  };
+}
