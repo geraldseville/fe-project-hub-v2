@@ -31,7 +31,10 @@ import {
 } from '@/utils/project.utils';
 import { getFullName } from '@/utils/user.utils';
 
-import type { CreateProjectInput } from '@/validators/project.validator';
+import type {
+  ProjectFormErrors,
+  ProjectFormInput,
+} from '@/validators/project.validator';
 
 import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
 import { User } from '@/types/user.types';
@@ -49,9 +52,9 @@ import SingleSelect from '@/components/elements/SingleSelect';
 import { IconBin2, IconPlus1 } from '@/components/svgs/icons';
 
 interface ProjectFormProps {
-  draftProjectForm: CreateProjectInput;
-  setDraftProjectForm: React.Dispatch<SetStateAction<CreateProjectInput>>;
-  errors: any;
+  draftProjectForm: ProjectFormInput;
+  setDraftProjectForm: React.Dispatch<SetStateAction<ProjectFormInput>>;
+  errors: ProjectFormErrors;
 }
 
 export default function ProjectForm({
@@ -64,7 +67,7 @@ export default function ProjectForm({
 
   const { data: users = [] } = useUsers();
 
-  console.log({ me, users });
+  // console.log({ me, users });
 
   // const assignees = useUsersStore((state) => state.users);
 
@@ -188,7 +191,7 @@ export default function ProjectForm({
         <DateTimePicker
           type="date-time"
           placeholder="Select Start Date..."
-          timezone={me.timezone}
+          timezone={me?.timezone}
           value={draftProjectForm.startDate}
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
@@ -212,7 +215,7 @@ export default function ProjectForm({
         <DateTimePicker
           type="date-time"
           placeholder="Select End Date..."
-          timezone={me.timezone}
+          timezone={me?.timezone}
           value={draftProjectForm.endDate}
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
