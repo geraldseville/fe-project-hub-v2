@@ -4,7 +4,7 @@ import { COMMON_PASSWORDS } from '@/utils/auth.utils';
 
 import { isValidTimezone } from '@/lib/date-time';
 
-export const userChangePasswordSchema = z
+export const changeUserPasswordSchema = z
   .object({
     newPassword: z
       .string()
@@ -28,7 +28,7 @@ export const userChangePasswordSchema = z
     }
   });
 
-export const userUpdateSchema = z.object({
+export const updateUserSchema = z.object({
   firstName: z
     .string()
     .trim()
@@ -62,12 +62,12 @@ export const userUpdateSchema = z.object({
     .optional(),
 });
 
-export type UserChangePasswordInput = z.infer<typeof userChangePasswordSchema>;
+export type ChangeUserPasswordInput = z.infer<typeof changeUserPasswordSchema>;
 
-export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
-export const validateChangePassword = (values: UserChangePasswordInput) => {
-  const result = userChangePasswordSchema.safeParse(values);
+export const validateChangePassword = (values: ChangeUserPasswordInput) => {
+  const result = changeUserPasswordSchema.safeParse(values);
 
   if (result.success) {
     return {
@@ -87,8 +87,8 @@ export const validateChangePassword = (values: UserChangePasswordInput) => {
   };
 };
 
-export const validateUpdateUser = (values: UserUpdateInput) => {
-  const result = userUpdateSchema.safeParse(values);
+export const validateUpdateUser = (values: UpdateUserInput) => {
+  const result = updateUserSchema.safeParse(values);
 
   if (result.success) {
     return {
