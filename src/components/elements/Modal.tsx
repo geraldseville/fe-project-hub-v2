@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 import clsx from 'clsx';
@@ -21,6 +21,22 @@ export default function Modal({
   onClose,
   children,
 }: ModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   // Prevent SSR issues
   if (typeof document === 'undefined') return null;
 
@@ -29,8 +45,8 @@ export default function Modal({
       {isOpen && (
         <div
           className={clsx(
-            'fixed z-50 inset-0',
-            'flex justify-center items-center',
+            'fixed inset-0 z-50',
+            'flex items-center justify-center',
             'p-4',
             classNames?.root,
           )}
@@ -38,8 +54,8 @@ export default function Modal({
           {/* Backdrop */}
           <motion.div
             className={clsx(
-              'absolute z-1 inset-0',
-              'w-full h-full',
+              'absolute inset-0 z-1',
+              'h-full w-full',
               'bg-black/60',
               'backdrop-blur-sm',
               classNames?.backdrop,
@@ -54,10 +70,12 @@ export default function Modal({
           {/* Content */}
           <motion.div
             className={clsx(
-              'relative z-2 overflow-hidden',
+              'relative z-2',
               'flex flex-col',
-              'max-w-md w-full',
-              'max-h-[90dvh] min-h-[40dvh] h-auto',
+              'max-w-md',
+              'max-h-[90dvh] min-h-[40dvh]',
+              'h-auto w-full',
+              'overflow-hidden',
               classNames?.content,
             )}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
