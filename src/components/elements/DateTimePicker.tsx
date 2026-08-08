@@ -42,9 +42,9 @@ type DateTimeSelectResult = {
   formattedTime: string;
   formattedFull: string;
   day: number;
-  month: number; // 1-12
+  month: number;
   year: number;
-  hour: number; // 0-23
+  hour: number;
   minute: number;
   second: number;
   weekday: string;
@@ -94,29 +94,102 @@ export default function DateTimePicker({
   value,
   onChange,
 }: DateTimePickerProps) {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const [view, setView] = useState<CalendarView>('days');
 
   const [activeTab, setActiveTab] = useState<TabView>('date');
 
   const selectedHourRef = useRef<HTMLButtonElement | null>(null);
-
   const selectedMinuteRef = useRef<HTMLButtonElement | null>(null);
 
   const hoursContainerRef = useRef<HTMLDivElement | null>(null);
-
   const minutesContainerRef = useRef<HTMLDivElement | null>(null);
 
+  /**
+   * Always work with one timezone throughout the component.
+   */
   const tz = useMemo(() => timezone || momentTimezone.tz.guess(), [timezone]);
 
+  /**
+   * Convert the incoming ISO value into the selected timezone.
+   *
+   * Example:
+   *
+   * 2026-08-09T15:00:00.000Z
+   *
+   * becomes:
+   *
+   * 2026-08-09 23:00 in Asia/Manila
+   */
   const selectedMoment = useMemo(() => {
     if (!value) return null;
 
-    const m = momentTimezone(value).tz(tz);
+    const momentValue = momentTimezone.tz(value, tz);
 
-    return m.isValid() ? m : null;
+    return momentValue.isValid() ? momentValue : null;
   }, [value, tz]);
+
+  /**
+   * Returns the date that the calendar should initially display.
+   *
+   * Valid value:
+   *   -> display that date
+   *
+   * No value:
+   *   -> display today in the selected timezone
+   *
+   * Invalid value:
+   *   -> display today in the selected timezone
+   */
+  const getInitialViewDate = useCallback(
+    (currentValue?: string | null) => {
+      if (currentValue) {
+        const valueMoment = momentTimezone.tz(currentValue, tz);
+
+        if (valueMoment.isValid()) {
+          return valueMoment;
+        }
+      }
+
+      return momentTimezone.tz(tz);
+    },
+    [tz],
+  );
+
+  /**
+   * The date currently being displayed by the calendar.
+   *
+   * This is deliberately initialized only once.
+   * Synchronization with value happens in the effect below.
+   */
+  const [viewDate, setViewDate] = useState<momentTimezone.Moment>(() =>
+    getInitialViewDate(value),
+  );
+
+  /**
+   * Keep the calendar view synchronized with the incoming value.
+   *
+   * This is important when:
+   *
+   * - editing an existing project
+   * - opening the picker with a new value
+   * - switching between different projects
+   * - changing timezone
+   *
+   * If value is empty or invalid, we use today in the selected timezone.
+   */
+  useEffect(() => {
+    setViewDate(getInitialViewDate(value));
+  }, [value, tz, getInitialViewDate]);
+
+  /**
+   * The selected value, otherwise the current calendar view.
+   *
+   * This allows the time picker to still work when there is
+   * no selected value yet.
+   */
+  const activeAnchor = selectedMoment || viewDate;
 
   const is12HourFormat = useMemo(() => {
     return /[aA]/.test(formatTime);
@@ -130,12 +203,6 @@ export default function DateTimePicker({
     return /DD/.test(formatDate);
   }, [formatDate]);
 
-  const [viewDate, setViewDate] = useState(() => {
-    return selectedMoment ? selectedMoment.clone() : momentTimezone().tz(tz);
-  });
-
-  const activeAnchor = selectedMoment || viewDate;
-
   const calendarGrid = useMemo(() => {
     const startOfMonth = viewDate.clone().startOf('month');
     const daysInMonth = viewDate.daysInMonth();
@@ -147,10 +214,10 @@ export default function DateTimePicker({
     const days: Array<{
       day: number;
       currentMonth: boolean;
-      momentObj: moment.Moment;
+      momentObj: momentTimezone.Moment;
     }> = [];
 
-    // Fill preceding days from previous month
+    // Previous month
     for (let i = startDayOfWeek - 1; i >= 0; i--) {
       const dayNum = prevMonthDays - i;
 
@@ -161,7 +228,7 @@ export default function DateTimePicker({
       });
     }
 
-    // Current month days
+    // Current month
     for (let i = 1; i <= daysInMonth; i++) {
       days.push({
         day: i,
@@ -170,9 +237,8 @@ export default function DateTimePicker({
       });
     }
 
-    // Fill tailing days for 6 full grid rows (42 slots)
+    // Next month
     const remainingSlots = 42 - days.length;
-
     const nextMonth = viewDate.clone().add(1, 'month');
 
     for (let i = 1; i <= remainingSlots; i++) {
@@ -188,112 +254,164 @@ export default function DateTimePicker({
 
   const displayString = useMemo(() => {
     if (!selectedMoment) return null;
-    if (type === 'date') return selectedMoment.format(formatDate);
-    if (type === 'time') return selectedMoment.format(formatTime);
-    return `${selectedMoment.format(formatDate)} ${selectedMoment.format(formatTime)}`;
+
+    if (type === 'date') {
+      return selectedMoment.format(formatDate);
+    }
+
+    if (type === 'time') {
+      return selectedMoment.format(formatTime);
+    }
+
+    return `${selectedMoment.format(formatDate)} ${selectedMoment.format(
+      formatTime,
+    )}`;
   }, [selectedMoment, type, formatDate, formatTime]);
 
   const navigateHeader = (direction: 'prev' | 'next') => {
     const delta = direction === 'next' ? 1 : -1;
 
     if (view === 'days') {
-      setViewDate(viewDate.clone().add(delta, 'month'));
+      setViewDate((current) => current.clone().add(delta, 'month'));
     } else if (view === 'months') {
-      setViewDate(viewDate.clone().add(delta, 'year'));
+      setViewDate((current) => current.clone().add(delta, 'year'));
     } else if (view === 'years') {
-      setViewDate(viewDate.clone().add(delta * 12, 'years'));
+      setViewDate((current) => current.clone().add(delta * 12, 'years'));
     }
   };
 
-  const handleUpdate = (newMoment: moment.Moment) => {
-    const iso = newMoment.toISOString();
+  const handleUpdate = (newMoment: momentTimezone.Moment) => {
+    const updated = newMoment.clone().tz(tz);
 
     const payload: DateTimeSelectResult = {
-      iso,
-      formattedDate: newMoment.format(formatDate),
-      formattedTime: newMoment.format(formatTime),
-      formattedFull: newMoment.format(`${formatDate} ${formatTime}`),
-      day: newMoment.date(),
-      month: newMoment.month() + 1, // 1-indexed
-      year: newMoment.year(),
-      hour: newMoment.hour(), // 0-23
-      minute: newMoment.minute(),
-      second: newMoment.second(),
-      weekday: newMoment.format('dddd'),
-      monthName: newMoment.format('MMMM'),
+      iso: updated.toISOString(),
+      formattedDate: updated.format(formatDate),
+      formattedTime: updated.format(formatTime),
+      formattedFull: updated.format(`${formatDate} ${formatTime}`),
+      day: updated.date(),
+      month: updated.month() + 1,
+      year: updated.year(),
+      hour: updated.hour(),
+      minute: updated.minute(),
+      second: updated.second(),
+      weekday: updated.format('dddd'),
+      monthName: updated.format('MMMM'),
       timezone: tz,
-      unix: newMoment.unix(),
+      unix: updated.unix(),
     };
 
     onChange?.(payload);
   };
 
-  const handleSelectDay = (itemMoment: moment.Moment) => {
-    const updated = itemMoment.clone();
+  const handleSelectDay = (itemMoment: momentTimezone.Moment) => {
+    const updated = itemMoment.clone().tz(tz);
+
     setViewDate(updated.clone());
+
     handleUpdate(updated);
   };
 
   const handleSelectMonth = (monthIndex: number) => {
     const updated = activeAnchor.clone().month(monthIndex);
-    setViewDate(updated);
+
+    setViewDate(updated.clone());
     setView('days');
-    if (selectedMoment) handleUpdate(updated);
+
+    if (selectedMoment) {
+      handleUpdate(updated);
+    }
   };
 
   const handleSelectYear = (year: number) => {
     const updated = activeAnchor.clone().year(year);
-    setViewDate(updated);
+
+    setViewDate(updated.clone());
     setView('months');
-    if (selectedMoment) handleUpdate(updated);
+
+    if (selectedMoment) {
+      handleUpdate(updated);
+    }
   };
 
   const handleHourChange = (hourValue: number) => {
     let newHour = hourValue;
+
     if (is12HourFormat) {
       const isPM = activeAnchor.hour() >= 12;
-      if (isPM && hourValue < 12) newHour = hourValue + 12;
-      if (!isPM && hourValue === 12) newHour = 0;
+
+      if (isPM && hourValue < 12) {
+        newHour = hourValue + 12;
+      }
+
+      if (!isPM && hourValue === 12) {
+        newHour = 0;
+      }
     }
+
     const updated = activeAnchor.clone().hour(newHour);
+
     handleUpdate(updated);
   };
 
   const handleMinuteChange = (minute: number) => {
     const updated = activeAnchor.clone().minute(minute);
+
     handleUpdate(updated);
   };
 
   const handleAmPmToggle = (period: 'AM' | 'PM') => {
     let currentHour = activeAnchor.hour();
-    if (period === 'PM' && currentHour < 12) currentHour += 12;
-    if (period === 'AM' && currentHour >= 12) currentHour -= 12;
+
+    if (period === 'PM' && currentHour < 12) {
+      currentHour += 12;
+    }
+
+    if (period === 'AM' && currentHour >= 12) {
+      currentHour -= 12;
+    }
+
     const updated = activeAnchor.clone().hour(currentHour);
+
     handleUpdate(updated);
   };
 
+  /**
+   * Scroll selected hour/minute into view when opening
+   * the time selector.
+   */
   useEffect(() => {
-    if (isOpen && (type === 'time' || activeTab === 'time')) {
-      const timer = setTimeout(() => {
-        selectedHourRef.current?.scrollIntoView({
-          block: 'center',
-          behavior: 'auto',
-        });
-        selectedMinuteRef.current?.scrollIntoView({
-          block: 'center',
-          behavior: 'auto',
-        });
-      }, 0);
-
-      return () => clearTimeout(timer);
+    if (!isOpen || (type !== 'time' && activeTab !== 'time')) {
+      return;
     }
+
+    const timer = setTimeout(() => {
+      selectedHourRef.current?.scrollIntoView({
+        block: 'center',
+        behavior: 'auto',
+      });
+
+      selectedMinuteRef.current?.scrollIntoView({
+        block: 'center',
+        behavior: 'auto',
+      });
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [isOpen, activeTab, type, activeAnchor]);
 
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
-    onOpenChange: () => {
-      setIsOpen((prev) => !prev);
-      setView('days');
+    onOpenChange: (open) => {
+      setIsOpen(open);
+
+      if (open) {
+        /**
+         * When opening, make sure the calendar starts
+         * at the selected value or today's date.
+         */
+        setViewDate(getInitialViewDate(value));
+        setView('days');
+      }
     },
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
@@ -301,9 +419,7 @@ export default function DateTimePicker({
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, { role: 'listbox' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
@@ -338,7 +454,8 @@ export default function DateTimePicker({
           'rounded-lg',
           'bg-[#060E20]',
           'border border-[#464554]',
-          'focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-0 focus:ring-offset-[#060E20]',
+          'focus:outline-none focus:ring-1 focus:ring-white',
+          'focus:ring-offset-0 focus:ring-offset-[#060E20]',
           classNames?.trigger,
         )}
         ref={setReferenceRef}
@@ -346,21 +463,19 @@ export default function DateTimePicker({
         type="button"
       >
         {type === 'date' ? (
-          <IconCalendar3 className="min-w-3.5 w-3.5 h-3.5" />
+          <IconCalendar3 />
         ) : type === 'time' ? (
-          <IconClock1 className="min-w-3.5 w-3.5 h-3.5" />
+          <IconCalendarTime />
         ) : (
-          <IconCalendarTime className="min-w-3.5 w-3.5 h-3.5" />
+          <IconCalendarTime />
         )}
+
         {displayString ? (
-          <div className="text-white text-sm leading-tight truncate">
-            {displayString}
-          </div>
+          <span>{displayString}</span>
         ) : (
-          <div className="text-placeholder text-sm leading-tight truncate">
-            {placeholder}
-          </div>
+          <span className="text-placeholder">{placeholder}</span>
         )}
+
         <IconAngleDown
           className={clsx(
             'text-placeholder group-hover:text-white',
@@ -424,11 +539,11 @@ export default function DateTimePicker({
               />
             )}
 
-            {/* Date Tab View */}
+            {/* Date View */}
             {(type === 'date' ||
               (type === 'date-time' && activeTab === 'date')) && (
               <div className="max-w-[250px] min-h-[300px]">
-                {/* Header Navigation */}
+                {/* Header */}
                 <div
                   className={clsx(
                     'flex justify-between items-center',
@@ -447,12 +562,17 @@ export default function DateTimePicker({
                     )}
                     type="button"
                     onClick={() => {
-                      if (view === 'days') setView('months');
-                      else if (view === 'months') setView('years');
+                      if (view === 'days') {
+                        setView('months');
+                      } else if (view === 'months') {
+                        setView('years');
+                      }
                     }}
                   >
                     {view === 'days' && viewDate.format('MMMM YYYY')}
+
                     {view === 'months' && viewDate.format('YYYY')}
+
                     {view === 'years' &&
                       `${viewDate.year() - 5} - ${viewDate.year() + 6}`}
                   </button>
@@ -471,6 +591,7 @@ export default function DateTimePicker({
                     >
                       <IconCaretLeft className="w-[16px] h-[16px]" />
                     </button>
+
                     <button
                       className={clsx(
                         'text-slate-500',
@@ -482,12 +603,12 @@ export default function DateTimePicker({
                       type="button"
                       onClick={() => navigateHeader('next')}
                     >
-                      <IconCaretRight className="w-[16px] h-[16px]" />
+                      <IconCaretRight className="min-w-4 w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                {/* Days Selector */}
+                {/* Days */}
                 {view === 'days' && (
                   <>
                     <div
@@ -497,19 +618,20 @@ export default function DateTimePicker({
                         'h-[32px]',
                       )}
                     >
-                      {Weekdays.map((d) => (
+                      {Weekdays.map((day) => (
                         <div
                           className={clsx(
                             'flex justify-center items-center',
                             'w-8 h-8',
                             'p-1',
                           )}
-                          key={`weekday-${d}`}
+                          key={`weekday-${day}`}
                         >
-                          {d.slice(0, 1)}
+                          {day.slice(0, 1)}
                         </div>
                       ))}
                     </div>
+
                     <div className="grid grid-cols-7 gap-1">
                       {calendarGrid.map((item, idx) => {
                         const isSelected =
@@ -517,7 +639,7 @@ export default function DateTimePicker({
                           item.momentObj.isSame(selectedMoment, 'day');
 
                         const isToday = item.momentObj.isSame(
-                          momentTimezone().tz(tz),
+                          momentTimezone.tz(tz),
                           'day',
                         );
 
@@ -551,13 +673,13 @@ export default function DateTimePicker({
                   </>
                 )}
 
-                {/* Months Selector */}
+                {/* Months */}
                 {view === 'months' && (
                   <div className={clsx('grid grid-cols-3 gap-2', 'py-2')}>
                     {(useShortMonthNames
                       ? momentTimezone.monthsShort()
                       : momentTimezone.months()
-                    ).map((m, idx) => (
+                    ).map((month, idx) => (
                       <button
                         className={clsx(
                           'font-medium',
@@ -569,23 +691,23 @@ export default function DateTimePicker({
                             ? 'font-semibold text-white dark:text-slate-900 bg-slate-900 dark:bg-slate-100'
                             : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800',
                         )}
-                        key={m}
+                        key={month}
                         type="button"
                         onClick={() => handleSelectMonth(idx)}
                       >
-                        {m}
+                        {month}
                       </button>
                     ))}
                   </div>
                 )}
 
-                {/* Years Selector */}
+                {/* Years */}
                 {view === 'years' && (
                   <div className="grid grid-cols-3 gap-2 py-2">
                     {Array.from(
                       { length: 12 },
                       (_, i) => viewDate.year() - 5 + i,
-                    ).map((yr) => (
+                    ).map((year) => (
                       <button
                         className={clsx(
                           'font-medium',
@@ -593,15 +715,15 @@ export default function DateTimePicker({
                           'py-3',
                           'rounded-xl',
                           'transition',
-                          viewDate.year() === yr
+                          viewDate.year() === year
                             ? 'font-semibold text-white bg-slate-900 dark:bg-slate-100 dark:text-slate-900'
                             : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800',
                         )}
-                        key={yr}
+                        key={year}
                         type="button"
-                        onClick={() => handleSelectYear(yr)}
+                        onClick={() => handleSelectYear(year)}
                       >
-                        {yr}
+                        {year}
                       </button>
                     ))}
                   </div>
@@ -609,7 +731,7 @@ export default function DateTimePicker({
               </div>
             )}
 
-            {/* Time Tab View */}
+            {/* Time View */}
             {(type === 'time' ||
               (type === 'date-time' && activeTab === 'time')) && (
               <div
@@ -624,7 +746,7 @@ export default function DateTimePicker({
                     'flex-1 h-[calc(100%-44px)]',
                   )}
                 >
-                  {/* Hour Selector */}
+                  {/* Hours */}
                   <div
                     className={clsx(
                       'overflow-auto',
@@ -635,15 +757,16 @@ export default function DateTimePicker({
                   >
                     {Array.from({ length: is12HourFormat ? 12 : 24 }, (_, i) =>
                       is12HourFormat ? i + 1 : i,
-                    ).map((h) => {
+                    ).map((hour) => {
                       const currentHour = activeAnchor.hour();
+
                       const displayHour = is12HourFormat
                         ? currentHour % 12 === 0
                           ? 12
                           : currentHour % 12
                         : currentHour;
 
-                      const isSelectedHour = displayHour === h;
+                      const isSelectedHour = displayHour === hour;
 
                       return (
                         <button
@@ -655,11 +778,11 @@ export default function DateTimePicker({
                               ? 'font-semibold text-white dark:text-slate-900 bg-slate-900 dark:bg-slate-100 shadow-md'
                               : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800',
                           )}
-                          key={`hour-${h}`}
+                          key={`hour-${hour}`}
                           type="button"
-                          onClick={() => handleHourChange(h)}
+                          onClick={() => handleHourChange(hour)}
                         >
-                          {h
+                          {hour
                             .toString()
                             .padStart(
                               formatTime.includes('hh') ||
@@ -673,7 +796,7 @@ export default function DateTimePicker({
                     })}
                   </div>
 
-                  {/* Minute Selector */}
+                  {/* Minutes */}
                   <div
                     className={clsx(
                       'overflow-auto',
@@ -683,10 +806,12 @@ export default function DateTimePicker({
                     ref={minutesContainerRef}
                   >
                     {Array.from(
-                      { length: Math.ceil(60 / minuteStep) },
+                      {
+                        length: Math.ceil(60 / minuteStep),
+                      },
                       (_, i) => i * minuteStep,
-                    ).map((m) => {
-                      const isSelectedMinute = activeAnchor.minute() === m;
+                    ).map((minute) => {
+                      const isSelectedMinute = activeAnchor.minute() === minute;
 
                       return (
                         <button
@@ -698,17 +823,18 @@ export default function DateTimePicker({
                               : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800',
                           )}
                           ref={isSelectedMinute ? selectedMinuteRef : null}
-                          key={`minute-${m}`}
+                          key={`minute-${minute}`}
                           type="button"
-                          onClick={() => handleMinuteChange(m)}
+                          onClick={() => handleMinuteChange(minute)}
                         >
-                          {m.toString().padStart(2, '0')}
+                          {minute.toString().padStart(2, '0')}
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
+                {/* AM / PM */}
                 {is12HourFormat && (
                   <SegmentedTab
                     classNames={{
@@ -735,7 +861,7 @@ export default function DateTimePicker({
               </div>
             )}
 
-            {/* Timezone Badge */}
+            {/* Timezone */}
             {showTimezone && (
               <div
                 className={clsx(
@@ -746,8 +872,10 @@ export default function DateTimePicker({
                 )}
               >
                 <span className="flex items-center gap-1">
-                  <IconGlobe className="min-w-3 w-3 h-3" /> Timezone:
+                  <IconGlobe className="min-w-3 w-3 h-3" />
+                  Timezone:
                 </span>
+
                 <span
                   className={clsx(
                     'font-mono font-medium',
