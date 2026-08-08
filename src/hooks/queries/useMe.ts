@@ -8,7 +8,7 @@ export function useMe() {
     queryFn: async () => {
       const response = await authMe();
 
-      return response.data.user ?? response.data ?? null;
+      return response.data?.user ?? null;
     },
   });
 }

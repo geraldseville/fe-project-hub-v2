@@ -8,7 +8,7 @@ export function useUsers() {
     queryFn: async () => {
       const response = await getUsers();
 
-      return response.data.users ?? [];
+      return response.data?.users ?? [];
     },
   });
 }
