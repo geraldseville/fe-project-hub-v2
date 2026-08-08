@@ -1,16 +1,18 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export type Response = {
+export type ApiResponse<T = unknown> = {
   status: string;
   message: string;
-  data?: any;
+  data?: T;
   error?: string;
 };
 
-export async function apiClient(path: string, options: RequestInit = {}) {
+export async function apiClient<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<ApiResponse<T>> {
   const headers = new Headers(options.headers);
 
-  // Don't override Content-Type for FormData
   if (!(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
@@ -21,7 +23,7 @@ export async function apiClient(path: string, options: RequestInit = {}) {
     credentials: 'include',
   });
 
-  const data: Response = await response.json();
+  const data: ApiResponse<T> = await response.json();
 
   if (!response.ok) {
     throw new Error(data.error || 'Something went wrong');
