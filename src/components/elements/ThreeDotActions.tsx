@@ -142,6 +142,7 @@ export default function ThreeDotActions({
                   onClick={(e) => {
                     e.preventDefault();
                     item.onClick();
+                    setIsOpen(false);
                   }}
                   style={{
                     color: item.color,
