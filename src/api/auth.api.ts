@@ -1,10 +1,9 @@
-import type { Response } from '@/api/api';
 import { apiClient } from '@/api/api';
 
-import type { AuthLoginDto, AuthRegisterDto } from '@/types/user.types';
+import type { AuthLoginDto, AuthRegisterDto, User } from '@/types/user.types';
 
-export const authLogin = (payload: AuthLoginDto): Promise<Response> => {
-  return apiClient('/auth/login', {
+export const authLogin = (payload: AuthLoginDto) => {
+  return apiClient<{ user: User }>('/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -17,13 +16,13 @@ export const authLogout = () => {
 };
 
 export const authMe = () => {
-  return apiClient('/auth/me', {
+  return apiClient<{ user: User }>('/auth/me', {
     method: 'GET',
   });
 };
 
-export const authRegister = (payload: AuthRegisterDto): Promise<Response> => {
-  return apiClient('/auth/register', {
+export const authRegister = (payload: AuthRegisterDto) => {
+  return apiClient<{ user: User }>('/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
