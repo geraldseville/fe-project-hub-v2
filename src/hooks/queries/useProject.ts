@@ -8,7 +8,7 @@ export function useProject(projectId: string) {
     queryFn: async () => {
       const response = await getProject(projectId);
 
-      return response.data?.project;
+      return response.data?.project || null;
     },
     enabled: !!projectId,
   });
