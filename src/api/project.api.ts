@@ -4,7 +4,7 @@ import type { Project } from '@/types/project.types';
 import type { CreateProjectDto, UpdateProjectDto } from '@/types/project.types';
 
 export const createProject = (payload: CreateProjectDto) => {
-  return apiClient('/projects', {
+  return apiClient<{ project: Project }>('/projects', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
