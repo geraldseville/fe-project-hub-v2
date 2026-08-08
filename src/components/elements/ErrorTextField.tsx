@@ -12,13 +12,7 @@ export default function ErrorTextField({
   if (!text) return null;
 
   return (
-    <p
-      className={clsx(
-        className,
-        'text-red-400 text-[14px] leading-tight',
-        'mt-2',
-      )}
-    >
+    <p className={clsx(className, 'text-red-400 leading-tight', 'mt-2')}>
       {text}
     </p>
   );

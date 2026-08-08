@@ -149,9 +149,7 @@ export default function ThreeDotActions({
                   }}
                 >
                   {Icon}
-                  <div
-                    className={clsx('font-medium', 'text-[14px] leading-tight')}
-                  >
+                  <div className={clsx('font-medium', 'leading-tight')}>
                     {item.label}
                   </div>
                 </button>
