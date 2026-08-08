@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { PROJECT_STATUSES, PROJECT_URGENCIES } from '@/utils/project.utils';
 
-export const createProjectSchema = z
+export const projectFormSchema = z
   .object({
     title: z.string().trim().min(1, 'Title is required.'),
 
@@ -57,9 +57,9 @@ export const createProjectSchema = z
     },
   );
 
-export type CreateProjectInput = z.infer<typeof createProjectSchema>;
+export type ProjectFormInput = z.infer<typeof projectFormSchema>;
 
-export const blankProjectForm: CreateProjectInput = {
+export const blankProjectForm: ProjectFormInput = {
   title: '',
   description: '',
   status: 'PLANNING',
@@ -71,8 +71,30 @@ export const blankProjectForm: CreateProjectInput = {
   assigneeIds: [],
 };
 
-export const validateCreateProject = (values: CreateProjectInput) => {
-  const result = createProjectSchema.safeParse(values);
+export type ProjectFormErrors = {
+  title?: string;
+  description?: string;
+  status?: string;
+  urgency?: string;
+  startDate?: string;
+  endDate?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  assigneeIds?: string;
+};
+
+export const validateProjectForm = (
+  values: ProjectFormInput,
+):
+  | {
+      success: true;
+      errors: ProjectFormErrors;
+    }
+  | {
+      success: false;
+      errors: ProjectFormErrors;
+    } => {
+  const result = projectFormSchema.safeParse(values);
 
   if (result.success) {
     return {
@@ -94,6 +116,7 @@ export const validateCreateProject = (values: CreateProjectInput) => {
       endDate: fieldErrors.endDate?.[0],
       primaryColor: fieldErrors.primaryColor?.[0],
       secondaryColor: fieldErrors.secondaryColor?.[0],
+      assigneeIds: fieldErrors.assigneeIds?.[0],
     },
   };
 };
