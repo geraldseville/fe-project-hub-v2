@@ -21,6 +21,10 @@ export default function ProjectListPage() {
     (state) => state.openProjectCreateModal,
   );
 
+  const openProjectUpdateModal = useUiStore(
+    (state) => state.openProjectUpdateModal,
+  );
+
   const { data: projects } = useProjects();
 
   const [projectView, setProjectView] = useState<{
@@ -43,10 +47,6 @@ export default function ProjectListPage() {
       project: null,
     }));
   };
-
-  // useEffect(() => {
-  //   fetchProjects();
-  // }, [fetchProjects]);
 
   return (
     <main className={clsx('overflow-auto', 'w-full h-screen', 'py-10 px-4')}>
@@ -113,9 +113,9 @@ export default function ProjectListPage() {
             <ProjectGridView
               key={projectItem.id}
               project={projectItem}
-              // onToggleEdit={(project) => {
-              //   openProjectUpdateModal(project, fetchProjects);
-              // }}
+              onToggleEdit={(project) => {
+                openProjectUpdateModal(project);
+              }}
               onToggleDelete={(project) => {
                 setIsDeleteProjectModal((prev) => ({
                   ...prev,
