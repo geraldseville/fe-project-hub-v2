@@ -9,7 +9,7 @@ import { useMe } from '@/hooks/queries/useMe';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
 import {
-  type UserUpdateInput,
+  type UpdateUserInput,
   validateUpdateUser,
 } from '@/validators/user.validator';
 
@@ -34,7 +34,7 @@ export default function BasicInformation() {
   const [toggleUpdate, setToggleUpdate] = useState<boolean>(false);
 
   const [basicInformationForm, setBasicInformationForm] =
-    useState<UserUpdateInput>({
+    useState<UpdateUserInput>({
       firstName: me?.firstName ?? '',
       lastName: me?.lastName ?? '',
       role: me?.role ?? '',
