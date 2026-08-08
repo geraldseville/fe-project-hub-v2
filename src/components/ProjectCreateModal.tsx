@@ -6,10 +6,10 @@ import clsx from 'clsx';
 import { useCreateProject } from '@/hooks/mutations/useCreateProject';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
+import type { ProjectFormInput } from '@/validators/project.validator';
 import {
   blankProjectForm,
-  type CreateProjectInput,
-  validateCreateProject,
+  validateProjectForm,
 } from '@/validators/project.validator';
 
 import Button from '@/components/elements/Button';
@@ -32,14 +32,14 @@ export default function ProjectCreateModal({
 
   const createProject = useCreateProject();
 
+  const isCreatingProjectPending = createProject.isPending;
+
   const [draftProjectForm, setDraftProjectForm] =
-    useState<CreateProjectInput>(blankProjectForm);
+    useState<ProjectFormInput>(blankProjectForm);
 
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-  const validationResult = validateCreateProject(draftProjectForm);
+  const validationResult = validateProjectForm(draftProjectForm);
 
   const errors = hasSubmitted ? validationResult.errors : {};
 
@@ -49,8 +49,6 @@ export default function ProjectCreateModal({
     if (!validationResult.success) {
       return;
     }
-
-    setIsSubmitting(true);
 
     try {
       const result = await createProject.mutateAsync({
@@ -78,7 +76,6 @@ export default function ProjectCreateModal({
       );
     } finally {
       setHasSubmitted(false);
-      setIsSubmitting(false);
       onClose();
     }
   };
@@ -92,7 +89,7 @@ export default function ProjectCreateModal({
   return (
     <Modal
       classNames={{
-        root: clsx(isSubmitting && 'is-disabled opacity-100!'),
+        root: clsx(isCreatingProjectPending && 'is-disabled opacity-100!'),
         content: 'max-w-5xl! rounded-lg bg-[#1E293B] border border-[#464554]',
       }}
       isOpen={isOpen}
@@ -164,7 +161,7 @@ export default function ProjectCreateModal({
             className=""
             buttonStyle="primary"
             type="button"
-            text={isSubmitting ? 'Creating...' : 'Create Project'}
+            text={isCreatingProjectPending ? 'Creating...' : 'Create Project'}
             onClick={handleCreateProject}
           />
         </div>
