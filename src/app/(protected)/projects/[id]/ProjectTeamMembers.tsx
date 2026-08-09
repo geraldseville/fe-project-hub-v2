@@ -11,13 +11,13 @@ import ThreeDotActions from '@/components/elements/ThreeDotActions';
 import { IconPlus1 } from '@/components/svgs/icons';
 
 interface ProjectTeamMembersProps {
-  assignees: User[] | null;
+  members: User[] | null;
 }
 
 export default function ProjectTeamMembers({
-  assignees,
+  members,
 }: ProjectTeamMembersProps) {
-  if (!assignees) return null;
+  if (!members) return null;
 
   return (
     <div
@@ -52,7 +52,7 @@ export default function ProjectTeamMembers({
           'max-h-38 min-h-38',
         )}
       >
-        {assignees.map((item) => (
+        {members.map((item) => (
           <div
             className="flex flex-row justify-start items-center gap-4"
             key={item.id}

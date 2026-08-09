@@ -18,7 +18,7 @@ export type Project = {
   secondaryColor?: string;
   ownerId: string;
   owner: User;
-  assignees: User[];
+  members: User[];
   createdAt: string;
   updatedAt: string;
 };
@@ -32,7 +32,7 @@ export type CreateProjectDto = {
   endDate: string;
   primaryColor: string;
   secondaryColor: string;
-  assigneeIds: string[];
+  memberIds: string[];
 };
 
 export type UpdateProjectDto = {
@@ -44,5 +44,5 @@ export type UpdateProjectDto = {
   endDate?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  assigneeIds?: string[];
+  memberIds?: string[];
 };

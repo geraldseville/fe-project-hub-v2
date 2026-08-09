@@ -72,7 +72,7 @@ export default function ProjectUpdateModal({
           secondaryColor: draftProjectForm.secondaryColor,
           startDate: draftProjectForm.startDate,
           endDate: draftProjectForm.endDate,
-          assigneeIds: draftProjectForm.assigneeIds,
+          memberIds: draftProjectForm.memberIds,
         },
       });
 
@@ -113,7 +113,7 @@ export default function ProjectUpdateModal({
       endDate: project.endDate ?? '',
       primaryColor: project.primaryColor ?? '#000000',
       secondaryColor: project.secondaryColor ?? '#000000',
-      assigneeIds: project.assignees.map((assignee) => assignee.id),
+      memberIds: project.members.map((members) => members.id),
     });
   }, [project]);
 

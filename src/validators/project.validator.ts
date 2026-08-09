@@ -46,7 +46,7 @@ export const projectFormSchema = z
       .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid secondary color.')
       .default('#000000'),
 
-    assigneeIds: z.array(z.string().uuid()).optional().default([]),
+    memberIds: z.array(z.string().uuid()).optional().default([]),
   })
   .refine(
     (data) =>
@@ -68,7 +68,7 @@ export const blankProjectForm: ProjectFormInput = {
   endDate: '',
   primaryColor: '#000000',
   secondaryColor: '#000000',
-  assigneeIds: [],
+  memberIds: [],
 };
 
 export type ProjectFormErrors = {
@@ -80,7 +80,7 @@ export type ProjectFormErrors = {
   endDate?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  assigneeIds?: string;
+  memberIds?: string;
 };
 
 export const validateProjectForm = (
@@ -116,7 +116,7 @@ export const validateProjectForm = (
       endDate: fieldErrors.endDate?.[0],
       primaryColor: fieldErrors.primaryColor?.[0],
       secondaryColor: fieldErrors.secondaryColor?.[0],
-      assigneeIds: fieldErrors.assigneeIds?.[0],
+      memberIds: fieldErrors.memberIds?.[0],
     },
   };
 };

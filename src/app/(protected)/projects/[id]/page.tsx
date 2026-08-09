@@ -153,7 +153,7 @@ export default function ProjectItemPage() {
           className={clsx('flex flex-col gap-4', 'basis-[305px] min-w-[305px]')}
         >
           <ProjectStatus project={project} />
-          <ProjectTeamMembers assignees={project.assignees} />
+          <ProjectTeamMembers members={project.members} />
         </div>
       </div>
     </main>

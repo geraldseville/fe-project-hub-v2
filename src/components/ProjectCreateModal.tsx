@@ -60,7 +60,7 @@ export default function ProjectCreateModal({
         secondaryColor: draftProjectForm.secondaryColor,
         startDate: draftProjectForm.startDate,
         endDate: draftProjectForm.endDate,
-        assigneeIds: draftProjectForm.assigneeIds,
+        memberIds: draftProjectForm.memberIds,
       });
 
       const projectId = result.data?.project.id;

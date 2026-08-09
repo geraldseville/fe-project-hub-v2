@@ -69,7 +69,7 @@ export default function ProjectForm({
 
   // console.log({ me, users });
 
-  // const assignees = useUsersStore((state) => state.users);
+  // const members = useUsersStore((state) => state.users);
 
   // const [taskTitleInput, setTaskTitleInput] = useState<string>('');
 
@@ -233,15 +233,15 @@ export default function ProjectForm({
         />
         <ErrorTextField text={errors.endDate} />
       </div>
-      {/* Assignees */}
+      {/* Members */}
       <div className="w-full">
-        <LabelField id="projectAssignees" text="Assignees" />
+        <LabelField id="projectMembers" text="Members" />
         <MultiSelect
           id="multiSelect"
-          placeholder="Add Assignees..."
+          placeholder="Add Members..."
           searchable
           value={users
-            .filter((u) => draftProjectForm.assigneeIds.includes(u.id))
+            .filter((u) => draftProjectForm.memberIds.includes(u.id))
             .map((u) => ({
               id: u.id,
               image: u.imageUrl,
@@ -259,7 +259,7 @@ export default function ProjectForm({
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
               ...prev,
-              assigneeIds: [...selected.map((item) => item.data.id)],
+              memberIds: [...selected.map((item) => item.data.id)],
             }));
           }}
         />

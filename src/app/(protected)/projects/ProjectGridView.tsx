@@ -104,10 +104,10 @@ export default function ProjectGridView({
             'mt-4',
           )}
         >
-          {project.assignees.length > 0 ? (
+          {project.members.length > 0 ? (
             <ImageStack
               className={{ item: 'border-[#131B2E]!' }}
-              images={project.assignees.map((item) => ({
+              images={project.members.map((item) => ({
                 src: item.imageUrl ?? '',
                 alt: getFullName(item.firstName, item.lastName),
               }))}
