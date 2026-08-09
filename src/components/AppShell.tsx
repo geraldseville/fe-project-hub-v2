@@ -10,6 +10,10 @@ import Toast from '@/components/Toast';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const projectCreateModal = useUiStore((state) => state.projectCreateModal);
 
+  const openProjectCreateModal = useUiStore(
+    (state) => state.openProjectCreateModal,
+  );
+
   const closeProjectCreateModal = useUiStore(
     (state) => state.closeProjectCreateModal,
   );
@@ -28,11 +32,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         'w-full min-h-screen h-screen',
       )}
     >
-      <Sidebar
-        onNewProject={() => {
-          console.log('onNewProject');
-        }}
-      />
+      <Sidebar onNewProject={openProjectCreateModal} />
       {children}
       <Toast />
       <ProjectCreateModal
