@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
 
@@ -11,12 +12,14 @@ import { Project } from '@/types/project.types';
 
 import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
-import { IconListBullet, IconPlus1 } from '@/components/svgs/icons';
+import { IconGrid1, IconListBullet, IconPlus1 } from '@/components/svgs/icons';
 
 import ProjectDeleteModal from './ProjectDeleteModal';
-import ProjectGridView from './ProjectGridView';
+import ProjectItemView from './ProjectItemView';
 
 export default function ProjectListPage() {
+  const router = useRouter();
+
   const openProjectCreateModal = useUiStore(
     (state) => state.openProjectCreateModal,
   );
@@ -46,6 +49,10 @@ export default function ProjectListPage() {
       isOpen: false,
       project: null,
     }));
+  };
+
+  const handleOnPreview = (project: Project) => {
+    router.replace(`/projects/${project.id}`);
   };
 
   return (
@@ -80,7 +87,7 @@ export default function ProjectListPage() {
           options={[
             {
               id: 'tab-grid',
-              icon: <IconListBullet className="w-3.5 h-3.5" />,
+              icon: <IconGrid1 className="w-3.5 h-3.5" />,
             },
             {
               id: 'tab-list',
@@ -100,63 +107,70 @@ export default function ProjectListPage() {
         />
       </div>
       {/* Body */}
-      <div
-        className={clsx(
-          'grid auto-rows-55 gap-4',
-          'grid-cols-4 max-[1440px]:grid-cols-3 max-[1080px]:grid-cols-2',
-          'mt-10',
-        )}
-      >
-        {projects &&
-          projects.length > 0 &&
-          projects.map((projectItem: Project) => (
-            <ProjectGridView
-              key={projectItem.id}
-              project={projectItem}
-              onToggleEdit={(project) => {
-                openProjectUpdateModal(project);
-              }}
-              onToggleDelete={(project) => {
-                setIsDeleteProjectModal((prev) => ({
-                  ...prev,
-                  isOpen: true,
-                  project,
-                }));
-              }}
-            />
-          ))}
-        {/* Create Project */}
-        <button
+      <div className="mt-10">
+        {/* Project Item View */}
+        <div
           className={clsx(
-            'flex flex-col justify-center items-center gap-4',
-            'p-3',
-            'rounded-lg',
-            'border border-dashed border-[#464554]',
+            projectView.id === 'tab-grid' &&
+              'grid auto-rows-55 gap-4 grid-cols-4 max-[1440px]:grid-cols-3 max-[1080px]:grid-cols-2',
+            projectView.id === 'tab-list' && 'flex flex-col gap-4',
           )}
-          type="button"
-          onClick={openProjectCreateModal}
         >
-          <div
+          {projects &&
+            projects.length > 0 &&
+            projects.map((projectItem: Project) => (
+              <ProjectItemView
+                key={projectItem.id}
+                view={projectView.id}
+                project={projectItem}
+                onTogglePreview={handleOnPreview}
+                onToggleEdit={(project) => {
+                  openProjectUpdateModal(project);
+                }}
+                onToggleDelete={(project) => {
+                  setIsDeleteProjectModal((prev) => ({
+                    ...prev,
+                    isOpen: true,
+                    project,
+                  }));
+                }}
+              />
+            ))}
+          {/* Create Project */}
+          <button
             className={clsx(
-              'flex justify-center items-center',
-              'w-12 h-12',
-              'rounded-xl',
-              'bg-[#171F33]',
+              'flex flex-col justify-center items-center gap-4',
+              'p-3',
+              'rounded-lg',
+              'border-2 border-dashed',
+              'border-[#464554] hover:border-primary',
+              projectView.id === 'tab-list' && 'flex-row h-[136px]',
             )}
+            type="button"
+            onClick={openProjectCreateModal}
           >
-            <IconPlus1 className="min-w-3.5 w-3.5 h-auto" />
-          </div>
-          <div
-            className={clsx(
-              'font-inter font-bold',
-              'text-[#C7C4D7] leading-tight tracking-[0.28px]',
-            )}
-          >
-            Create Button
-          </div>
-        </button>
+            <div
+              className={clsx(
+                'flex justify-center items-center',
+                'w-12 h-12',
+                'rounded-xl',
+                'bg-[#171F33]',
+              )}
+            >
+              <IconPlus1 className="min-w-3.5 w-3.5 h-auto" />
+            </div>
+            <div
+              className={clsx(
+                'font-inter font-bold',
+                'text-[#C7C4D7] leading-tight tracking-[0.28px]',
+              )}
+            >
+              Create Project
+            </div>
+          </button>
+        </div>
       </div>
-      {/* Project Deletion */}
+      {/* Project Delete Modal */}
       <ProjectDeleteModal
         isOpen={deleteProjectModal.isOpen}
         onClose={closeDeleteProjectModal}
