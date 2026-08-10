@@ -39,7 +39,9 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
   });
 
   const click = useClick(context);
+
   const dismiss = useDismiss(context);
+
   const role = useRole(context, {
     role: 'dialog',
   });
@@ -85,7 +87,6 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
               'z-50',
               'w-[240px] max-h-[280px]',
               'overflow-y-auto',
-              'p-2',
               'rounded-lg',
               'bg-[#131B2E]',
               'border border-[#464554]',
@@ -95,7 +96,19 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
             style={floatingStyles}
             {...getFloatingProps()}
           >
-            <div className="flex flex-wrap gap-1.5">
+            <div
+              className={clsx(
+                'text-center',
+                'p-2',
+                'bg-[#131b2e]',
+                'border-b border-b-[#464554]',
+              )}
+            >
+              Projects
+            </div>
+            <div
+              className={clsx('flex flex-wrap gap-1.5', 'p-2', 'bg-[#171F33]')}
+            >
               {projects.map((project) => (
                 <button
                   className=""
@@ -108,9 +121,7 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
                   {/* Project tag goes here */}
                   <ProjectAsTag
                     title={project.title}
-                    color={
-                      PROJECT_STATUS_COLORS[project.status].hex ?? '#000000'
-                    }
+                    color={project.primaryColor ?? '#000000'}
                   />
                 </button>
               ))}
