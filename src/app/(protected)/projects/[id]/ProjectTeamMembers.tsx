@@ -5,10 +5,11 @@ import clsx from 'clsx';
 
 import { getFullName } from '@/utils/user.utils';
 
-import { User } from '@/types/user.types';
+import type { User } from '@/types/user.types';
 
 import ThreeDotActions from '@/components/elements/ThreeDotActions';
-import { IconPlus1 } from '@/components/svgs/icons';
+import Avatar from '@/components/reusable/Avatar';
+import { IconExternalLink, IconPlus1 } from '@/components/svgs/icons';
 
 interface ProjectTeamMembersProps {
   members: User[] | null;
@@ -72,7 +73,9 @@ export default function ProjectTeamMembers({
                   height={40}
                   draggable={false}
                 />
-              ) : null}
+              ) : (
+                <Avatar initial={item.firstName?.charAt(0)} />
+              )}
               {false && (
                 <div
                   className={clsx(
@@ -90,6 +93,7 @@ export default function ProjectTeamMembers({
                 className={clsx(
                   'font-semibold',
                   'text-[#DAE2FD] text-[12px] leading-tight',
+                  'h-[calc(1.25em*1)]',
                 )}
               >
                 {getFullName(item.firstName, item.lastName)}
@@ -98,13 +102,33 @@ export default function ProjectTeamMembers({
                 className={clsx(
                   'font-semibold',
                   'text-[#C7C4D7] text-[11px] leading-tight',
+                  'h-[calc(1.25em*1)]',
                   'mt-1',
                 )}
               >
                 {item.role}
               </div>
             </div>
-            <ThreeDotActions orientation="Vertical" />
+            <ThreeDotActions
+              orientation="Vertical"
+              placement="left-start"
+              actions={[
+                {
+                  id: 'action-preview',
+                  color: '#C7C4D7',
+                  label: 'Preview',
+                  icon: <IconExternalLink />,
+                  onClick: () => {},
+                },
+                {
+                  id: 'action-remove',
+                  color: '#e90f1e',
+                  label: 'Remove',
+                  // icon: <IconExternalLink />,
+                  onClick: () => {},
+                },
+              ]}
+            />
           </div>
         ))}
       </div>
