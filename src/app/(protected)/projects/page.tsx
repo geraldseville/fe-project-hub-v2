@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
@@ -12,6 +12,7 @@ import { Project } from '@/types/project.types';
 
 import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
+import SingleSelect from '@/components/elements/SingleSelect';
 import { IconGrid1, IconListBullet, IconPlus1 } from '@/components/svgs/icons';
 
 import ProjectDeleteModal from './ProjectDeleteModal';
@@ -29,6 +30,61 @@ export default function ProjectListPage() {
   );
 
   const { data: projects, isPending: isProjectsPending } = useProjects();
+
+  const [projectSort, setProjectSort] = useState<{
+    id: string;
+    label: string;
+    value: string;
+  }>({
+    id: 'title',
+    label: 'Title',
+    value: 'title',
+  });
+
+  const [projectSearch, setProjectSearch] = useState<string>('');
+
+  const visibleProjects = useMemo(() => {
+    const sortOrder = 'asc';
+
+    return (
+      projects
+        ?.filter((project) => {
+          const query = projectSearch.trim().toLowerCase();
+
+          if (!query) return true;
+
+          return (
+            project.title.toLowerCase().includes(query) ||
+            project.description?.toLowerCase().includes(query)
+          );
+        })
+        .sort((a, b) => {
+          let comparison = 0;
+
+          switch (projectSort.id) {
+            case 'title':
+              comparison = a.title.localeCompare(b.title);
+              break;
+
+            case 'status':
+              comparison = a.status.localeCompare(b.status);
+              break;
+
+            case 'startDate':
+              comparison =
+                new Date(a.startDate ?? 0).getTime() -
+                new Date(b.startDate ?? 0).getTime();
+              break;
+
+            case 'tasks':
+              comparison = a.tasks.length - b.tasks.length;
+              break;
+          }
+
+          return sortOrder === 'asc' ? comparison : -comparison;
+        }) ?? []
+    );
+  }, [projectSearch, projectSort, projects]);
 
   const [projectView, setProjectView] = useState<{
     id: string;
@@ -78,6 +134,38 @@ export default function ProjectListPage() {
             Manage and track your ongoing enterprise workstreams.
           </div>
         </div>
+        {/* Project Sort */}
+        <SingleSelect
+          classNames={{ root: 'max-w-[150px]', trigger: 'h-10!' }}
+          id="projectSort"
+          value={projectSort}
+          options={[
+            {
+              id: 'title',
+              label: 'Title',
+              value: 'title',
+            },
+            {
+              id: 'status',
+              label: 'Status',
+              value: 'status',
+            },
+            {
+              id: 'startDate',
+              label: 'Start Date',
+              value: 'startDate',
+            },
+            {
+              id: 'tasks',
+              label: 'Tasks',
+              value: 'tasks',
+            },
+          ]}
+          onChange={(selected) => {
+            setProjectSort(selected);
+          }}
+        />
+        {/* Project View Tab */}
         <SegmentedTab
           classNames={{
             root: 'h-[40px]!',
@@ -98,6 +186,7 @@ export default function ProjectListPage() {
             setProjectView(selected);
           }}
         />
+        {/* Project Create Button */}
         <Button
           className=""
           type="button"
@@ -125,9 +214,9 @@ export default function ProjectListPage() {
             ))
           ) : (
             <>
-              {projects &&
-                projects.length > 0 &&
-                projects.map((projectItem: Project) => (
+              {visibleProjects &&
+                visibleProjects.length > 0 &&
+                visibleProjects.map((projectItem: Project) => (
                   <ProjectItemView
                     key={projectItem.id}
                     view={projectView.id}
