@@ -117,7 +117,7 @@ export default function ProjectItemView({
           <div
             className={clsx('flex justify-start items-center gap-4', 'w-full')}
           >
-            <div className="basis-1/3">
+            <div className="flex-1">
               {/* Project Title */}
               <ProjectTitleUI title={project.title} />
               {/* Project Description */}
@@ -137,7 +137,9 @@ export default function ProjectItemView({
               <ProjectMembersUI members={project.members} />
             </div>
             {/* Task Counter */}
-            <TaskCounterUI current={totalCompletedTasks} total={totalTasks} />
+            <div className="flex justify-start basis-40">
+              <TaskCounterUI current={totalCompletedTasks} total={totalTasks} />
+            </div>
             {/* Project Action */}
             <ThreeDotActions
               classNames={{ trigger: 'ml-auto' }}

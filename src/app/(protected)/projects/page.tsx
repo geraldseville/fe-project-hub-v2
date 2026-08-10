@@ -28,7 +28,7 @@ export default function ProjectListPage() {
     (state) => state.openProjectUpdateModal,
   );
 
-  const { data: projects } = useProjects();
+  const { data: projects, isPending: isProjectsPending } = useProjects();
 
   const [projectView, setProjectView] = useState<{
     id: string;
@@ -116,58 +116,69 @@ export default function ProjectListPage() {
             projectView.id === 'tab-list' && 'flex flex-col gap-4',
           )}
         >
-          {projects &&
-            projects.length > 0 &&
-            projects.map((projectItem: Project) => (
-              <ProjectItemView
-                key={projectItem.id}
+          {isProjectsPending ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <ProjectSkeleton
+                key={`project-skeleton-${index}`}
                 view={projectView.id}
-                project={projectItem}
-                onTogglePreview={handleOnPreview}
-                onToggleEdit={(project) => {
-                  openProjectUpdateModal(project);
-                }}
-                onToggleDelete={(project) => {
-                  setIsDeleteProjectModal((prev) => ({
-                    ...prev,
-                    isOpen: true,
-                    project,
-                  }));
-                }}
               />
-            ))}
-          {/* Create Project */}
-          <button
-            className={clsx(
-              'flex flex-col justify-center items-center gap-4',
-              'p-3',
-              'rounded-lg',
-              'border-2 border-dashed',
-              'border-[#464554] hover:border-primary',
-              projectView.id === 'tab-list' && 'flex-row h-[136px]',
-            )}
-            type="button"
-            onClick={openProjectCreateModal}
-          >
-            <div
-              className={clsx(
-                'flex justify-center items-center',
-                'w-12 h-12',
-                'rounded-xl',
-                'bg-[#171F33]',
-              )}
-            >
-              <IconPlus1 className="min-w-3.5 w-3.5 h-auto" />
-            </div>
-            <div
-              className={clsx(
-                'font-inter font-bold',
-                'text-[#C7C4D7] leading-tight tracking-[0.28px]',
-              )}
-            >
-              Create Project
-            </div>
-          </button>
+            ))
+          ) : (
+            <>
+              {projects &&
+                projects.length > 0 &&
+                projects.map((projectItem: Project) => (
+                  <ProjectItemView
+                    key={projectItem.id}
+                    view={projectView.id}
+                    project={projectItem}
+                    onTogglePreview={handleOnPreview}
+                    onToggleEdit={(project) => {
+                      openProjectUpdateModal(project);
+                    }}
+                    onToggleDelete={(project) => {
+                      setIsDeleteProjectModal((prev) => ({
+                        ...prev,
+                        isOpen: true,
+                        project,
+                      }));
+                    }}
+                  />
+                ))}
+              {/* Create Project */}
+              <button
+                className={clsx(
+                  'flex flex-col justify-center items-center gap-4',
+                  'p-3',
+                  'rounded-lg',
+                  'border-2 border-dashed',
+                  'border-[#464554] hover:border-primary',
+                  projectView.id === 'tab-list' && 'flex-row h-[136px]',
+                )}
+                type="button"
+                onClick={openProjectCreateModal}
+              >
+                <div
+                  className={clsx(
+                    'flex justify-center items-center',
+                    'w-12 h-12',
+                    'rounded-xl',
+                    'bg-[#171F33]',
+                  )}
+                >
+                  <IconPlus1 className="min-w-3.5 w-3.5 h-auto" />
+                </div>
+                <div
+                  className={clsx(
+                    'font-inter font-bold',
+                    'text-[#C7C4D7] leading-tight tracking-[0.28px]',
+                  )}
+                >
+                  Create Project
+                </div>
+              </button>
+            </>
+          )}
         </div>
       </div>
       {/* Project Delete Modal */}
@@ -177,5 +188,77 @@ export default function ProjectListPage() {
         project={deleteProjectModal.project}
       />
     </main>
+  );
+}
+
+function ProjectSkeleton({ view }: { view: string }) {
+  return (
+    <div
+      className={clsx(
+        'overflow-hidden',
+        'p-6',
+        'rounded-lg',
+        'animate-pulse',
+        'bg-[#131B2E]',
+        'border border-l-[6px] border-[#464554]/30',
+        view === 'tab-list' &&
+          'flex justify-start items-center gap-4 min-h-[136px]',
+      )}
+    >
+      {/* Grid View */}
+      {view === 'tab-grid' && (
+        <>
+          {/* Status + Actions */}
+          <div className="flex justify-between items-center">
+            <div className="w-16 h-6 rounded-full bg-[#2D3449]" />
+            <div className="w-5 h-5 rounded bg-[#2D3449]" />
+          </div>
+
+          {/* Title */}
+          <div className="w-3/4 h-5 mt-4 rounded bg-[#2D3449]" />
+
+          {/* Description */}
+          <div className="space-y-2 mt-4">
+            <div className="w-full h-4 rounded bg-[#2D3449]" />
+            <div className="w-2/3 h-4 rounded bg-[#2D3449]" />
+          </div>
+
+          {/* Members + Tasks */}
+          <div className="flex justify-between items-center h-8 mt-4">
+            <div className="flex -space-x-2">
+              <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
+              <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
+              <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
+            </div>
+
+            <div className="w-16 h-4 rounded bg-[#2D3449]" />
+          </div>
+        </>
+      )}
+
+      {/* List View */}
+      {view === 'tab-list' && (
+        <>
+          <div className="flex-1">
+            <div className="w-3/4 h-5 rounded bg-[#2D3449]" />
+            <div className="w-2/4 h-5 mt-4 rounded bg-[#2D3449]" />
+          </div>
+
+          <div className="basis-40 space-y-2">
+            <div className="w-full h-4 rounded bg-[#2D3449]" />
+          </div>
+
+          <div className="flex basis-40 -space-x-2">
+            <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
+            <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
+            <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
+          </div>
+
+          <div className="basis-40 h-4 rounded bg-[#2D3449]" />
+
+          <div className="min-w-8 w-8 h-8 rounded bg-[#2D3449]" />
+        </>
+      )}
+    </div>
   );
 }
