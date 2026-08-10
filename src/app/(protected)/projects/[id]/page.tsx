@@ -1,27 +1,24 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
 import clsx from 'clsx';
 
+import { useUpdateProjectStatus } from '@/hooks/mutations/useUpdateProjectStatus';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
-import {
-  PROJECT_STATUS_COLORS,
-  PROJECT_URGENCY_COLORS,
-} from '@/utils/project.utils';
+import { PROJECT_STATUS_COLORS, PROJECT_STATUSES } from '@/utils/project.utils';
 
-// import { getAllTasksByProjectId, getProjectById } from '@/api/project.api';
-// import { useUiStore } from '@/store/use-ui-store';
-// import { type Project, PROJECT_STATUS_COLORS } from '@/types/project.types';
-// import { type Task } from '@/types/task.types';
+import type { ProjectStatus } from '@/types/project.types';
+
 import Button from '@/components/elements/Button';
+import SingleSelect from '@/components/elements/SingleSelect';
 import { IconAngleRight, IconPen3, IconShare2 } from '@/components/svgs/icons';
 
 import ProjectOverview from './ProjectOverview';
-import ProjectStatus from './ProjectStatus';
+import ProjectStatusCard from './ProjectStatus';
 import ProjectTaskTable from './ProjectTaskTable';
 import ProjectTeamMembers from './ProjectTeamMembers';
 
@@ -33,41 +30,11 @@ export default function ProjectItemPage() {
   const { data: project = null, isPending: isProjectPending } =
     useProject(projectId);
 
+  const updateProjectStatus = useUpdateProjectStatus();
+
   const openProjectUpdateModal = useUiStore(
     (state) => state.openProjectUpdateModal,
   );
-
-  console.log({ project });
-
-  // const openProjectUpdateModal = useUiStore(
-  //   (state) => state.openProjectUpdateModal,
-  // );
-
-  // const [project, setProject] = useState<Project | null>(null);
-
-  // const [tasks, setTasks] = useState<Task[]>([]);
-
-  // const fetchProject = useCallback(async () => {
-  //   const result = await getProjectById(projectId);
-
-  //   setProject(result.data.project);
-  // }, [projectId]);
-
-  // const fetchTasks = useCallback(async () => {
-  //   const result = await getAllTasksByProjectId(projectId);
-
-  //   if (result.data.tasks.length) {
-  //     setTasks(result.data.tasks);
-  //   }
-  // }, [projectId]);
-
-  // useEffect(() => {
-  //   fetchProject();
-  // }, [fetchProject]);
-
-  // useEffect(() => {
-  //   fetchTasks();
-  // }, [fetchTasks]);
 
   if (!project) return null;
 
@@ -84,7 +51,7 @@ export default function ProjectItemPage() {
               'flex justify-start items-center gap-2',
             )}
           >
-            <span>Projects</span>
+            <Link href="/projects">Projects</Link>
             <IconAngleRight />
             <span>{project.title}</span>
           </div>
@@ -126,17 +93,43 @@ export default function ProjectItemPage() {
             {project.status}
           </div>
         </div>
+        <SingleSelect
+          classNames={{
+            root: 'max-w-[180px]',
+            trigger: 'h-10!',
+          }}
+          id="projectStatus"
+          placeholder="Select Status..."
+          value={{
+            id: project.status,
+            color: PROJECT_STATUS_COLORS[project.status].hex,
+            label: project.status,
+            value: project.status,
+          }}
+          options={PROJECT_STATUSES.map((item) => ({
+            id: item,
+            color: PROJECT_STATUS_COLORS[item].hex,
+            label: item,
+            value: item,
+          }))}
+          onChange={(selected) => {
+            updateProjectStatus.mutate({
+              projectId,
+              status: selected.value as ProjectStatus,
+            });
+          }}
+        />
         <Button
           className="min-w-[100px]!"
           buttonStyle="secondary"
           type="button"
-          icon={<IconShare2 className="min-[14px] w-[14px] h-auto" />}
+          icon={<IconShare2 className="min-w-3.5 w-3.5 h-auto" />}
           text="Share"
         />
         <Button
           buttonStyle="primary"
           type="button"
-          icon={<IconPen3 className="min-[14px] w-[14px] h-auto" />}
+          icon={<IconPen3 className="min-w-3.5 w-3.5 h-auto" />}
           text="Edit Project"
           onClick={() => {
             openProjectUpdateModal(project);
@@ -147,12 +140,12 @@ export default function ProjectItemPage() {
       <div className={clsx('flex justify-between items-start gap-4', 'mt-10')}>
         <div className={clsx('flex flex-col gap-4', 'flex-1')}>
           <ProjectOverview project={project} />
-          {/* <ProjectTaskTable tasks={tasks} /> */}
+          <ProjectTaskTable project={project} />
         </div>
         <div
           className={clsx('flex flex-col gap-4', 'basis-[305px] min-w-[305px]')}
         >
-          <ProjectStatus project={project} />
+          <ProjectStatusCard project={project} />
           <ProjectTeamMembers members={project.members} />
         </div>
       </div>
