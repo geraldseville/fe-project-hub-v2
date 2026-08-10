@@ -4,27 +4,23 @@ import { updateTask } from '@/api/task.api';
 
 import type { UpdateTaskDto } from '@/types/task.types';
 
+interface UpdateTaskVariables {
+  taskId: string;
+  projectId: string;
+  payload: UpdateTaskDto;
+}
+
 export function useUpdateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      taskId,
-      payload,
-    }: {
-      taskId: string;
-      payload: UpdateTaskDto;
-    }) => updateTask(taskId, payload),
+    mutationFn: ({ taskId, payload }: UpdateTaskVariables) =>
+      updateTask(taskId, payload),
 
-    async onSuccess(_, variables) {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ['tasks'],
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ['tasks', variables.taskId],
-        }),
-      ]);
+    onSuccess: async (_, { projectId }) => {
+      await queryClient.invalidateQueries({
+        queryKey: ['projects', projectId],
+      });
     },
   });
 }
