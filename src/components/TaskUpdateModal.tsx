@@ -143,7 +143,7 @@ export default function TaskUpdateModal({
               'text-[#C7C4D7] leading-tight truncate',
             )}
           >
-            {/* {project.title} */}
+            {project?.title}
           </div>
         </div>
         <button
