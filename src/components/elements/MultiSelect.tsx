@@ -115,7 +115,9 @@ export default function MultiSelect({
   });
 
   const click = useClick(context);
+
   const dismiss = useDismiss(context);
+
   const role = useRole(context, { role: 'listbox' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
@@ -155,8 +157,8 @@ export default function MultiSelect({
           classNames?.trigger,
         )}
         ref={setReferenceRef}
-        {...getReferenceProps()}
         type="button"
+        {...getReferenceProps()}
       >
         <div
           className={clsx(
