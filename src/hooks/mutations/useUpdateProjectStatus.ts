@@ -2,21 +2,21 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { updateProject } from '@/api/project.api';
 
-import type { Project, UpdateProjectDto } from '@/types/project.types';
+import type { Project, ProjectStatus } from '@/types/project.types';
 
-interface UpdateProjectVariables {
+interface UpdateProjectStatusVariables {
   projectId: string;
-  payload: UpdateProjectDto;
+  status: ProjectStatus;
 }
 
-export function useUpdateProject() {
+export function useUpdateProjectStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ projectId, payload }: UpdateProjectVariables) =>
-      updateProject(projectId, payload),
+    mutationFn: ({ projectId, status }: UpdateProjectStatusVariables) =>
+      updateProject(projectId, { status }),
 
-    onMutate: async ({ projectId, payload }) => {
+    onMutate: async ({ projectId, status }) => {
       await queryClient.cancelQueries({
         queryKey: ['projects', projectId],
       });
@@ -33,7 +33,7 @@ export function useUpdateProject() {
 
           return {
             ...currentProject,
-            ...payload,
+            status,
           };
         },
       );
@@ -53,12 +53,13 @@ export function useUpdateProject() {
     onSuccess: (response, { projectId }) => {
       const updatedProject = response.data?.project;
 
-      if (updatedProject) {
-        queryClient.setQueryData(['projects', projectId], updatedProject);
-      }
+      if (!updatedProject) return;
+
+      queryClient.setQueryData(['projects', projectId], updatedProject);
 
       queryClient.invalidateQueries({
         queryKey: ['projects'],
+        exact: true,
       });
     },
   });
