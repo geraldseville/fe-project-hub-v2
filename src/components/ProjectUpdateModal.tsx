@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
 
 import { useUpdateProject } from '@/hooks/mutations/useUpdateProject';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
-import type { ProjectFormInput } from '@/validators/project.validator';
 import {
   blankProjectForm,
   validateProjectForm,
@@ -30,20 +28,13 @@ export default function ProjectUpdateModal({
   onClose,
   project,
 }: ProjectEditModalProps) {
-  console.log({ project });
-
-  const router = useRouter();
-
   const toast = useToastStore();
 
   const updateProject = useUpdateProject();
 
-  const [draftProjectForm, setDraftProjectForm] =
-    useState<ProjectFormInput>(blankProjectForm);
+  const [draftProjectForm, setDraftProjectForm] = useState(blankProjectForm);
 
-  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
-
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const validationResult = validateProjectForm(draftProjectForm);
 
@@ -52,16 +43,12 @@ export default function ProjectUpdateModal({
   const handleUpdateProject = async () => {
     setHasSubmitted(true);
 
-    if (!project) return;
-
-    if (!validationResult.success) {
+    if (!project || !validationResult.success) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      const result = await updateProject.mutateAsync({
+      await updateProject.mutateAsync({
         projectId: project.id,
         payload: {
           title: draftProjectForm.title,
@@ -77,17 +64,15 @@ export default function ProjectUpdateModal({
       });
 
       toast.success('project updated successfully.');
-
-      setDraftProjectForm(blankProjectForm);
-
-      // router.push(`/projects/${result.data?.project.id}`);
     } catch (err) {
       toast.failed(
         err instanceof Error ? err.message : 'failed to update project.',
       );
     } finally {
+      setDraftProjectForm(blankProjectForm);
+
       setHasSubmitted(false);
-      setIsSubmitting(false);
+
       onClose();
     }
   };
@@ -106,21 +91,21 @@ export default function ProjectUpdateModal({
 
     setDraftProjectForm({
       title: project.title,
-      description: project.description,
+      description: project.description ?? '',
       status: project.status,
       urgency: project.urgency,
       startDate: project.startDate ?? '',
       endDate: project.endDate ?? '',
       primaryColor: project.primaryColor ?? '#000000',
       secondaryColor: project.secondaryColor ?? '#000000',
-      memberIds: project.members.map((members) => members.id),
+      memberIds: project.members.map((member) => member.id),
     });
   }, [project]);
 
   return (
     <Modal
       classNames={{
-        root: clsx(isSubmitting && 'is-disabled opacity-100!'),
+        root: clsx(updateProject.isPending && 'is-disabled opacity-100!'),
         content: 'max-w-5xl! rounded-lg bg-[#1E293B] border border-[#464554]',
       }}
       isOpen={isOpen}
@@ -186,7 +171,7 @@ export default function ProjectUpdateModal({
             className=""
             buttonStyle="primary"
             type="button"
-            text={isSubmitting ? 'Updating...' : 'Update Project'}
+            text={updateProject.isPending ? 'Updating...' : 'Update Project'}
             onClick={handleUpdateProject}
           />
         </div>
