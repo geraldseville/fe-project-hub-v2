@@ -15,10 +15,23 @@ export const deleteMyAccount = () => {
   });
 };
 
-export const getUsers = () => {
-  return apiClient<{ users: User[] }>('/users', {
-    method: 'GET',
-  });
+export interface GetUsersOptions {
+  excludeMe?: boolean;
+}
+
+export const getUsers = ({ excludeMe = false }: GetUsersOptions = {}) => {
+  const params = new URLSearchParams();
+
+  if (excludeMe) {
+    params.set('excludeMe', 'true');
+  }
+
+  return apiClient<{ users: User[] }>(
+    `/users${params.toString() ? `?${params.toString()}` : ''}`,
+    {
+      method: 'GET',
+    },
+  );
 };
 
 export const updateMe = (payload: UserDto) => {
