@@ -60,6 +60,14 @@ export const updateUserSchema = z.object({
       message: 'Invalid timezone.',
     })
     .optional(),
+
+  savedColors: z
+    .array(
+      z
+        .string()
+        .regex(/^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/, 'Invalid HEX color.'),
+    )
+    .optional(),
 });
 
 export type ChangeUserPasswordInput = z.infer<typeof changeUserPasswordSchema>;
