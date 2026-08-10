@@ -13,15 +13,15 @@ import SingleLineField from '@/components/elements/SingleLineField';
 import { IconCaution2, IconClose1 } from '@/components/svgs/icons';
 
 interface ProjectDeleteModalProps {
-  project: Project | null;
   isOpen: boolean;
   onClose: () => void;
+  project: Project | null;
 }
 
 export default function ProjectDeleteModal({
-  project,
   isOpen,
   onClose,
+  project,
 }: ProjectDeleteModalProps) {
   const toast = useToastStore();
 
