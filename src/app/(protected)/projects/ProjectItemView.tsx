@@ -52,7 +52,7 @@ export default function ProjectItemView({
           'border border-l-[6px] border-transparent hover:border-[#464554]',
         )}
         style={{
-          borderLeftColor: styles.hex,
+          borderLeftColor: project.primaryColor,
         }}
         href={`/projects/${project.id}`}
       >
