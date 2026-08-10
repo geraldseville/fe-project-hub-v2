@@ -1,7 +1,10 @@
 import { apiClient } from '@/api/api';
 
-import type { Project } from '@/types/project.types';
-import type { CreateProjectDto, UpdateProjectDto } from '@/types/project.types';
+import type {
+  CreateProjectDto,
+  Project,
+  UpdateProjectDto,
+} from '@/types/project.types';
 
 export const createProject = (payload: CreateProjectDto) => {
   return apiClient<{ project: Project }>('/projects', {
