@@ -38,8 +38,8 @@ export default function ProfileImage() {
       const resultProfileImage =
         await uploadUserProfileImage.mutateAsync(formData);
 
-      if (!resultProfileImage.data.url) {
-        throw new Error('Failed to upload profile image.');
+      if (!resultProfileImage.data?.url) {
+        throw new Error('failed to upload profile image.');
       }
 
       await updateMe.mutateAsync({
@@ -51,7 +51,6 @@ export default function ProfileImage() {
       toast.failed(
         err instanceof Error ? err.message : 'failed to upload profile image.',
       );
-      console.error(err);
     }
   };
 
