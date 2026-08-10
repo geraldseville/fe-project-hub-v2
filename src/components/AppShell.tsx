@@ -5,6 +5,7 @@ import { useUiStore } from '@/hooks/ui/useUiStore';
 import ProjectCreateModal from '@/components/ProjectCreateModal';
 import ProjectUpdateModal from '@/components/ProjectUpdateModal';
 import Sidebar from '@/components/Sidebar';
+import TaskUpdateModal from '@/components/TaskUpdateModal';
 import Toast from '@/components/Toast';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const closeProjectUpdateModal = useUiStore(
     (state) => state.closeProjectUpdateModal,
   );
+
+  const taskUpdateModal = useUiStore((state) => state.taskUpdateModal);
+
+  const closeTaskUpdateModal = useUiStore(
+    (state) => state.closeTaskUpdateModal,
+  );
+
+  console.log({ taskUpdateModal });
 
   return (
     <div
@@ -43,6 +52,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         isOpen={projectUpdateModal.isOpen}
         onClose={closeProjectUpdateModal}
         project={projectUpdateModal.project}
+      />
+      <TaskUpdateModal
+        isOpen={taskUpdateModal.isOpen}
+        onClose={closeTaskUpdateModal}
+        task={taskUpdateModal.task}
+        project={taskUpdateModal.project}
       />
     </div>
   );
