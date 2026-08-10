@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-import { type Project } from '@/types/project.types';
+import type { Project } from '@/types/project.types';
+import type { Task } from '@/types/task.types';
 
 interface UiState {
   projectCreateModal: {
@@ -17,6 +18,14 @@ interface UiState {
   };
   openProjectUpdateModal: (project: Project, onUpdate?: () => void) => void;
   closeProjectUpdateModal: () => void;
+
+  taskUpdateModal: {
+    isOpen: boolean;
+    task: Task | null;
+    project: Project | null;
+  };
+  openTaskUpdateModal: (task: Task, project: Project) => void;
+  closeTaskUpdateModal: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -64,6 +73,28 @@ export const useUiStore = create<UiState>((set) => ({
     set({
       projectUpdateModal: {
         isOpen: false,
+        project: null,
+      },
+    }),
+
+  taskUpdateModal: {
+    isOpen: false,
+    task: null,
+    project: null,
+  },
+  openTaskUpdateModal: (task, project) =>
+    set({
+      taskUpdateModal: {
+        isOpen: true,
+        task,
+        project,
+      },
+    }),
+  closeTaskUpdateModal: () =>
+    set({
+      taskUpdateModal: {
+        isOpen: false,
+        task: null,
         project: null,
       },
     }),
