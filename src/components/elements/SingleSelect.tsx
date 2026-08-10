@@ -70,6 +70,8 @@ export default function SingleSelect({
 
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
+  const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
+
   const handleSelect = (selectedValue: SelectOption) => {
     onChange(selectedValue);
     setIsOpen(false);
@@ -85,6 +87,18 @@ export default function SingleSelect({
       return () => clearTimeout(timer);
     }
   }, [isOpen, searchable]);
+
+  useEffect(() => {
+    if (!isOpen || !value) return;
+
+    const timer = setTimeout(() => {
+      selectedOptionRef.current?.scrollIntoView({
+        block: 'nearest',
+      });
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [isOpen, value?.id]);
 
   // Floating UI setup
   const { refs, floatingStyles, context } = useFloating({
@@ -264,6 +278,7 @@ export default function SingleSelect({
                         ? 'bg-[#8083FF]/20 border-l-4 border-l-[#C0C1FF]'
                         : 'bg-transparent hover:bg-[#222A3D] border-l-4 border-l-transparent',
                     )}
+                    ref={isSelected ? selectedOptionRef : null}
                     key={optionItem.id}
                     type="button"
                     onClick={() => handleSelect(optionItem)}
@@ -312,7 +327,14 @@ export default function SingleSelect({
               })}
             </div>
           ) : (
-            <div className="italic truncate flex justify-start items-center h-[42px] py-2 px-4">
+            <div
+              className={clsx(
+                'italic truncate',
+                'flex justify-start items-center',
+                'h-[42px]',
+                'py-2 px-4',
+              )}
+            >
               NO MATCHES FOUND
             </div>
           )}
