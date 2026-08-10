@@ -12,75 +12,27 @@ import clsx from 'clsx';
 import { motion } from 'motion/react';
 
 import Button from '@/components/elements/Button';
-import {
-  IconAnalytics2,
-  IconCalendar2,
-  IconCustomer1,
-  IconFolder1,
-  IconGridDashboard,
-  IconNotifications,
-  IconPlus2,
-  IconSettings3,
-} from '@/components/svgs/icons';
+import { IconPlus2 } from '@/components/svgs/icons';
 
-interface NavItem {
+export type NavItem = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   label: string;
   href: string;
-}
+};
 
 interface SidebarProps {
+  navList?: NavItem[];
   onNewProject?: () => void;
 }
 
-export default function Sidebar({ onNewProject }: SidebarProps) {
+export default function Sidebar({ navList, onNewProject }: SidebarProps) {
   const pathname = usePathname();
-
-  // const openProjectCreateModal = useUiStore(
-  //   (state) => state.openProjectCreateModal,
-  // );
-
-  const navList: NavItem[] = [
-    {
-      icon: IconGridDashboard,
-      label: 'Dashboard',
-      href: '/dashboard',
-    },
-    {
-      icon: IconFolder1,
-      label: 'Projects',
-      href: '/projects',
-    },
-    {
-      icon: IconAnalytics2,
-      label: 'Kanban',
-      href: '/kanban',
-    },
-    {
-      icon: IconCalendar2,
-      label: 'Calendar',
-      href: '/calendar',
-    },
-    {
-      icon: IconCustomer1,
-      label: 'Team',
-      href: '/team',
-    },
-    {
-      icon: IconNotifications,
-      label: 'Notifications',
-      href: '/notifications',
-    },
-    {
-      icon: IconSettings3,
-      label: 'Settings',
-      href: '/settings',
-    },
-  ];
 
   const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  const activeIndex = navList.findIndex((item) => pathname.includes(item.href));
+  const activeIndex = navList?.findIndex((item) =>
+    pathname.includes(item.href),
+  );
 
   const [activeMenuIndicator, setActiveMenuIndicator] = useState({
     top: 0,
@@ -88,6 +40,8 @@ export default function Sidebar({ onNewProject }: SidebarProps) {
   });
 
   useLayoutEffect(() => {
+    if (activeIndex === undefined) return;
+
     const el = navRefs.current[activeIndex];
 
     if (!el) return;
@@ -135,50 +89,52 @@ export default function Sidebar({ onNewProject }: SidebarProps) {
           text="New Project"
           onClick={onNewProject}
         />
-        <nav className="relative flex flex-col gap-1">
-          {navList.map((navItem, index) => {
-            const Icon = navItem.icon;
+        {navList && navList.length > 0 && (
+          <nav className="relative flex flex-col gap-1">
+            {navList.map((navItem, index) => {
+              const Icon = navItem.icon;
 
-            return (
-              <Link
+              return (
+                <Link
+                  className={clsx(
+                    activeIndex === index ? 'text-[#0D0096]' : 'text-[#C7C4D7]',
+                    'relative z-2',
+                    'flex items-center gap-4',
+                    'h-9',
+                    'px-4 py-1',
+                  )}
+                  key={`nav-${index}-${navItem.label}`}
+                  href={navItem.href}
+                  ref={(el) => {
+                    navRefs.current[index] = el;
+                  }}
+                >
+                  <Icon className="w-4 h-auto" />
+                  <span>{navItem.label}</span>
+                </Link>
+              );
+            })}
+            {activeMenuIndicator && (
+              <motion.div
                 className={clsx(
-                  activeIndex === index ? 'text-[#0D0096]' : 'text-[#C7C4D7]',
-                  'relative z-2',
-                  'flex items-center gap-4',
-                  'h-9',
-                  'px-4 py-1',
+                  'absolute z-1 left-0 top-0 bottom-0',
+                  'w-full',
+                  'rounded-xs',
+                  'bg-[#8083FF]',
                 )}
-                key={`nav-${index}-${navItem.label}`}
-                href={navItem.href}
-                ref={(el) => {
-                  navRefs.current[index] = el;
+                transition={{
+                  type: 'spring',
+                  stiffness: 500,
+                  damping: 35,
                 }}
-              >
-                <Icon className="w-4 h-auto" />
-                <span>{navItem.label}</span>
-              </Link>
-            );
-          })}
-          {activeMenuIndicator && (
-            <motion.div
-              className={clsx(
-                'absolute z-1 left-0 top-0 bottom-0',
-                'w-full',
-                'rounded-xs',
-                'bg-[#8083FF]',
-              )}
-              transition={{
-                type: 'spring',
-                stiffness: 500,
-                damping: 35,
-              }}
-              animate={{
-                height: activeMenuIndicator.height,
-                y: activeMenuIndicator.top,
-              }}
-            />
-          )}
-        </nav>
+                animate={{
+                  height: activeMenuIndicator.height,
+                  y: activeMenuIndicator.top,
+                }}
+              />
+            )}
+          </nav>
+        )}
       </div>
     </div>
   );
