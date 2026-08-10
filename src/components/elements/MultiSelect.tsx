@@ -17,6 +17,7 @@ import {
 import clsx from 'clsx';
 
 import SingleLineField from '@/components/elements/SingleLineField';
+import Avatar from '@/components/reusable/Avatar';
 import { IconAngleDown, IconClose1, IconSearch } from '@/components/svgs/icons';
 
 type SelectOption = {
@@ -189,7 +190,7 @@ export default function MultiSelect({
                   </div>
                 )}
                 {/* Image */}
-                {item?.image && (
+                {item?.image ? (
                   <Image
                     className={clsx(
                       'min-w-5 w-5 h-5',
@@ -201,6 +202,11 @@ export default function MultiSelect({
                     title={item.value}
                     width={24}
                     height={24}
+                  />
+                ) : (
+                  <Avatar
+                    className="text-[8px]! min-w-5! w-5! h-5!"
+                    initial={item.label.charAt(0)}
                   />
                 )}
                 {/* Label */}
@@ -319,7 +325,7 @@ export default function MultiSelect({
                       </div>
                     )}
                     {/* Image */}
-                    {optionItem.image && (
+                    {optionItem.image ? (
                       <Image
                         className={clsx(
                           'min-w-6 w-6 h-6',
@@ -331,6 +337,11 @@ export default function MultiSelect({
                         title={optionItem.value}
                         width={36}
                         height={36}
+                      />
+                    ) : (
+                      <Avatar
+                        className="text-[10px]! min-w-6! w-6! h-6!"
+                        initial={optionItem.label.charAt(0)}
                       />
                     )}
                     {/* Label */}

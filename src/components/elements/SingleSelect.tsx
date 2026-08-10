@@ -17,6 +17,7 @@ import {
 import clsx from 'clsx';
 
 import SingleLineField from '@/components/elements/SingleLineField';
+import Avatar from '@/components/reusable/Avatar';
 import { IconAngleDown, IconSearch } from '@/components/svgs/icons';
 
 type SelectOption = {
@@ -144,7 +145,7 @@ export default function SingleSelect({
         {/* Color */}
         {value?.color && (
           <div
-            className="w-2 h-2 rounded-full bg-white"
+            className="min-w-2 w-2 h-2 rounded-full bg-white"
             style={{
               backgroundColor: value?.color,
             }}
@@ -152,24 +153,39 @@ export default function SingleSelect({
         )}
         {/* Icon */}
         {value?.icon && (
-          <div className="w-2 h-2 rounded-full bg-white">{value?.icon}</div>
+          <div className="min-w-2 w-2 h-2 rounded-full bg-white">
+            {value?.icon}
+          </div>
         )}
         {/* Image */}
-        {value?.image && (
-          <Image
-            className={clsx('w-6 h-6', 'object-cover', 'rounded-full')}
-            src={value.image}
-            alt={value.value}
-            title={value.value}
-            width={36}
-            height={36}
-          />
-        )}
+        {value &&
+          'image' in value &&
+          (value.image ? (
+            <Image
+              className={clsx(
+                'min-w-6 w-6 h-6',
+                'object-cover',
+                'rounded-full',
+              )}
+              src={value.image}
+              alt={value.value}
+              title={value.value}
+              width={36}
+              height={36}
+            />
+          ) : (
+            <Avatar
+              className="text-[10px]! min-w-6! w-6! h-6!"
+              initial={value.label.charAt(0)}
+            />
+          ))}
         {/* Label */}
         {value ? (
-          <div className="text-white text-sm leading-tight">{value.label}</div>
+          <div className="text-white text-sm leading-tight truncate">
+            {value.label}
+          </div>
         ) : (
-          <div className="text-placeholder text-sm leading-tight">
+          <div className="text-placeholder text-sm leading-tight truncate">
             {placeholder}
           </div>
         )}
@@ -177,6 +193,7 @@ export default function SingleSelect({
           <IconAngleDown
             className={clsx(
               'text-placeholder group-hover:text-white',
+              'min-w-2.5 w-2.5 h-2.5',
               'ml-auto',
               isOpen ? 'rotate-180' : 'rotate-0',
               'transition-all duration-200',
@@ -254,7 +271,7 @@ export default function SingleSelect({
                     {/* Color */}
                     {optionItem.color && (
                       <div
-                        className="w-2 h-2 rounded-full bg-white"
+                        className="min-w-2 w-2 h-2 rounded-full bg-white"
                         style={{
                           backgroundColor: optionItem.color,
                         }}
@@ -262,15 +279,15 @@ export default function SingleSelect({
                     )}
                     {/* Icon */}
                     {optionItem.icon && (
-                      <div className="w-2 h-2 rounded-full bg-white">
+                      <div className="min-w-2 w-2 h-2 rounded-full bg-white">
                         {optionItem.icon}
                       </div>
                     )}
                     {/* Image */}
-                    {optionItem.image && (
+                    {optionItem.image ? (
                       <Image
                         className={clsx(
-                          'w-6 h-6',
+                          'min-w-6 w-6 h-6',
                           'object-cover',
                           'rounded-full',
                         )}
@@ -280,9 +297,14 @@ export default function SingleSelect({
                         width={36}
                         height={36}
                       />
-                    )}
+                    ) : 'image' in optionItem ? (
+                      <Avatar
+                        className="text-[10px]! min-w-6! w-6! h-6!"
+                        initial={optionItem.label.charAt(0)}
+                      />
+                    ) : null}
                     {/* Label */}
-                    <div className={clsx('text-white text-sm text-left')}>
+                    <div className={clsx('text-white text-left truncate')}>
                       {optionItem.label}
                     </div>
                   </button>
