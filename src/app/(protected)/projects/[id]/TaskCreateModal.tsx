@@ -320,6 +320,7 @@ export default function TaskCreateModal({
                 }));
               }}
             />
+            <ErrorTextField text={errors.assigneeId} />
           </div>
         </div>
       </div>

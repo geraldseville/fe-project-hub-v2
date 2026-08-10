@@ -38,7 +38,7 @@ export const taskFormSchema = z
 
     projectId: z.string().cuid('Invalid project ID.'),
 
-    assigneeId: z.string().uuid('Invalid assignee ID.').optional(),
+    assigneeId: z.string().uuid('Please select an assignee.'),
   })
   .refine(
     (data) =>
