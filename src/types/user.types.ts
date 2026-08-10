@@ -22,9 +22,10 @@ export type User = {
   role?: string;
   bio?: string;
   timezone?: string;
+  savedColors?: string[];
+  memberProjects?: Project[];
   createdAt?: string;
   updatedAt?: string;
-  memberProjects?: Project[];
 };
 
 export type UserChangePasswordDto = {
@@ -38,4 +39,5 @@ export type UserDto = {
   bio?: string;
   imageUrl?: string;
   timezone?: string;
+  savedColors?: string[];
 };
