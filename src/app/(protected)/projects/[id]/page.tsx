@@ -65,37 +65,9 @@ export default function ProjectItemPage() {
             {project.title}
           </div>
         </div>
-        <div
-          className={clsx(
-            'flex justify-center items-center gap-1',
-            'ml-auto py-1 px-2',
-            'rounded-lg',
-            'bg-[#00A6E0]',
-            'border border-[#7BD0FF]/30',
-            PROJECT_STATUS_COLORS[project.status].border,
-            PROJECT_STATUS_COLORS[project.status].bg,
-          )}
-        >
-          <div
-            className={clsx(
-              'min-w-2 5 w-2 5 h-2 5',
-              'rounded-full',
-              PROJECT_STATUS_COLORS[project.status].bg,
-            )}
-          />
-          <div
-            className={clsx(
-              'font-jetbrains-mono font-medium',
-              'text-[#7BD0FF] leading-tight',
-              PROJECT_STATUS_COLORS[project.status].text,
-            )}
-          >
-            {project.status}
-          </div>
-        </div>
         <SingleSelect
           classNames={{
-            root: 'max-w-[180px]',
+            root: 'max-w-[180px] ml-auto',
             trigger: 'h-10!',
           }}
           id="projectStatus"
