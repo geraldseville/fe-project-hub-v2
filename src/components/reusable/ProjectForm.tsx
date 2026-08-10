@@ -1,9 +1,10 @@
-import React, { SetStateAction } from 'react';
+import React, { SetStateAction, useState } from 'react';
 
 import { useMe } from '@/hooks/queries/useMe';
 import { useUsers } from '@/hooks/queries/useUsers';
 
 import {
+  PROJECT_COLOR_PRESETS,
   PROJECT_STATUS_COLORS,
   PROJECT_STATUSES,
   PROJECT_URGENCIES,
@@ -17,8 +18,9 @@ import type {
 } from '@/validators/project.validator';
 
 import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
-import { User } from '@/types/user.types';
+import type { User } from '@/types/user.types';
 
+import ColorSelector from '@/components/elements/ColorSelector';
 import DateTimePicker from '@/components/elements/DateTimePicker';
 import ErrorTextField from '@/components/elements/ErrorTextField';
 import LabelField from '@/components/elements/LabelField';
@@ -42,11 +44,15 @@ export default function ProjectForm({
 
   const { data: users = [] } = useUsers();
 
+  const [allColors, setAllColors] = useState<string[]>([
+    ...PROJECT_COLOR_PRESETS,
+  ]);
+
   return (
     <div className="flex flex-wrap gap-6">
       {/* Title */}
       <div className="basis-full">
-        <LabelField id="projectTitle" text="Project Title" />
+        <LabelField id="projectTitle" text="Title" />
         <SingleLineField
           classNames={{}}
           id="projectTitle"
@@ -66,7 +72,7 @@ export default function ProjectForm({
       </div>
       {/* Description */}
       <div className="basis-full">
-        <LabelField id="projectDescription" text="Project Description" />
+        <LabelField id="projectDescription" text="Description" />
         <MultiLineField
           classNames={{}}
           placeholder="e.g. brief description of your project..."
@@ -81,6 +87,23 @@ export default function ProjectForm({
           }}
         />
         <ErrorTextField text={errors.description} />
+      </div>
+      {/* Color */}
+      <div className="basis-full">
+        <LabelField id="projectColor" text="Color" />
+        <ColorSelector
+          presetColors={allColors}
+          value={draftProjectForm.primaryColor}
+          onChange={(selected) => {
+            setDraftProjectForm((prev) => ({
+              ...prev,
+              primaryColor: selected.hex,
+            }));
+          }}
+          onAddColor={(color) => {
+            setAllColors((prev) => [...prev, color.hex]);
+          }}
+        />
       </div>
       {/* Status */}
       <div className="basis-[calc(50%-(24px/2))]">
