@@ -39,6 +39,8 @@ export default function ProjectItemView({
   const totalCompletedTasks =
     project.tasks?.filter((item) => item.status === 'DONE').length || 0;
 
+  const styles = PROJECT_STATUS_COLORS[project.status];
+
   return (
     <>
       <Link
@@ -50,7 +52,7 @@ export default function ProjectItemView({
           'border border-l-[6px] border-transparent hover:border-[#464554]',
         )}
         style={{
-          borderLeftColor: project.primaryColor,
+          borderLeftColor: styles.hex,
         }}
         href={`/projects/${project.id}`}
       >
@@ -186,7 +188,7 @@ function ProjectTitleUI({ title }: { title: string }) {
   return (
     <div
       className={clsx(
-        'font-hanken-grotesk',
+        'font-hanken-grotesk font-bold',
         'text-[#DAE2FD] text-[16px] leading-tight truncate',
         'mt-2',
       )}
