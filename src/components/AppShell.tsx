@@ -31,8 +31,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     (state) => state.closeTaskUpdateModal,
   );
 
-  console.log({ taskUpdateModal });
-
   return (
     <div
       className={clsx(

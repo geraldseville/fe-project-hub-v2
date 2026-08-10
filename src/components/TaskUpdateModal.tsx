@@ -45,16 +45,12 @@ export default function TaskUpdateModal({
 
   const errors = hasSubmitted ? validationResult.errors : {};
 
-  console.log({ validationResult, errors, draftTaskForm });
-
   const handleupdateTask = async () => {
     setHasSubmitted(true);
 
     if (!task || !project || !validationResult.success) {
       return;
     }
-
-    console.log('try catch');
 
     try {
       await updateTask.mutateAsync({
