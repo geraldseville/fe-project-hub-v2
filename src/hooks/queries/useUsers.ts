@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getUsers } from '@/api/user.api';
+import { getUsers, type GetUsersOptions } from '@/api/user.api';
 
-export function useUsers() {
+export function useUsers(options?: GetUsersOptions) {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ['users', options],
     queryFn: async () => {
-      const response = await getUsers();
+      const response = await getUsers(options);
 
       return response.data?.users ?? [];
     },
