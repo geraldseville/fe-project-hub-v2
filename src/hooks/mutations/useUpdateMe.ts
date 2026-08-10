@@ -8,10 +8,15 @@ export function useUpdateMe() {
   return useMutation({
     mutationFn: updateMe,
 
-    onSuccess() {
-      queryClient.invalidateQueries({
-        queryKey: ['me'],
-      });
+    async onSuccess() {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['me'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['users'],
+        }),
+      ]);
     },
   });
 }
