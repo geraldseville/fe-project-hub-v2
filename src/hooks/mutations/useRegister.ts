@@ -9,9 +9,14 @@ export function useRegister() {
     mutationFn: authRegister,
 
     async onSuccess() {
-      await queryClient.invalidateQueries({
-        queryKey: ['me'],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['me'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['users'],
+        }),
+      ]);
     },
   });
 }
