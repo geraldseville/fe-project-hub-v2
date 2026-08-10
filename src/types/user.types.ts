@@ -1,3 +1,5 @@
+import { Project } from '@/types/project.types';
+
 export type AuthLoginDto = {
   email: string;
   password: string;
@@ -22,6 +24,7 @@ export type User = {
   timezone?: string;
   createdAt?: string;
   updatedAt?: string;
+  memberProjects?: Project[];
 };
 
 export type UserChangePasswordDto = {
