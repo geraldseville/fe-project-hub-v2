@@ -1,28 +1,8 @@
-import React, { SetStateAction, useState } from 'react';
-
-import clsx from 'clsx';
-import { v4 as uuid } from 'uuid';
+import React, { SetStateAction } from 'react';
 
 import { useMe } from '@/hooks/queries/useMe';
-// import { blankTaskForm } from '@/lib/taskHelper';
 import { useUsers } from '@/hooks/queries/useUsers';
 
-// import { useAuthStore } from '@/store/use-auth-store';
-// import { useUsersStore } from '@/store/use-user-store';
-// import {
-//   PROJECT_STATUS_COLORS,
-//   PROJECT_STATUSES,
-//   PROJECT_URGENCIES,
-//   PROJECT_URGENCY_COLORS,
-//   type ProjectFormFields,
-//   type ProjectStatus,
-//   type ProjectUrgency,
-// } from '@/types/project.types';
-// import {
-//   TASK_PRIORITIES,
-//   TASK_PRIORITY_COLORS,
-//   type TaskPriority,
-// } from '@/types/task.types';
 import {
   PROJECT_STATUS_COLORS,
   PROJECT_STATUSES,
@@ -39,17 +19,13 @@ import type {
 import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
 import { User } from '@/types/user.types';
 
-import Button from '@/components/elements/Button';
 import DateTimePicker from '@/components/elements/DateTimePicker';
-import EditableField from '@/components/elements/EditableField';
 import ErrorTextField from '@/components/elements/ErrorTextField';
 import LabelField from '@/components/elements/LabelField';
 import MultiLineField from '@/components/elements/MultiLineField';
 import MultiSelect from '@/components/elements/MultiSelect';
-import SegmentedTab from '@/components/elements/SegmentedTabs';
 import SingleLineField from '@/components/elements/SingleLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
-import { IconBin2, IconPlus1 } from '@/components/svgs/icons';
 
 interface ProjectFormProps {
   draftProjectForm: ProjectFormInput;
@@ -62,34 +38,9 @@ export default function ProjectForm({
   setDraftProjectForm,
   errors,
 }: ProjectFormProps) {
-  // const userTimezone = useAuthStore((state) => state.user?.timezone);
   const { data: me } = useMe();
 
   const { data: users = [] } = useUsers();
-
-  // console.log({ me, users });
-
-  // const members = useUsersStore((state) => state.users);
-
-  // const [taskTitleInput, setTaskTitleInput] = useState<string>('');
-
-  // const handleAddTask = () => {
-  //   setDraftProjectForm((prev) => ({
-  //     ...prev,
-  //     tasks: [
-  //       ...(prev.tasks ?? []),
-  //       {
-  //         ...blankTaskForm,
-  //         id: uuid(),
-  //         title: taskTitleInput,
-  //         startDate: prev.startDate,
-  //         endDate: prev.startDate,
-  //       },
-  //     ],
-  //   }));
-
-  //   setTaskTitleInput('');
-  // };
 
   return (
     <div className="flex flex-wrap gap-6">
@@ -197,13 +148,6 @@ export default function ProjectForm({
             setDraftProjectForm((prev) => ({
               ...prev,
               startDate: selected.iso,
-              // tasks: prev.tasks?.map((task) => ({
-              //   ...task,
-              //   startDate:
-              //     !task.startDate || task.startDate === prev.startDate
-              //       ? selected.iso
-              //       : task.startDate,
-              // })),
             }));
           }}
         />
@@ -221,13 +165,6 @@ export default function ProjectForm({
             setDraftProjectForm((prev) => ({
               ...prev,
               endDate: selected.iso,
-              // tasks: prev.tasks?.map((task) => ({
-              //   ...task,
-              //   endDate:
-              //     !task.endDate || task.endDate === prev.endDate
-              //       ? selected.iso
-              //       : task.endDate,
-              // })),
             }));
           }}
         />
@@ -264,119 +201,6 @@ export default function ProjectForm({
           }}
         />
       </div>
-      {/* Task Input 
-      <div className="basis-full">
-        <LabelField id="taskInput" text="Tasks" />
-        <div className="flex justify-between items-center gap-6 h-[47px]">
-          <SingleLineField
-            classNames={{
-              root: 'w-full',
-            }}
-            type="text"
-            placeholder="Task Name..."
-            value={taskTitleInput}
-            onChange={(e) => {
-              const newValue = e.target.value;
-
-              setTaskTitleInput(newValue);
-            }}
-            onEnter={handleAddTask}
-          />
-          <Button
-            className={clsx(
-              'min-w-[70px]! h-[47px]!',
-              'rounded-md',
-              'bg-[#2D3449]! hover:bg-[#2D3449]/60!',
-            )}
-            buttonStyle="secondary"
-            icon={<IconPlus1 className="min-w-3 w-3 h-3" />}
-            text=""
-            disabled={!taskTitleInput}
-            onClick={handleAddTask}
-          />
-        </div>
-      </div>
-      */}
-      {/* Task List and Repeater 
-      <div className="basis-full">
-        <div className="flex flex-col gap-6">
-          {draftProjectForm.tasks?.map((taskItem) => (
-            <div
-              className={clsx(
-                'group/task-item',
-                'flex justify-between items-center gap-4',
-                'h-[47px]',
-                'py-2 px-4',
-                'rounded-md',
-                'bg-[#2D3449]',
-              )}
-              key={`taskItem-${taskItem.id}`}
-            >
-              <EditableField
-                classNames={{ root: 'p-0! border-transparent!', input: '' }}
-                label="Edit Task Title"
-                value={taskItem.title}
-                onSave={(value) => {
-                  setDraftProjectForm((prev) => ({
-                    ...prev,
-                    tasks: prev.tasks?.map((task) =>
-                      task.id === taskItem.id
-                        ? { ...task, title: value }
-                        : task,
-                    ),
-                  }));
-                }}
-              />
-              <SegmentedTab
-                classNames={{
-                  root: 'h-[36px]! ml-auto',
-                  tabItem: 'text-[11px]! min-w-20',
-                  tabIndicator: 'bg-[#2D3449]!',
-                }}
-                id={`taskPriority-${taskItem.id}`}
-                selected={{
-                  id: taskItem.priority,
-                  label: taskItem.priority,
-                }}
-                options={TASK_PRIORITIES.map((item) => ({
-                  id: item,
-                  className: TASK_PRIORITY_COLORS[item].text,
-                  label: item,
-                }))}
-                onSelect={(selected) => {
-                  setDraftProjectForm((prev) => ({
-                    ...prev,
-                    tasks: prev.tasks?.map((task) =>
-                      task.id === taskItem.id
-                        ? { ...task, priority: selected.id as TaskPriority }
-                        : task,
-                    ),
-                  }));
-                }}
-              />
-              <button
-                className={clsx(
-                  'flex justify-center items-center',
-                  'min-w-8 w-8 h-8',
-                  'invisible group-hover/task-item:visible',
-                )}
-                type="button"
-                onClick={() => {
-                  setDraftProjectForm((prev) => ({
-                    ...prev,
-                    tasks: prev.tasks?.filter(
-                      (task) => task.id !== taskItem.id,
-                    ),
-                  }));
-                }}
-              >
-                <IconBin2 className="min-w-3 w-3 h-3" />
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-      */}
     </div>
   );
 }
