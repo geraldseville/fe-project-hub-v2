@@ -22,14 +22,13 @@ export default function ProjectStatus({ project }: ProjectStatusProps) {
 
   const timezone = me?.timezone ?? defaultTimezone;
 
-  const totalTasks = 0;
-  // const totalTasks = project.tasks?.length || 0;
+  const totalTasks = project.tasks.length || 0;
 
-  const totalCompletedTasks = 0;
-  // const totalCompletedTasks = project.tasks?.filter((item) => item.status === 'DONE').length || 0;
+  const totalCompletedTasks =
+    project.tasks.filter((item) => item.status === 'DONE').length || 0;
 
-  const totalPendingTasks = 0;
-  // const totalPendingTasks = project.tasks?.filter((item) => item.status !== 'DONE').length || 0;
+  const totalPendingTasks =
+    project.tasks.filter((item) => item.status !== 'DONE').length || 0;
 
   const projectTimeline = getProjectTimeline(
     project.startDate ?? '',
