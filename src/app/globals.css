@@ -109,3 +109,25 @@ input[type='button'] {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.sketch-color-picker .w-color-sketch {
+  --sketch-background: #131b2e !important;
+  --sketch-box-shadow: none !important;
+  --editable-input-label-color: #ffffff !important;
+  --editable-input-color: #ffffff !important;
+  color: '#FFFFFF' !important;
+}
+
+.sketch-color-picker .w-color-editable-input {
+  color: #ffffff !important;
+}
+
+.sketch-color-picker .w-color-editable-input input {
+  color: #ffffff !important;
+  background: #1b2438 !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sketch-color-picker .w-color-editable-input label {
+  color: #ffffff !important;
+}
