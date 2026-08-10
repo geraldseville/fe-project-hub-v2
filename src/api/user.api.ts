@@ -40,3 +40,12 @@ export const updateMe = (payload: UserDto) => {
     body: JSON.stringify(payload),
   });
 };
+
+export const updateMySavedColors = (savedColors: string[]) => {
+  return apiClient<{ user: User }>('/users/me/saved-colors', {
+    method: 'PATCH',
+    body: JSON.stringify({
+      savedColors,
+    }),
+  });
+};
