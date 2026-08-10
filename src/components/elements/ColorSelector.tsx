@@ -14,9 +14,11 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react';
-import { Colorful } from '@uiw/react-color';
+import { Sketch } from '@uiw/react-color';
 import clsx from 'clsx';
 import { type Color, converter, formatHex, formatRgb, parse } from 'culori';
+
+import { IconPlus1 } from '../svgs/icons';
 
 const toRgb = converter('rgb');
 const toOklch = converter('oklch');
@@ -91,14 +93,7 @@ export default function ColorSelector({
   disabled = false,
   onAddColor,
 }: ColorSelectorProps) {
-  const defaultColor: SelectedColor = {
-    hex: '#FFFFFF',
-    rgb: 'rgb(255, 255, 255)',
-    oklch: 'oklch(100% 0 0)',
-  };
-
-  const [customColorTemp, setCustomColorTemp] =
-    useState<SelectedColor>(defaultColor);
+  const [customColorTemp, setCustomColorTemp] = useState<string>('#FFFFFF');
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -109,6 +104,23 @@ export default function ColorSelector({
 
     return normalizeHex(value);
   }, [value]);
+
+  const isCustomColorPreset = useMemo(() => {
+    const normalizedCustomColor = normalizeHex(customColorTemp);
+
+    if (!normalizedCustomColor) {
+      return false;
+    }
+
+    return presetColors.some((color) => {
+      const normalizedPresetColor = normalizeHex(color);
+
+      return (
+        normalizedPresetColor?.toLowerCase() ===
+        normalizedCustomColor.toLowerCase()
+      );
+    });
+  }, [customColorTemp, presetColors]);
 
   const handlePresetClick = (color: string) => {
     const values = colorToValues(color);
@@ -121,8 +133,28 @@ export default function ColorSelector({
   };
 
   const handleAddColor = () => {
-    onAddColor?.(customColorTemp);
-    setCustomColorTemp(defaultColor);
+    const parsed = parse(customColorTemp);
+
+    if (!parsed) {
+      return;
+    }
+
+    const rgb = toRgb(parsed);
+    const oklch = toOklch(parsed);
+
+    if (!rgb || !oklch) {
+      return;
+    }
+
+    const transform: SelectedColor = {
+      hex: formatHex(parsed),
+      rgb: formatRgb(rgb),
+      oklch: formatOklch(oklch),
+    };
+
+    onAddColor?.(transform);
+
+    setCustomColorTemp('#FFFFFF');
     setIsOpen(false);
   };
 
@@ -163,7 +195,11 @@ export default function ColorSelector({
 
   return (
     <div
-      className={clsx('relative flex flex-wrap items-center gap-2', className)}
+      className={clsx(
+        'relative',
+        'flex flex-wrap items-center gap-2',
+        className,
+      )}
     >
       {presetColors.map((color) => {
         const normalizedColor = normalizeHex(color);
@@ -214,12 +250,8 @@ export default function ColorSelector({
         );
       })}
 
-      {/* Custom color trigger */}
+      {/* Trigger */}
       <button
-        ref={setReferenceRef}
-        type="button"
-        disabled={disabled}
-        aria-label="Choose custom color"
         className={clsx(
           'flex items-center justify-center',
           'size-8',
@@ -234,12 +266,16 @@ export default function ColorSelector({
           'disabled:pointer-events-none',
           'disabled:opacity-50',
         )}
+        ref={setReferenceRef}
+        type="button"
+        disabled={disabled}
+        aria-label="Choose custom color"
         {...getReferenceProps()}
       >
-        <span className="text-lg leading-none text-white/70">+</span>
+        <IconPlus1 className="min-w-2.5 w-2.5 h-2.5" />
       </button>
 
-      {/* Custom color picker */}
+      {/* Dropdown */}
       {isOpen && (
         <FloatingPortal>
           <div
@@ -252,42 +288,41 @@ export default function ColorSelector({
               'rounded-xl',
               'border border-white/10',
               'bg-[#131B2E]',
-              'p-3',
+              'p-1',
               'shadow-2xl',
             )}
           >
-            <Colorful
-              color={customColorTemp.hex}
-              disableAlpha
-              onChange={(selected) => {
-                const parsed = parse(selected.hex);
-                const oklch = parsed ? toOklch(parsed) : '';
+            <div className="sketch-color-picker">
+              <Sketch
+                color={customColorTemp}
+                presetColors={[]}
+                disableAlpha
+                onChange={(selected) => {
+                  setCustomColorTemp(selected.hex);
+                }}
+              />
+            </div>
 
-                setCustomColorTemp({
-                  hex: selected.hex,
-                  rgb: selected.rgb.toString(),
-                  oklch: oklch.toString(),
-                });
-              }}
-            />
-
-            <button
-              type="button"
-              className={clsx(
-                'mt-4',
-                'w-full',
-                'rounded-lg',
-                'border border-white/10',
-                'bg-white/5',
-                'px-4 py-2',
-                'text-sm text-white',
-                'transition-colors',
-                'hover:bg-white/10',
-              )}
-              onClick={handleAddColor}
-            >
-              Add Color
-            </button>
+            <div className="mt-1 p-2.5">
+              <button
+                className={clsx(
+                  'w-full',
+                  'rounded-lg',
+                  'border border-white/10',
+                  'bg-white/5',
+                  'px-4 py-2',
+                  'text-sm text-white',
+                  'transition-colors',
+                  'hover:bg-white/10',
+                )}
+                type="button"
+                onClick={handleAddColor}
+                disabled={isCustomColorPreset}
+              >
+                {isCustomColorPreset ? 'Color already exists' : 'Add Color'}
+                {/* Add Color */}
+              </button>
+            </div>
           </div>
         </FloatingPortal>
       )}
