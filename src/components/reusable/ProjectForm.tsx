@@ -1,7 +1,11 @@
-import React, { SetStateAction, useState } from 'react';
+'use client';
 
+import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
+
+import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useMe } from '@/hooks/queries/useMe';
 import { useUsers } from '@/hooks/queries/useUsers';
+import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 
 import {
   PROJECT_COLOR_PRESETS,
@@ -20,7 +24,9 @@ import type {
 import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
 import type { User } from '@/types/user.types';
 
-import ColorSelector from '@/components/elements/ColorSelector';
+import ColorSelector, {
+  type SelectedColor,
+} from '@/components/elements/ColorSelector';
 import DateTimePicker from '@/components/elements/DateTimePicker';
 import ErrorTextField from '@/components/elements/ErrorTextField';
 import LabelField from '@/components/elements/LabelField';
@@ -44,9 +50,61 @@ export default function ProjectForm({
 
   const { data: users = [] } = useUsers();
 
-  const [allColors, setAllColors] = useState<string[]>([
-    ...PROJECT_COLOR_PRESETS,
-  ]);
+  const { mutate: updateSavedColors } = useUpdateSavedColors();
+
+  const [savedColors, setSavedColors] = useState<string[]>([]);
+
+  /*
+   * Initialize saved colors from the current user.
+   *
+   * This only updates local state. It does not trigger
+   * an API request.
+   */
+  useEffect(() => {
+    if (me?.savedColors) {
+      setSavedColors(me.savedColors);
+    }
+  }, [me?.savedColors]);
+
+  /*
+   * Preset colors belong to the application.
+   * Saved colors belong to the current user.
+   *
+   * The ColorSelector receives both.
+   */
+  const allColors = useMemo(
+    () => [...PROJECT_COLOR_PRESETS, ...savedColors],
+    [savedColors],
+  );
+
+  /*
+   * Debounce persistence so multiple color additions
+   * close together result in fewer API requests.
+   */
+  const saveSavedColors = useDebouncedCallback((colors: string[]) => {
+    updateSavedColors(colors);
+  }, 500);
+
+  const handleAddColor = (color: SelectedColor) => {
+    /*
+     * Prevent duplicate custom colors.
+     */
+    if (savedColors.includes(color.hex)) {
+      return;
+    }
+
+    const nextColors = [...savedColors, color.hex];
+
+    /*
+     * Update the UI immediately.
+     */
+    setSavedColors(nextColors);
+
+    /*
+     * Persist the updated list after the debounce delay.
+     */
+    saveSavedColors(nextColors);
+  };
 
   return (
     <div className="flex flex-wrap gap-6">
@@ -76,7 +134,7 @@ export default function ProjectForm({
         <MultiLineField
           classNames={{}}
           placeholder="e.g. brief description of your project..."
-          value={draftProjectForm?.description}
+          value={draftProjectForm.description}
           onChange={(e) => {
             const newValue = e.target.value;
 
@@ -100,9 +158,7 @@ export default function ProjectForm({
               primaryColor: selected.hex,
             }));
           }}
-          onAddColor={(color) => {
-            setAllColors((prev) => [...prev, color.hex]);
-          }}
+          onAddColor={handleAddColor}
         />
       </div>
       {/* Status */}
@@ -201,25 +257,25 @@ export default function ProjectForm({
           placeholder="Add Members..."
           searchable
           value={users
-            .filter((u) => draftProjectForm.memberIds.includes(u.id))
-            .map((u) => ({
-              id: u.id,
-              image: u.imageUrl,
-              label: getFullName(u.firstName, u.lastName),
-              value: u.id,
-              data: u,
+            .filter((user) => draftProjectForm.memberIds.includes(user.id))
+            .map((user) => ({
+              id: user.id,
+              image: user.imageUrl,
+              label: getFullName(user.firstName, user.lastName),
+              value: user.id,
+              data: user,
             }))}
-          options={users.map((item: User) => ({
-            id: item.id,
-            image: item.imageUrl,
-            label: getFullName(item.firstName, item.lastName),
-            value: item.id,
-            data: { ...item },
+          options={users.map((user: User) => ({
+            id: user.id,
+            image: user.imageUrl,
+            label: getFullName(user.firstName, user.lastName),
+            value: user.id,
+            data: user,
           }))}
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
               ...prev,
-              memberIds: [...selected.map((item) => item.data.id)],
+              memberIds: selected.map((item) => item.data.id),
             }));
           }}
         />
