@@ -86,7 +86,7 @@ export default function Register() {
         timezone: defaultTimezone,
       });
 
-      router.replace('/dashboard');
+      router.push('/dashboard');
     } catch (err) {
       setErrorMessage(
         err instanceof Error ? err.message : 'Unable to register.',
@@ -96,7 +96,7 @@ export default function Register() {
 
   useEffect(() => {
     if (!isMePending && me) {
-      router.replace('/dashboard');
+      router.push('/dashboard');
     }
   }, [isMePending, me, router]);
 

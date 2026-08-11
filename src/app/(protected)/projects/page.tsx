@@ -109,7 +109,7 @@ export default function ProjectListPage() {
   };
 
   const handleOnPreview = (project: Project) => {
-    router.replace(`/projects/${project.id}`);
+    router.push(`/projects/${project.id}`);
   };
 
   return (

@@ -115,7 +115,7 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
                   key={project.id}
                   type="button"
                   onClick={() => {
-                    router.replace(`/projects/${project.id}`);
+                    router.push(`/projects/${project.id}`);
                   }}
                 >
                   {/* Project tag goes here */}
