@@ -1,4 +1,4 @@
-import { TaskPriority, TaskStatus } from '@/types/task.types';
+import type { TaskPriority, TaskStatus } from '@/types/task.types';
 
 export const TASK_STATUSES = [
   'TODO',

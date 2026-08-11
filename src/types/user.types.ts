@@ -1,4 +1,4 @@
-import { Project } from '@/types/project.types';
+import type { Project } from '@/types/project.types';
 
 export type AuthLoginDto = {
   email: string;

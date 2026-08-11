@@ -1,6 +1,6 @@
 import momentTimezone from 'moment-timezone';
 
-import { ProjectStatus, ProjectUrgency } from '@/types/project.types';
+import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
 
 export const PROJECT_COLOR_PRESETS = [
   '#EF4444', // Red

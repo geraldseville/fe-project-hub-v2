@@ -6,7 +6,7 @@ import { useMe } from '@/hooks/queries/useMe';
 
 import { getProjectTimeline } from '@/utils/project.utils';
 
-import { Project } from '@/types/project.types';
+import type { Project } from '@/types/project.types';
 
 import ProgressBar from '@/components/elements/ProgressBar';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';

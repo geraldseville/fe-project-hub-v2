@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import { useProjects } from '@/hooks/queries/useProjects';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
-import { Project } from '@/types/project.types';
+import type { Project } from '@/types/project.types';
 
 import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
