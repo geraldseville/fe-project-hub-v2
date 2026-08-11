@@ -3,10 +3,17 @@ import Link from 'next/link';
 
 import clsx from 'clsx';
 
-import { PROJECT_STATUS_COLORS } from '@/utils/project.utils';
+import {
+  PROJECT_STATUS_COLORS,
+  PROJECT_URGENCY_COLORS,
+} from '@/utils/project.utils';
 import { getFullName } from '@/utils/user.utils';
 
-import type { Project, ProjectStatus } from '@/types/project.types';
+import type {
+  Project,
+  ProjectStatus,
+  ProjectUrgency,
+} from '@/types/project.types';
 import type { User } from '@/types/user.types';
 
 import AnimatedNumber from '@/components/elements/AnimatedNumber';
@@ -15,6 +22,7 @@ import ThreeDotActions from '@/components/elements/ThreeDotActions';
 import {
   IconBin2,
   IconCheck3,
+  IconDot,
   IconExternalLink,
   IconPen2,
 } from '@/components/svgs/icons';
@@ -39,13 +47,12 @@ export default function ProjectItemView({
   const totalCompletedTasks =
     project.tasks?.filter((item) => item.status === 'DONE').length || 0;
 
-  const styles = PROJECT_STATUS_COLORS[project.status];
-
   return (
     <>
       <Link
         className={clsx(
           'overflow-hidden',
+          'min-h-32',
           'p-6',
           'rounded-lg',
           'bg-[#131B2E]',
@@ -59,8 +66,12 @@ export default function ProjectItemView({
         {view === 'tab-grid' && (
           <div className="relative block">
             <div className="flex justify-between items-center">
-              {/* Project Status */}
-              <ProjectStatusUI status={project.status} />
+              <div className="flex justify-start items-center gap-4">
+                {/* Project Status */}
+                <ProjectStatusUI status={project.status} />
+                {/* Project Urgency */}
+                <ProjectUrgencyUI urgency={project.urgency} />
+              </div>
               {/* Project Action */}
               <ThreeDotActions
                 classNames={{ trigger: 'ml-auto' }}
@@ -97,8 +108,10 @@ export default function ProjectItemView({
                 ]}
               />
             </div>
-            {/* Project Title */}
-            <ProjectTitleUI title={project.title} />
+            <div className="mt-2">
+              {/* Project Title */}
+              <ProjectTitleUI title={project.title} />
+            </div>
             {/* Project Description */}
             <ProjectDescriptionUI description={project.description ?? ''} />
             <div
@@ -111,7 +124,10 @@ export default function ProjectItemView({
               {/* Project Members */}
               <ProjectMembersUI members={project.members} />
               {/* Task Counter */}
-              <TaskCounterUI current={totalCompletedTasks} total={totalTasks} />
+              <ProjectTaskCounterUI
+                current={totalCompletedTasks}
+                total={totalTasks}
+              />
             </div>
           </div>
         )}
@@ -125,9 +141,16 @@ export default function ProjectItemView({
               {/* Project Description */}
               <ProjectDescriptionUI description={project.description ?? ''} />
             </div>
-            {/* Project Status */}
-            <div className="basis-40">
+            <div
+              className={clsx(
+                'flex justify-start items-center gap-4',
+                'basis-50',
+              )}
+            >
+              {/* Project Status */}
               <ProjectStatusUI status={project.status} />
+              {/* Project Urgency */}
+              <ProjectUrgencyUI urgency={project.urgency} />
             </div>
             {/* Project Members */}
             <div
@@ -140,7 +163,10 @@ export default function ProjectItemView({
             </div>
             {/* Task Counter */}
             <div className="flex justify-start basis-40">
-              <TaskCounterUI current={totalCompletedTasks} total={totalTasks} />
+              <ProjectTaskCounterUI
+                current={totalCompletedTasks}
+                total={totalTasks}
+              />
             </div>
             {/* Project Action */}
             <ThreeDotActions
@@ -184,13 +210,12 @@ export default function ProjectItemView({
   );
 }
 
-function ProjectTitleUI({ title }: { title: string }) {
+export function ProjectTitleUI({ title }: { title: string }) {
   return (
     <div
       className={clsx(
         'font-hanken-grotesk font-bold',
         'text-[#DAE2FD] text-[16px] leading-tight truncate',
-        'mt-2',
       )}
     >
       {title}
@@ -198,7 +223,7 @@ function ProjectTitleUI({ title }: { title: string }) {
   );
 }
 
-function ProjectDescriptionUI({ description }: { description: string }) {
+export function ProjectDescriptionUI({ description }: { description: string }) {
   return (
     <div
       className={clsx(
@@ -214,7 +239,7 @@ function ProjectDescriptionUI({ description }: { description: string }) {
   );
 }
 
-function ProjectStatusUI({ status }: { status: ProjectStatus }) {
+export function ProjectStatusUI({ status }: { status: ProjectStatus }) {
   const styles = PROJECT_STATUS_COLORS[status];
 
   return (
@@ -242,7 +267,28 @@ function ProjectStatusUI({ status }: { status: ProjectStatus }) {
   );
 }
 
-function ProjectMembersUI({ members }: { members: User[] }) {
+export function ProjectUrgencyUI({ urgency }: { urgency: ProjectUrgency }) {
+  const styles = PROJECT_URGENCY_COLORS[urgency];
+
+  return (
+    <div
+      className={clsx('flex justify-center items-center gap-2', 'w-fit')}
+      style={{ '--icon-dot-color': styles.hex } as React.CSSProperties}
+    >
+      <IconDot className="text-[var(--icon-dot-color)] min-w-2 w-2 h-2" />
+      <div
+        className={clsx(
+          'font-inter font-medium',
+          'text-[#C7C4D7] text-[12px] capitalize leading-tight',
+        )}
+      >
+        {urgency}
+      </div>
+    </div>
+  );
+}
+
+export function ProjectMembersUI({ members }: { members: User[] }) {
   if (members.length === 0) {
     return (
       <div
@@ -268,7 +314,13 @@ function ProjectMembersUI({ members }: { members: User[] }) {
   );
 }
 
-function TaskCounterUI({ current, total }: { current: number; total: number }) {
+export function ProjectTaskCounterUI({
+  current,
+  total,
+}: {
+  current: number;
+  total: number;
+}) {
   return (
     <div className="flex justify-center items-center gap-1">
       <IconCheck3 className="w-4 h-4" />
