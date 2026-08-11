@@ -30,7 +30,7 @@ function syntaxHighlight(json: unknown) {
   );
 }
 
-export default function JsonViewer({ className, data }: DisplayJSONProps) {
+export default function DisplayJSON({ className, data }: DisplayJSONProps) {
   return (
     <div className="overflow-auto h-100">
       <pre
