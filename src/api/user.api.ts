@@ -34,6 +34,12 @@ export const getUsers = ({ excludeMe = false }: GetUsersOptions = {}) => {
   );
 };
 
+export const getUser = (id: string) => {
+  return apiClient<{ user: User }>(`/users/${id}`, {
+    method: 'GET',
+  });
+};
+
 export const updateMe = (payload: UserDto) => {
   return apiClient<{ user: User }>('/users/me', {
     method: 'PATCH',
