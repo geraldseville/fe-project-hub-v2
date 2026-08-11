@@ -5,20 +5,23 @@ import clsx from 'clsx';
 
 import { getFullName } from '@/utils/user.utils';
 
-import type { User } from '@/types/user.types';
+import type { Project } from '@/types/project.types';
 
+import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import ThreeDotActions from '@/components/elements/ThreeDotActions';
 import Avatar from '@/components/reusable/Avatar';
 import { IconExternalLink, IconPlus1 } from '@/components/svgs/icons';
 
 interface ProjectTeamMembersProps {
-  members: User[] | null;
+  project?: Project | null;
+  isProjectPending: boolean;
 }
 
 export default function ProjectTeamMembers({
-  members,
+  project,
+  isProjectPending,
 }: ProjectTeamMembersProps) {
-  if (!members) return null;
+  const members = project?.members ?? [];
 
   return (
     <div
@@ -33,18 +36,20 @@ export default function ProjectTeamMembers({
         <div className="text-[#DAE2FD] text-[18px] leading-tight">
           Team Members
         </div>
-        <button
-          className={clsx(
-            'flex justify-center items-center',
-            'min-w-8 w-8 h-8',
-            'rounded-full',
-            'border-2 border-dashed border-[#464553]',
-          )}
-          type="button"
-          onClick={() => {}}
-        >
-          <IconPlus1 className="text-[#464553]" />
-        </button>
+        {!isProjectPending && (
+          <button
+            className={clsx(
+              'flex justify-center items-center',
+              'min-w-8 w-8 h-8',
+              'rounded-full',
+              'border-2 border-dashed border-[#464553]',
+            )}
+            type="button"
+            onClick={() => {}}
+          >
+            <IconPlus1 className="text-[#464553]" />
+          </button>
+        )}
       </div>
       <div
         className={clsx(
@@ -53,84 +58,112 @@ export default function ProjectTeamMembers({
           'max-h-38 min-h-38',
         )}
       >
-        {members.map((item) => (
-          <div
-            className="flex flex-row justify-start items-center gap-4"
-            key={item.id}
-          >
-            <div className={clsx('relative', 'min-w-10 w-10 h-10')}>
-              {item.imageUrl ? (
-                <Image
-                  className={clsx(
-                    'w-full h-full',
-                    'object-cover object-top',
-                    'rounded-full',
-                  )}
-                  src={item.imageUrl}
-                  alt={getFullName(item.firstName, item.lastName)}
-                  title={getFullName(item.firstName, item.lastName)}
-                  width={40}
-                  height={40}
-                  draggable={false}
-                />
-              ) : (
-                <Avatar initial={item.firstName?.charAt(0)} />
-              )}
-              {false && (
+        {isProjectPending
+          ? Array.from({ length: 4 }).map((_, index) => {
+              return (
                 <div
-                  className={clsx(
-                    'absolute z-2 bottom-0 right-0',
-                    'min-w-2.5 w-2.5 h-2.5',
-                    'rounded-full',
-                    'bg-[#22C55E]',
-                    'border border-white',
+                  className="flex justify-start items-center gap-4"
+                  key={`skeleton-loading-${index}`}
+                >
+                  <div className={clsx('relative', 'min-w-10 w-10 h-10')}>
+                    <SkeletonLoading className="w-full h-full rounded-full" />
+                  </div>
+                  <div className="flex-1">
+                    <SkeletonLoading className="w-full h-4" />
+                    <SkeletonLoading className="w-1/2 h-4 mt-1" />
+                  </div>
+                  <SkeletonLoading className="w-8 h-8" />
+                </div>
+              );
+            })
+          : members.map((item) => (
+              <div
+                className="flex justify-start items-center gap-4"
+                key={item.id}
+              >
+                <div className={clsx('relative', 'min-w-10 w-10 h-10')}>
+                  {isProjectPending ? (
+                    <SkeletonLoading className="w-full h-full rounded-full" />
+                  ) : item.imageUrl ? (
+                    <Image
+                      className={clsx(
+                        'w-full h-full',
+                        'object-cover object-top',
+                        'rounded-full',
+                      )}
+                      src={item.imageUrl}
+                      alt={getFullName(item.firstName, item.lastName)}
+                      title={getFullName(item.firstName, item.lastName)}
+                      width={40}
+                      height={40}
+                      draggable={false}
+                    />
+                  ) : (
+                    <Avatar initial={item.firstName?.charAt(0)} />
                   )}
+                  {false && (
+                    <div
+                      className={clsx(
+                        'absolute z-2 bottom-0 right-0',
+                        'min-w-2.5 w-2.5 h-2.5',
+                        'rounded-full',
+                        'bg-[#22C55E]',
+                        'border border-white',
+                      )}
+                    />
+                  )}
+                </div>
+                <div className="flex-1">
+                  {isProjectPending ? (
+                    <SkeletonLoading className="w-full h-4" />
+                  ) : (
+                    <div
+                      className={clsx(
+                        'font-semibold',
+                        'text-[#DAE2FD] text-[12px] leading-tight',
+                        'h-[calc(1.25em*1)]',
+                      )}
+                    >
+                      {getFullName(item.firstName, item.lastName)}
+                    </div>
+                  )}
+                  {isProjectPending ? (
+                    <SkeletonLoading className="w-1/2 h-4" />
+                  ) : (
+                    <div
+                      className={clsx(
+                        'font-semibold',
+                        'text-[#C7C4D7] text-[11px] leading-tight',
+                        'h-[calc(1.25em*1)]',
+                        'mt-1',
+                      )}
+                    >
+                      {item.role}
+                    </div>
+                  )}
+                </div>
+                <ThreeDotActions
+                  orientation="Vertical"
+                  placement="left-start"
+                  actions={[
+                    {
+                      id: 'action-preview',
+                      color: '#C7C4D7',
+                      label: 'Preview',
+                      icon: <IconExternalLink />,
+                      onClick: () => {},
+                    },
+                    {
+                      id: 'action-remove',
+                      color: '#e90f1e',
+                      label: 'Remove',
+                      // icon: <IconExternalLink />,
+                      onClick: () => {},
+                    },
+                  ]}
                 />
-              )}
-            </div>
-            <div className="flex-1">
-              <div
-                className={clsx(
-                  'font-semibold',
-                  'text-[#DAE2FD] text-[12px] leading-tight',
-                  'h-[calc(1.25em*1)]',
-                )}
-              >
-                {getFullName(item.firstName, item.lastName)}
               </div>
-              <div
-                className={clsx(
-                  'font-semibold',
-                  'text-[#C7C4D7] text-[11px] leading-tight',
-                  'h-[calc(1.25em*1)]',
-                  'mt-1',
-                )}
-              >
-                {item.role}
-              </div>
-            </div>
-            <ThreeDotActions
-              orientation="Vertical"
-              placement="left-start"
-              actions={[
-                {
-                  id: 'action-preview',
-                  color: '#C7C4D7',
-                  label: 'Preview',
-                  icon: <IconExternalLink />,
-                  onClick: () => {},
-                },
-                {
-                  id: 'action-remove',
-                  color: '#e90f1e',
-                  label: 'Remove',
-                  // icon: <IconExternalLink />,
-                  onClick: () => {},
-                },
-              ]}
-            />
-          </div>
-        ))}
+            ))}
       </div>
     </div>
   );

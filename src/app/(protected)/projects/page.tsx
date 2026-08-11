@@ -13,6 +13,7 @@ import { Project } from '@/types/project.types';
 import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
 import SingleSelect from '@/components/elements/SingleSelect';
+import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import { IconGrid1, IconListBullet, IconPlus1 } from '@/components/svgs/icons';
 
 import ProjectDeleteModal from './ProjectDeleteModal';
@@ -206,12 +207,67 @@ export default function ProjectListPage() {
           )}
         >
           {isProjectsPending ? (
-            Array.from({ length: 4 }).map((_, index) => (
-              <ProjectSkeleton
-                key={`project-skeleton-${index}`}
-                view={projectView.id}
-              />
-            ))
+            Array.from({ length: 4 }).map((_, index) => {
+              const view = projectView.id;
+
+              return (
+                <div
+                  className={clsx(
+                    'overflow-hidden',
+                    'p-6',
+                    'rounded-lg',
+                    'animate-pulse',
+                    'bg-[#131B2E]',
+                    'border border-l-[6px] border-[#464554]/30',
+                    view === 'tab-list' &&
+                      'flex justify-start items-center gap-4 min-h-[136px]',
+                  )}
+                  key={`skeleton-loading-${index}`}
+                >
+                  {/* Grid View */}
+                  {view === 'tab-grid' && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <SkeletonLoading className="w-16 h-6 rounded-full" />
+                        <SkeletonLoading className="w-5 h-5" />
+                      </div>
+                      <SkeletonLoading className="w-3/4 h-5 mt-4" />
+                      <div className="space-y-2 mt-4">
+                        <SkeletonLoading className="w-full h-4" />
+                        <SkeletonLoading className="w-2/3 h-4" />
+                      </div>
+                      <div className="flex justify-between items-center h-8 mt-4">
+                        <div className="flex -space-x-2">
+                          <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
+                          <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
+                          <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
+                        </div>
+                        <SkeletonLoading className="w-16 h-4" />
+                      </div>
+                    </>
+                  )}
+                  {/* List View */}
+                  {view === 'tab-list' && (
+                    <>
+                      <div className="flex-1">
+                        <SkeletonLoading className="w-3/4 h-5" />
+                        <SkeletonLoading className="w-2/4 h-5 mt-4" />
+                      </div>
+                      <div className="basis-40 space-y-2">
+                        <SkeletonLoading className="w-full h-4" />
+                      </div>
+                      <div className="flex basis-40 -space-x-2">
+                        <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
+                        <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
+                        <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
+                      </div>
+                      <SkeletonLoading className="basis-40 h-4 rounded" />
+                      <SkeletonLoading className="min-w-8 w-8 h-8" />
+                    </>
+                  )}
+                </div>
+              );
+            })
           ) : (
             <>
               {visibleProjects &&
@@ -277,77 +333,5 @@ export default function ProjectListPage() {
         project={deleteProjectModal.project}
       />
     </main>
-  );
-}
-
-function ProjectSkeleton({ view }: { view: string }) {
-  return (
-    <div
-      className={clsx(
-        'overflow-hidden',
-        'p-6',
-        'rounded-lg',
-        'animate-pulse',
-        'bg-[#131B2E]',
-        'border border-l-[6px] border-[#464554]/30',
-        view === 'tab-list' &&
-          'flex justify-start items-center gap-4 min-h-[136px]',
-      )}
-    >
-      {/* Grid View */}
-      {view === 'tab-grid' && (
-        <>
-          {/* Status + Actions */}
-          <div className="flex justify-between items-center">
-            <div className="w-16 h-6 rounded-full bg-[#2D3449]" />
-            <div className="w-5 h-5 rounded bg-[#2D3449]" />
-          </div>
-
-          {/* Title */}
-          <div className="w-3/4 h-5 mt-4 rounded bg-[#2D3449]" />
-
-          {/* Description */}
-          <div className="space-y-2 mt-4">
-            <div className="w-full h-4 rounded bg-[#2D3449]" />
-            <div className="w-2/3 h-4 rounded bg-[#2D3449]" />
-          </div>
-
-          {/* Members + Tasks */}
-          <div className="flex justify-between items-center h-8 mt-4">
-            <div className="flex -space-x-2">
-              <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
-              <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
-              <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
-            </div>
-
-            <div className="w-16 h-4 rounded bg-[#2D3449]" />
-          </div>
-        </>
-      )}
-
-      {/* List View */}
-      {view === 'tab-list' && (
-        <>
-          <div className="flex-1">
-            <div className="w-3/4 h-5 rounded bg-[#2D3449]" />
-            <div className="w-2/4 h-5 mt-4 rounded bg-[#2D3449]" />
-          </div>
-
-          <div className="basis-40 space-y-2">
-            <div className="w-full h-4 rounded bg-[#2D3449]" />
-          </div>
-
-          <div className="flex basis-40 -space-x-2">
-            <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
-            <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
-            <div className="w-8 h-8 rounded-full bg-[#2D3449] border-2 border-[#131B2E]" />
-          </div>
-
-          <div className="basis-40 h-4 rounded bg-[#2D3449]" />
-
-          <div className="min-w-8 w-8 h-8 rounded bg-[#2D3449]" />
-        </>
-      )}
-    </div>
   );
 }

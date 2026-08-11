@@ -9,30 +9,35 @@ import { getProjectTimeline } from '@/utils/project.utils';
 import { Project } from '@/types/project.types';
 
 import ProgressBar from '@/components/elements/ProgressBar';
+import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import { IconTimer } from '@/components/svgs/icons';
 
 import { defaultTimezone } from '@/lib/date-time';
 
 interface ProjectStatusProps {
-  project: Project;
+  project?: Project | null;
+  isProjectPending: boolean;
 }
 
-export default function ProjectStatus({ project }: ProjectStatusProps) {
+export default function ProjectStatus({
+  project,
+  isProjectPending,
+}: ProjectStatusProps) {
   const { data: me } = useMe();
 
   const timezone = me?.timezone ?? defaultTimezone;
 
-  const totalTasks = project.tasks.length || 0;
+  const totalTasks = project?.tasks.length || 0;
 
   const totalCompletedTasks =
-    project.tasks.filter((item) => item.status === 'DONE').length || 0;
+    project?.tasks.filter((item) => item.status === 'DONE').length || 0;
 
   const totalPendingTasks =
-    project.tasks.filter((item) => item.status !== 'DONE').length || 0;
+    project?.tasks.filter((item) => item.status !== 'DONE').length || 0;
 
   const projectTimeline = getProjectTimeline(
-    project.startDate ?? '',
-    project.endDate ?? '',
+    project?.startDate ?? '',
+    project?.endDate ?? '',
     timezone,
   );
 
@@ -54,22 +59,30 @@ export default function ProjectStatus({ project }: ProjectStatusProps) {
         total={totalTasks}
       />
       <div className={clsx('flex justify-between items-center gap-4', 'mt-4')}>
-        <div
-          className={clsx(
-            'font-jetbrains-mono font-medium',
-            'text-[#C7C4D7] text-[12px] leading-tight',
-          )}
-        >
-          {totalCompletedTasks} Tasks Done
-        </div>
-        <div
-          className={clsx(
-            'font-jetbrains-mono font-medium',
-            'text-[#C7C4D7] text-[12px] leading-tight',
-          )}
-        >
-          {totalPendingTasks} Tasks Pending
-        </div>
+        {isProjectPending ? (
+          <SkeletonLoading className="w-1/3 h-4" />
+        ) : (
+          <div
+            className={clsx(
+              'font-jetbrains-mono font-medium',
+              'text-[#C7C4D7] text-[12px] leading-tight',
+            )}
+          >
+            {totalCompletedTasks} Tasks Done
+          </div>
+        )}
+        {isProjectPending ? (
+          <SkeletonLoading className="w-1/3 h-4" />
+        ) : (
+          <div
+            className={clsx(
+              'font-jetbrains-mono font-medium',
+              'text-[#C7C4D7] text-[12px] leading-tight',
+            )}
+          >
+            {totalPendingTasks} Tasks Pending
+          </div>
+        )}
       </div>
       <div
         className={clsx(
