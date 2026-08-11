@@ -60,7 +60,7 @@ export default function ProfileImage() {
         'group',
         'relative',
         'flex justify-center items-center',
-        'min-w-[136px] w-[136px] h-[136px]',
+        'min-w-34 w-34 h-34',
         'rounded-xl',
         'border-4 border-background',
         'bg-background',
