@@ -33,10 +33,14 @@ export default function SettingsPage() {
       >
         <ProfileImage />
         <div className="w-full pb-4">
-          <div className="font-hanken-grotesk text-[16px] leading-tight">
+          <div
+            className={clsx('font-hanken-grotesk', 'text-[16px] leading-tight')}
+          >
             {userFullName ?? ''}
           </div>
-          <div className="font-inter text-[16px] leading-tight">
+          <div
+            className={clsx('font-inter', 'text-[16px] leading-tight', 'mt-1')}
+          >
             {me?.role ?? 'Set Role'}
           </div>
         </div>
