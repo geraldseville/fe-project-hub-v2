@@ -33,8 +33,7 @@ import MultiLineField from '@/components/elements/MultiLineField';
 import MultiSelect from '@/components/elements/MultiSelect';
 import SingleLineField from '@/components/elements/SingleLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
-
-import { ProjectStatusUI } from '@/app/(protected)/projects/ProjectItemView';
+import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
 
 interface ProjectFormProps {
   draftProjectForm: ProjectFormInput;

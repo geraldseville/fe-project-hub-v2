@@ -220,7 +220,7 @@ export default function ProjectListPage() {
                     'bg-[#131B2E]',
                     'border border-l-[6px] border-[#464554]/30',
                     view === 'tab-list' &&
-                      'flex justify-start items-center gap-4 min-h-[136px]',
+                      'flex justify-start items-center gap-4 min-h-32',
                   )}
                   key={`skeleton-loading-${index}`}
                 >
@@ -228,7 +228,10 @@ export default function ProjectListPage() {
                   {view === 'tab-grid' && (
                     <>
                       <div className="flex justify-between items-center">
-                        <SkeletonLoading className="w-16 h-6 rounded-full" />
+                        <div className="flex justify-start items-center gap-4">
+                          <SkeletonLoading className="w-16 h-6 rounded-full" />
+                          <SkeletonLoading className="w-16 h-6 rounded-full" />
+                        </div>
                         <SkeletonLoading className="w-5 h-5" />
                       </div>
                       <SkeletonLoading className="w-3/4 h-5 mt-4" />
@@ -253,8 +256,14 @@ export default function ProjectListPage() {
                         <SkeletonLoading className="w-3/4 h-5" />
                         <SkeletonLoading className="w-2/4 h-5 mt-4" />
                       </div>
-                      <div className="basis-40 space-y-2">
-                        <SkeletonLoading className="w-full h-4" />
+                      <div
+                        className={clsx(
+                          'flex justify-start items-center gap-4',
+                          'basis-50',
+                        )}
+                      >
+                        <SkeletonLoading className="w-18 h-4" />
+                        <SkeletonLoading className="w-18 h-4" />
                       </div>
                       <div className="flex basis-40 -space-x-2">
                         <SkeletonLoading className="w-8 h-8 rounded-full animate-none! border-2 border-[#131B2E]" />
@@ -298,7 +307,7 @@ export default function ProjectListPage() {
                   'rounded-lg',
                   'border-2 border-dashed',
                   'border-[#464554] hover:border-primary',
-                  projectView.id === 'tab-list' && 'flex-row h-[136px]',
+                  projectView.id === 'tab-list' && 'flex-row h-32',
                 )}
                 type="button"
                 onClick={openProjectCreateModal}

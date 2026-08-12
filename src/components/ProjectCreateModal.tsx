@@ -14,7 +14,7 @@ import {
 
 import Button from '@/components/elements/Button';
 import Modal from '@/components/elements/Modal';
-import ProjectForm from '@/components/reusable/ProjectForm';
+import ProjectForm from '@/components/shared/projects/ProjectForm';
 import { IconClose1 } from '@/components/svgs/icons';
 
 interface ProjectCreateModalProps {

@@ -16,9 +16,9 @@ import type { ProjectStatus } from '@/types/project.types';
 import Button from '@/components/elements/Button';
 import SingleSelect from '@/components/elements/SingleSelect';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
+import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
 import { IconAngleRight, IconPen3 } from '@/components/svgs/icons';
 
-import { ProjectStatusUI } from '../ProjectItemView';
 import ProjectOverview from './ProjectOverview';
 import ProjectStatusCard from './ProjectStatus';
 import ProjectTaskTable from './ProjectTaskTable';

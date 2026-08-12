@@ -19,7 +19,7 @@ import { PROJECT_STATUS_COLORS } from '@/utils/project.utils';
 
 import type { Project } from '@/types/project.types';
 
-import ProjectAsTag from '@/components/reusable/ProjectAsTag';
+import ProjectAsTag from '@/components/shared/projects/ProjectAsTag';
 
 interface ProjectDropdownProps {
   projects: Project[];
@@ -68,18 +68,23 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
 
   return (
     <>
+      {/* Trigger */}
       <button
         className="relative"
         ref={setReferenceRef}
         type="button"
-        {...getReferenceProps()}
+        {...getReferenceProps({
+          onClick: (event) => {
+            event.stopPropagation();
+          },
+        })}
       >
         <ProjectAsTag
           title={projects[0].title}
           color={PROJECT_STATUS_COLORS[projects[0].status].hex ?? '#000000'}
         />
       </button>
-
+      {/* Dropdown */}
       {isOpen && (
         <FloatingPortal>
           <div
