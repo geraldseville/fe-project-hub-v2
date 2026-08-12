@@ -34,6 +34,7 @@ import MultiSelect from '@/components/elements/MultiSelect';
 import SingleLineField from '@/components/elements/SingleLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
 import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
+import ProjectUrgencyUI from '@/components/shared/projects/ProjectUrgencyUI';
 
 interface ProjectFormProps {
   draftProjectForm: ProjectFormInput;
@@ -196,13 +197,13 @@ export default function ProjectForm({
           placeholder="Select Urgency..."
           value={{
             id: draftProjectForm.urgency,
-            color: PROJECT_URGENCY_COLORS[draftProjectForm.urgency].hex,
+            custom: <ProjectUrgencyUI urgency={draftProjectForm.urgency} />,
             label: draftProjectForm.urgency,
             value: draftProjectForm.urgency,
           }}
           options={PROJECT_URGENCIES.map((item) => ({
             id: item,
-            color: PROJECT_URGENCY_COLORS[item].hex,
+            custom: <ProjectUrgencyUI urgency={item} />,
             label: item,
             value: item,
           }))}
