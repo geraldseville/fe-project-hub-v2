@@ -13,3 +13,7 @@ export const isValidTimezone = (timezone: string) => {
     return false;
   }
 };
+
+export const readableTimezone = (timezone: string) => {
+  return timezone.replace(/_/g, ' ').replace('/', ' / ');
+};
