@@ -61,17 +61,37 @@ export const PROJECT_STATUS_COLORS: Record<
 
 export const PROJECT_URGENCIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
 
-export const PROJECT_URGENCY_COLORS: Record<ProjectUrgency, { hex: string }> = {
+export const PROJECT_URGENCY_COLORS: Record<
+  ProjectUrgency,
+  {
+    hex: string;
+    text: string;
+    bg: string;
+    border: string;
+  }
+> = {
   LOW: {
+    text: 'text-emerald-400',
+    bg: 'bg-emerald-950',
+    border: 'border-emerald-700',
     hex: '#10B981',
   },
   MEDIUM: {
+    text: 'text-amber-400',
+    bg: 'bg-amber-950',
+    border: 'border-amber-700',
     hex: '#F59E0B',
   },
   HIGH: {
+    text: 'text-orange-400',
+    bg: 'bg-orange-950',
+    border: 'border-orange-700',
     hex: '#F97316',
   },
   CRITICAL: {
+    text: 'text-red-400',
+    bg: 'bg-red-950',
+    border: 'border-red-700',
     hex: '#EF4444',
   },
 };
