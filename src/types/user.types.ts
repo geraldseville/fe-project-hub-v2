@@ -23,6 +23,7 @@ export type User = {
   bio?: string;
   timezone?: string;
   savedColors?: string[];
+  ownedProjects?: Project[];
   memberProjects?: Project[];
   createdAt?: string;
   updatedAt?: string;
