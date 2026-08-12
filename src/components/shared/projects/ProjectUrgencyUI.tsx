@@ -6,8 +6,6 @@ import { PROJECT_URGENCY_COLORS } from '@/utils/project.utils';
 
 import type { ProjectUrgency } from '@/types/project.types';
 
-import { IconDot } from '@/components/svgs/icons';
-
 interface ProjectUrgencyUIProps {
   urgency: ProjectUrgency;
 }
@@ -17,14 +15,21 @@ export default function ProjectUrgencyUI({ urgency }: ProjectUrgencyUIProps) {
 
   return (
     <div
-      className={clsx('flex justify-center items-center gap-2', 'w-fit')}
-      style={{ '--icon-dot-color': styles.hex } as React.CSSProperties}
+      className={clsx(
+        'flex justify-center items-center gap-2',
+        'w-fit',
+        'py-1 px-2',
+        'rounded-md',
+        styles.bg,
+        'border',
+        styles.border,
+      )}
     >
-      <IconDot className="text-[var(--icon-dot-color)] min-w-2 w-2 h-2" />
       <div
         className={clsx(
-          'font-inter font-medium',
-          'text-[#C7C4D7] text-[12px] capitalize leading-tight',
+          'font-jetbrains-mono font-medium',
+          styles.text,
+          'text-[12px] uppercase leading-none',
         )}
       >
         {urgency}
