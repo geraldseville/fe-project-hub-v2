@@ -92,24 +92,28 @@ export default function ProjectStatus({
           'bg-[#DAE2FD]',
         )}
       >
-        <IconTimer className="text-[#0B1C30] min-w-3.75 w-3.75 h-auto" />
-        <div
-          className={clsx(
-            'font-semibold',
-            'text-[#0B1C30] text-[12px] leading-tight',
-          )}
-        >
-          {projectTimeline.label}
-        </div>
-        <div
-          className={clsx(
-            'font-bold',
-            'text-[#0B1C30] leading-tight',
-            'ml-auto',
-          )}
-        >
-          {projectTimeline.value}
-        </div>
+        {!isProjectPending && (
+          <>
+            <IconTimer className="text-[#0B1C30] min-w-3.75 w-3.75 h-auto" />
+            <div
+              className={clsx(
+                'font-semibold',
+                'text-[#0B1C30] text-[12px] leading-tight',
+              )}
+            >
+              {projectTimeline.label}
+            </div>
+            <div
+              className={clsx(
+                'font-bold',
+                'text-[#0B1C30] leading-tight',
+                'ml-auto',
+              )}
+            >
+              {projectTimeline.value}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
