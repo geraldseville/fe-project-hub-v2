@@ -25,6 +25,7 @@ type SelectOption = {
   color?: string;
   icon?: React.ReactNode;
   image?: string;
+  custom?: React.ReactNode;
   label: string;
   value: string;
 };
@@ -34,6 +35,8 @@ interface SingleSelectProps {
     root?: string;
     trigger?: string;
     dropdown?: string;
+    list?: string;
+    option?: string;
   };
   id?: string;
   placeholder?: string;
@@ -156,53 +159,7 @@ export default function SingleSelect({
         type="button"
         disabled={disabled}
       >
-        {/* Color */}
-        {value?.color && (
-          <div
-            className="min-w-2 w-2 h-2 rounded-full bg-white"
-            style={{
-              backgroundColor: value?.color,
-            }}
-          />
-        )}
-        {/* Icon */}
-        {value?.icon && (
-          <div className="min-w-2 w-2 h-2 rounded-full bg-white">
-            {value?.icon}
-          </div>
-        )}
-        {/* Image */}
-        {value &&
-          'image' in value &&
-          (value.image ? (
-            <Image
-              className={clsx(
-                'min-w-6 w-6 h-6',
-                'object-cover',
-                'rounded-full',
-              )}
-              src={value.image}
-              alt={value.value}
-              title={value.value}
-              width={36}
-              height={36}
-            />
-          ) : (
-            <Avatar
-              className="text-[10px]! min-w-6! w-6! h-6!"
-              initial={value.label.charAt(0)}
-            />
-          ))}
-        {/* Label */}
-        {value ? (
-          <div className="text-white text-sm leading-tight truncate">
-            {value.label}
-          </div>
-        ) : (
-          <div className="text-placeholder text-sm leading-tight truncate">
-            {placeholder}
-          </div>
-        )}
+        <SelectOptionContent option={value} placeholder={placeholder} />
         {hasOptions && (
           <IconAngleDown
             className={clsx(
@@ -261,6 +218,7 @@ export default function SingleSelect({
               className={clsx(
                 'overflow-auto',
                 'w-full max-h-[180px] min-h-auto',
+                classNames?.list,
               )}
             >
               {filteredOptions.map((optionItem) => {
@@ -277,51 +235,14 @@ export default function SingleSelect({
                       isSelected
                         ? 'bg-[#8083FF]/20 border-l-4 border-l-[#C0C1FF]'
                         : 'bg-transparent hover:bg-[#222A3D] border-l-4 border-l-transparent',
+                      classNames?.option,
                     )}
                     ref={isSelected ? selectedOptionRef : null}
                     key={optionItem.id}
                     type="button"
                     onClick={() => handleSelect(optionItem)}
                   >
-                    {/* Color */}
-                    {optionItem.color && (
-                      <div
-                        className="min-w-2 w-2 h-2 rounded-full bg-white"
-                        style={{
-                          backgroundColor: optionItem.color,
-                        }}
-                      />
-                    )}
-                    {/* Icon */}
-                    {optionItem.icon && (
-                      <div className="min-w-2 w-2 h-2 rounded-full bg-white">
-                        {optionItem.icon}
-                      </div>
-                    )}
-                    {/* Image */}
-                    {optionItem.image ? (
-                      <Image
-                        className={clsx(
-                          'min-w-6 w-6 h-6',
-                          'object-cover',
-                          'rounded-full',
-                        )}
-                        src={optionItem.image}
-                        alt={optionItem.value}
-                        title={optionItem.value}
-                        width={36}
-                        height={36}
-                      />
-                    ) : 'image' in optionItem ? (
-                      <Avatar
-                        className="text-[10px]! min-w-6! w-6! h-6!"
-                        initial={optionItem.label.charAt(0)}
-                      />
-                    ) : null}
-                    {/* Label */}
-                    <div className={clsx('text-white text-left truncate')}>
-                      {optionItem.label}
-                    </div>
+                    <SelectOptionContent option={optionItem} />
                   </button>
                 );
               })}
@@ -341,5 +262,44 @@ export default function SingleSelect({
         </div>
       )}
     </div>
+  );
+}
+
+function SelectOptionContent({
+  option,
+  placeholder,
+}: {
+  option?: SelectOption | null;
+  placeholder?: string;
+}) {
+  if (option?.custom) {
+    return option.custom;
+  }
+
+  return (
+    <>
+      {option?.color && (
+        <div
+          className="min-w-2 w-2 h-2 rounded-full"
+          style={{ backgroundColor: option.color }}
+        />
+      )}
+
+      {option?.icon && <div className="min-w-2 w-2 h-2">{option.icon}</div>}
+
+      {option?.image && (
+        <Image
+          className="min-w-6 w-6 h-6 object-cover rounded-full"
+          src={option.image}
+          alt={option.value}
+          width={36}
+          height={36}
+        />
+      )}
+
+      <div className="text-white text-sm truncate">
+        {option ? option.label : placeholder}
+      </div>
+    </>
   );
 }
