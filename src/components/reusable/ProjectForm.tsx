@@ -9,7 +9,6 @@ import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 
 import {
   PROJECT_COLOR_PRESETS,
-  PROJECT_STATUS_COLORS,
   PROJECT_STATUSES,
   PROJECT_URGENCIES,
   PROJECT_URGENCY_COLORS,
@@ -34,6 +33,8 @@ import MultiLineField from '@/components/elements/MultiLineField';
 import MultiSelect from '@/components/elements/MultiSelect';
 import SingleLineField from '@/components/elements/SingleLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
+
+import { ProjectStatusUI } from '@/app/(protected)/projects/ProjectItemView';
 
 interface ProjectFormProps {
   draftProjectForm: ProjectFormInput;
@@ -169,13 +170,13 @@ export default function ProjectForm({
           placeholder="Select Status..."
           value={{
             id: draftProjectForm.status,
-            color: PROJECT_STATUS_COLORS[draftProjectForm.status].hex,
+            custom: <ProjectStatusUI status={draftProjectForm.status} />,
             label: draftProjectForm.status,
             value: draftProjectForm.status,
           }}
           options={PROJECT_STATUSES.map((item) => ({
             id: item,
-            color: PROJECT_STATUS_COLORS[item].hex,
+            custom: <ProjectStatusUI status={item} />,
             label: item,
             value: item,
           }))}

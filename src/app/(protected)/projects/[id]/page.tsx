@@ -9,7 +9,7 @@ import { useUpdateProjectStatus } from '@/hooks/mutations/useUpdateProjectStatus
 import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
-import { PROJECT_STATUS_COLORS, PROJECT_STATUSES } from '@/utils/project.utils';
+import { PROJECT_STATUSES } from '@/utils/project.utils';
 
 import type { ProjectStatus } from '@/types/project.types';
 
@@ -18,6 +18,7 @@ import SingleSelect from '@/components/elements/SingleSelect';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import { IconAngleRight, IconPen3 } from '@/components/svgs/icons';
 
+import { ProjectStatusUI } from '../ProjectItemView';
 import ProjectOverview from './ProjectOverview';
 import ProjectStatusCard from './ProjectStatus';
 import ProjectTaskTable from './ProjectTaskTable';
@@ -95,14 +96,14 @@ export default function ProjectItemPage() {
               placeholder="Select Status..."
               value={{
                 id: project.status,
-                color: PROJECT_STATUS_COLORS[project.status].hex,
-                label: project.status,
+                custom: <ProjectStatusUI status={project.status} />,
+                label: '',
                 value: project.status,
               }}
               options={PROJECT_STATUSES.map((item) => ({
                 id: item,
-                color: PROJECT_STATUS_COLORS[item].hex,
-                label: item,
+                custom: <ProjectStatusUI status={item} />,
+                label: '',
                 value: item,
               }))}
               onChange={(selected) => {
