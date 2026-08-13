@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useDraggable } from '@dnd-kit/core';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 import clsx from 'clsx';
 
 interface KanbanCardProps<T> {
@@ -17,6 +17,7 @@ interface KanbanCardProps<T> {
   getCardId: (cardItem: T) => string | number;
   renderCard?: (cardItem: T) => React.ReactNode;
   onCardClick?: (cardItem: T) => void;
+  isPreview?: boolean;
 }
 
 export default function KanbanCard<T>({
@@ -26,32 +27,41 @@ export default function KanbanCard<T>({
   getCardId,
   renderCard,
   onCardClick,
+  isPreview = false,
 }: KanbanCardProps<T>) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: getCardId(cardItem),
-    });
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDraggableNodeRef,
+    isDragging,
+  } = useDraggable({
+    id: getCardId(cardItem),
+    disabled: isPreview,
+  });
 
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
+  const { setNodeRef: setDroppableNodeRef } = useDroppable({
+    id: getCardId(cardItem),
+    disabled: isPreview,
+  });
+
+  const setNodeRef = (node: HTMLDivElement | null) => {
+    setDraggableNodeRef(node);
+    setDroppableNodeRef(node);
+  };
 
   return (
     <div
       className={clsx(
         'relative overflow-hidden',
-        'cursor-grab active:cursor-grabbing',
+        !isPreview && 'cursor-grab active:cursor-grabbing',
         classNames?.card,
-        isDragging && 'opacity-40',
+        (isDragging || isPreview) && 'opacity-40',
       )}
       data-id={getCardId(cardItem)}
       ref={setNodeRef}
-      onClick={() => onCardClick?.(cardItem)}
-      style={style}
-      {...listeners}
-      {...attributes}
+      onClick={isPreview ? undefined : () => onCardClick?.(cardItem)}
+      {...(isPreview ? {} : listeners)}
+      {...(isPreview ? {} : attributes)}
     >
       {renderCard ? (
         renderCard(cardItem)

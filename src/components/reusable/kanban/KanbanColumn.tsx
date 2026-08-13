@@ -29,6 +29,9 @@ interface KanbanColumnProps<T> {
   onCardClick?: (item: T) => void;
   addCardRender?: React.ReactNode;
   onAddCardClick?: () => void;
+  previewItem?: T | null;
+  previewIndex?: number;
+  isPreviewFromAnotherColumn?: boolean;
 }
 
 export default function KanbanColumn<T>({
@@ -40,8 +43,11 @@ export default function KanbanColumn<T>({
   onCardClick,
   addCardRender,
   onAddCardClick,
+  previewItem,
+  previewIndex,
+  isPreviewFromAnotherColumn = false,
 }: KanbanColumnProps<T>) {
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef } = useDroppable({
     id: column.id,
   });
 
@@ -50,7 +56,6 @@ export default function KanbanColumn<T>({
       className={clsx(
         'flex flex-col gap-4',
         'w-80 min-w-80 h-full',
-        // isOver && 'bg-primary/5',
         classNames?.column,
       )}
       ref={setNodeRef}
@@ -80,7 +85,7 @@ export default function KanbanColumn<T>({
             'text-[#C7C4D7] text-xs',
           )}
         >
-          {column.items.length}
+          {column.items.length + (isPreviewFromAnotherColumn ? 1 : 0)}
         </span>
       </div>
 
@@ -88,17 +93,43 @@ export default function KanbanColumn<T>({
       <div className="overflow-y-auto">
         {/* Cards */}
         <div className={clsx('flex flex-col gap-4', 'flex-1 min-h-0')}>
-          {column.items.length > 0 ? (
-            column.items.map((cardItem, cardIndex) => (
-              <KanbanCard
-                key={getCardId(cardItem)}
-                cardItem={cardItem}
-                cardIndex={cardIndex}
-                getCardId={getCardId}
-                renderCard={renderCard}
-                onCardClick={onCardClick}
-              />
-            ))
+          {column.items.length > 0 || previewItem ? (
+            <>
+              {previewItem && previewIndex === 0 && (
+                <KanbanCard
+                  key={`preview-${getCardId(previewItem)}`}
+                  classNames={classNames}
+                  cardItem={previewItem}
+                  cardIndex={0}
+                  getCardId={getCardId}
+                  renderCard={renderCard}
+                  isPreview
+                />
+              )}
+              {column.items.map((cardItem, cardIndex) => (
+                <React.Fragment key={getCardId(cardItem)}>
+                  <KanbanCard
+                    classNames={classNames}
+                    cardItem={cardItem}
+                    cardIndex={cardIndex}
+                    getCardId={getCardId}
+                    renderCard={renderCard}
+                    onCardClick={onCardClick}
+                  />
+                  {previewItem && previewIndex === cardIndex + 1 && (
+                    <KanbanCard
+                      key={`preview-${getCardId(previewItem)}`}
+                      classNames={classNames}
+                      cardItem={previewItem}
+                      cardIndex={cardIndex + 1}
+                      getCardId={getCardId}
+                      renderCard={renderCard}
+                      isPreview
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </>
           ) : (
             <div
               className={clsx(

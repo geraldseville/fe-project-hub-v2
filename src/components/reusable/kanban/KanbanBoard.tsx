@@ -4,6 +4,7 @@ import {
   closestCorners,
   DndContext,
   DragEndEvent,
+  DragOverEvent,
   DragOverlay,
   DragStartEvent,
   PointerSensor,
@@ -55,6 +56,13 @@ export default function KanbanBoard<T>({
   const [columns, setColumns] = useState<KanbanColumnData<T>[]>(initialColumns);
 
   const [activeItem, setActiveItem] = useState<T | null>(null);
+  const [activeItemId, setActiveItemId] = useState<string | number | null>(
+    null,
+  );
+  const [dragPreview, setDragPreview] = useState<{
+    columnId: string;
+    index: number;
+  } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -70,6 +78,40 @@ export default function KanbanBoard<T>({
     );
   };
 
+  const getDropPreview = (event: DragOverEvent | DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over) {
+      return null;
+    }
+
+    const toColumn =
+      columns.find((column) => column.id === over.id) ?? findColumn(over.id);
+
+    if (!toColumn) {
+      return null;
+    }
+
+    const overIndex = toColumn.items.findIndex(
+      (item) => getCardId(item) === over.id,
+    );
+
+    if (overIndex < 0) {
+      return { columnId: toColumn.id, index: toColumn.items.length };
+    }
+
+    const activeRect = active.rect.current.translated;
+    const isBelowOverCard =
+      activeRect &&
+      activeRect.top + activeRect.height / 2 >
+        over.rect.top + over.rect.height / 2;
+
+    return {
+      columnId: toColumn.id,
+      index: overIndex + (isBelowOverCard ? 1 : 0),
+    };
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const itemId = event.active.id;
 
@@ -82,34 +124,41 @@ export default function KanbanBoard<T>({
     const item = column.items.find((item) => getCardId(item) === itemId);
 
     setActiveItem(item ?? null);
+    setActiveItemId(itemId);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setDragPreview(getDropPreview(event));
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     setActiveItem(null);
+    setActiveItemId(null);
+    setDragPreview(null);
 
     if (!over) {
       return;
     }
 
     const activeId = active.id;
-    const overId = over.id;
-
     const fromColumn = findColumn(activeId);
 
     if (!fromColumn) {
       return;
     }
 
-    const toColumn =
-      columns.find((column) => column.id === overId) ?? findColumn(overId);
-
-    if (!toColumn) {
+    const dropPreview = getDropPreview(event);
+    if (!dropPreview) {
       return;
     }
 
-    if (fromColumn.id === toColumn.id) {
+    const toColumn = columns.find(
+      (column) => column.id === dropPreview.columnId,
+    );
+
+    if (!toColumn) {
       return;
     }
 
@@ -119,19 +168,46 @@ export default function KanbanBoard<T>({
       return;
     }
 
+    const fromIndex = fromColumn.items.findIndex(
+      (columnItem) => getCardId(columnItem) === activeId,
+    );
+    const targetIndex =
+      fromColumn.id === toColumn.id && fromIndex < dropPreview.index
+        ? dropPreview.index - 1
+        : dropPreview.index;
+
     setColumns((currentColumns) =>
       currentColumns.map((column) => {
         if (column.id === fromColumn.id) {
+          const withoutActiveItem = column.items.filter(
+            (columnItem) => getCardId(columnItem) !== activeId,
+          );
+
+          if (column.id === toColumn.id) {
+            return {
+              ...column,
+              items: [
+                ...withoutActiveItem.slice(0, targetIndex),
+                item,
+                ...withoutActiveItem.slice(targetIndex),
+              ],
+            };
+          }
+
           return {
             ...column,
-            items: column.items.filter((item) => getCardId(item) !== activeId),
+            items: withoutActiveItem,
           };
         }
 
         if (column.id === toColumn.id) {
           return {
             ...column,
-            items: [...column.items, item],
+            items: [
+              ...column.items.slice(0, targetIndex),
+              item,
+              ...column.items.slice(targetIndex),
+            ],
           };
         }
 
@@ -153,7 +229,13 @@ export default function KanbanBoard<T>({
       sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={() => {
+        setActiveItem(null);
+        setActiveItemId(null);
+        setDragPreview(null);
+      }}
     >
       <div
         className={clsx(
@@ -211,7 +293,6 @@ export default function KanbanBoard<T>({
                             <SkeletonLoading className="w-40 h-5" />
                             <div className="flex flex-col gap-2 mt-4">
                               <SkeletonLoading className="w-full h-5" />
-                              {/* <SkeletonLoading className="w-full h-5" /> */}
                               <SkeletonLoading className="w-1/4 h-5" />
                             </div>
                           </div>
@@ -247,6 +328,14 @@ export default function KanbanBoard<T>({
                 onCardClick={onCardClick}
                 addCardRender={addCardRender}
                 onAddCardClick={onAddCardClick}
+                previewItem={
+                  dragPreview?.columnId === column.id ? activeItem : null
+                }
+                previewIndex={dragPreview?.index}
+                isPreviewFromAnotherColumn={
+                  dragPreview?.columnId === column.id &&
+                  findColumn(activeItemId ?? '')?.id !== column.id
+                }
               />
             ))}
       </div>
