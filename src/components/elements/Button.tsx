@@ -54,11 +54,13 @@ export default function Button({
       className={clsx(
         className,
         buttonStyles[buttonStyle],
-        'font-jetbrains-mono',
+        'font-bold',
+        'leading-none',
         'relative overflow-hidden',
         'flex flex-row justify-center items-center gap-2',
-        'min-w-[220px] w-fit h-10',
+        'min-w-50 w-fit h-10',
         'py-1 px-2',
+        'rounded-md',
         disabled && 'is-disabled',
       )}
       type={type}
