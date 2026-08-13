@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useDraggable } from '@dnd-kit/core';
 import clsx from 'clsx';
 
 interface KanbanCardProps<T> {
@@ -26,11 +27,31 @@ export default function KanbanCard<T>({
   renderCard,
   onCardClick,
 }: KanbanCardProps<T>) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: getCardId(cardItem),
+    });
+
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
+
   return (
     <div
-      className={clsx('relative overflow-hidden', classNames?.card)}
+      className={clsx(
+        'relative overflow-hidden',
+        'cursor-grab active:cursor-grabbing',
+        classNames?.card,
+        isDragging && 'opacity-40',
+      )}
       data-id={getCardId(cardItem)}
+      ref={setNodeRef}
       onClick={() => onCardClick?.(cardItem)}
+      style={style}
+      {...listeners}
+      {...attributes}
     >
       {renderCard ? (
         renderCard(cardItem)
@@ -45,7 +66,7 @@ export default function KanbanCard<T>({
             classNames?.cardContent,
           )}
         >
-          Card {cardIndex}
+          <div>Card {cardIndex}</div>
         </div>
       )}
     </div>

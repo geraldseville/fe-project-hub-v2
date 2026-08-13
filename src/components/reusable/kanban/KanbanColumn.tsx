@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useDroppable } from '@dnd-kit/core';
 import clsx from 'clsx';
 
 import { IconPlus1 } from '@/components/svgs/icons';
@@ -40,14 +41,19 @@ export default function KanbanColumn<T>({
   addCardRender,
   onAddCardClick,
 }: KanbanColumnProps<T>) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
   return (
     <div
       className={clsx(
         'flex flex-col gap-4',
-        'w-80 min-w-80',
-        'h-full',
+        'w-80 min-w-80 h-full',
+        // isOver && 'bg-primary/5',
         classNames?.column,
       )}
+      ref={setNodeRef}
     >
       {/* Column Header */}
       <div
