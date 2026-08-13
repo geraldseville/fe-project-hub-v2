@@ -14,15 +14,15 @@ import { IconTimer } from '@/components/svgs/icons';
 
 import { defaultTimezone } from '@/lib/date-time';
 
-interface ProjectStatusProps {
+interface ProjectStatusCardProps {
   project?: Project | null;
   isProjectPending: boolean;
 }
 
-export default function ProjectStatus({
+export default function ProjectStatusCard({
   project,
   isProjectPending,
-}: ProjectStatusProps) {
+}: ProjectStatusCardProps) {
   const { data: me } = useMe();
 
   const timezone = me?.timezone ?? defaultTimezone;
