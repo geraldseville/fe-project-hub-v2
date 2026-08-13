@@ -84,7 +84,7 @@ export default function Sidebar({ navList, onNewProject }: SidebarProps) {
       {/* Body */}
       <div className={clsx('relative z-1', 'px-4')}>
         <Button
-          className="mb-6"
+          className="w-full mb-6"
           icon={<IconPlus2 className="min-w-3.5 w-3.5 h-auto" />}
           text="New Project"
           onClick={onNewProject}
