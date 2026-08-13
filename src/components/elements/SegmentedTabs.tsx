@@ -15,6 +15,7 @@ interface SegmentedTabProps {
   classNames?: {
     root?: string;
     tabItem?: string;
+    tabItemSelected?: string;
     tabIndicator?: string;
   };
   selected: TabItem;
@@ -53,6 +54,7 @@ export default function SegmentedTab({
           <button
             className={clsx(
               isSelected ? 'text-[#C0C1FF]' : 'text-[#C7C4D7]',
+              isSelected && classNames?.tabItemSelected,
               'relative z-10',
               'flex justify-center items-center gap-4',
               'flex-1 min-w-12 w-12 h-full',
