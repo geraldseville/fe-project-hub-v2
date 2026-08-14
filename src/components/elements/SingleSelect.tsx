@@ -37,6 +37,7 @@ interface SingleSelectProps {
     dropdown?: string;
     list?: string;
     option?: string;
+    optionSelected?: string;
   };
   id?: string;
   placeholder?: string;
@@ -233,8 +234,16 @@ export default function SingleSelect({
                       'py-2 px-4',
                       'cursor-pointer',
                       isSelected
-                        ? 'bg-[#8083FF]/20 border-l-4 border-l-[#C0C1FF]'
-                        : 'bg-transparent hover:bg-[#222A3D] border-l-4 border-l-transparent',
+                        ? [
+                            'bg-[#8083FF]/20',
+                            'border-l-4 border-l-[#C0C1FF]',
+                            classNames?.optionSelected,
+                          ]
+                        : [
+                            'bg-transparent',
+                            'hover:bg-[#222A3D]',
+                            'border-l-4 border-l-transparent',
+                          ],
                       classNames?.option,
                     )}
                     ref={isSelected ? selectedOptionRef : null}
