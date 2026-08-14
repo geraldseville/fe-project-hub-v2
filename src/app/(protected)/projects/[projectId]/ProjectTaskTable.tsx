@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 
 import clsx from 'clsx';
 
@@ -27,9 +28,15 @@ export default function ProjectTaskTable({
   project,
   isProjectPending,
 }: ProjectTaskTableProps) {
+  const params = useParams();
+
+  const projectId = params.projectId as string;
+
   const openTaskCreateModal = useUiStore((state) => state.openTaskCreateModal);
 
   const openTaskUpdateModal = useUiStore((state) => state.openTaskUpdateModal);
+
+  const openTaskDrawer = useUiStore((state) => state.openTaskDrawer);
 
   const [taskDeleteModal, setTaskDeleteModal] = useState<{
     isOpen: boolean;
@@ -168,7 +175,8 @@ export default function ProjectTaskTable({
                       label: 'Edit',
                       icon: <IconPen2 />,
                       onClick: () => {
-                        handleToggleEdit(row);
+                        // handleToggleEdit(row);
+                        openTaskDrawer(row.id, projectId);
                       },
                     },
                     {
