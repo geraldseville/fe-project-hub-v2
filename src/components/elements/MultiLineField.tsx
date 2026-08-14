@@ -26,6 +26,7 @@ export default function MultiLineField({
       <textarea
         className={clsx(
           classNames?.input,
+          !value && 'placeholder:italic',
           'block',
           'min-w-[200px] w-full min-h-[120px] h-[120px] resize-y',
           'py-2 px-4',
