@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 
 import type { Project } from '@/types/project.types';
-import type { Task } from '@/types/task.types';
 
 interface UiState {
   projectCreateModal: {
@@ -19,12 +18,12 @@ interface UiState {
   openProjectUpdateModal: (project: Project, onUpdate?: () => void) => void;
   closeProjectUpdateModal: () => void;
 
-  taskCreateModal: {
+  taskCreateDrawer: {
     isOpen: boolean;
-    project: Project | null;
+    projectId: string;
   };
-  openTaskCreateModal: (project: Project) => void;
-  closeTaskCreateModal: () => void;
+  openTaskCreateDrawer: (projectId: string) => void;
+  closeTaskCreateDrawer: () => void;
 
   taskUpdateDrawer: {
     isOpen: boolean;
@@ -39,7 +38,6 @@ export const useUiStore = create<UiState>((set) => ({
   projectCreateModal: {
     isOpen: false,
   },
-
   openProjectCreateModal: () =>
     set({
       projectCreateModal: {
@@ -80,23 +78,22 @@ export const useUiStore = create<UiState>((set) => ({
       },
     }),
 
-  taskCreateModal: {
+  taskCreateDrawer: {
     isOpen: false,
-    task: null,
-    project: null,
+    projectId: '',
   },
-  openTaskCreateModal: (project) =>
+  openTaskCreateDrawer: (projectId) =>
     set({
-      taskCreateModal: {
+      taskCreateDrawer: {
         isOpen: true,
-        project,
+        projectId,
       },
     }),
-  closeTaskCreateModal: () =>
+  closeTaskCreateDrawer: () =>
     set({
-      taskCreateModal: {
+      taskCreateDrawer: {
         isOpen: false,
-        project: null,
+        projectId: '',
       },
     }),
 

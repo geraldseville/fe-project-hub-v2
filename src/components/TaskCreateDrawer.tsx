@@ -1,0 +1,326 @@
+import { useEffect, useState } from 'react';
+
+import clsx from 'clsx';
+
+import { useCreateTask } from '@/hooks/mutations/useCreateTask';
+import { useMe } from '@/hooks/queries/useMe';
+import { useProject } from '@/hooks/queries/useProject';
+import { useUsers } from '@/hooks/queries/useUsers';
+import { useToastStore } from '@/hooks/ui/useToastStore';
+
+import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/task.utils';
+import { getFullName } from '@/utils/user.utils';
+
+import type { TaskFormInput } from '@/validators/task.validator';
+import { blankTaskForm } from '@/validators/task.validator';
+import { validateTaskForm } from '@/validators/task.validator';
+
+import type { TaskPriority, TaskStatus } from '@/types/task.types';
+import type { User } from '@/types/user.types';
+
+import Button from '@/components/elements/Button';
+import DateTimePicker from '@/components/elements/DateTimePicker';
+import Drawer from '@/components/elements/Drawer';
+import ErrorTextField from '@/components/elements/ErrorTextField';
+import LabelField from '@/components/elements/LabelField';
+import MultiLineField from '@/components/elements/MultiLineField';
+import SingleLineField from '@/components/elements/SingleLineField';
+import SingleSelect from '@/components/elements/SingleSelect';
+import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
+import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
+import { IconClose1 } from '@/components/svgs/icons';
+
+interface TaskCreateDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+  projectId: string;
+}
+
+export default function TaskCreateDrawer({
+  isOpen,
+  onClose,
+  projectId,
+}: TaskCreateDrawerProps) {
+  const toast = useToastStore();
+
+  const createTask = useCreateTask();
+
+  const { data: me } = useMe();
+
+  const { data: users = [] } = useUsers();
+
+  const { data: project, isPending: isProjectPending } = useProject(projectId);
+
+  const isCreateTaskPending = createTask.isPending;
+
+  const [draftTaskForm, setDraftTaskForm] =
+    useState<TaskFormInput>(blankTaskForm);
+
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
+
+  const validationResult = validateTaskForm(draftTaskForm);
+
+  const errors = hasSubmitted ? validationResult.errors : {};
+
+  const handleCreateTask = async () => {
+    setHasSubmitted(true);
+
+    if (!validationResult.success) {
+      return;
+    }
+
+    try {
+      await createTask.mutateAsync({
+        title: draftTaskForm.title,
+        description: draftTaskForm.description,
+        status: draftTaskForm.status,
+        priority: draftTaskForm.priority,
+        startDate: draftTaskForm.startDate,
+        endDate: draftTaskForm.endDate,
+        projectId: draftTaskForm.projectId,
+        assigneeId: draftTaskForm.assigneeId,
+      });
+
+      toast.success('project created successfully.');
+
+      setDraftTaskForm(blankTaskForm);
+    } catch (err) {
+      toast.failed(
+        err instanceof Error ? err.message : 'failed to create project.',
+      );
+    } finally {
+      setHasSubmitted(false);
+      onClose();
+    }
+  };
+
+  const handleCancel = () => {
+    setDraftTaskForm(blankTaskForm);
+    setHasSubmitted(false);
+    onClose();
+  };
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    setDraftTaskForm((prev) => ({
+      ...prev,
+      projectId: projectId,
+    }));
+  }, [projectId]);
+
+  return (
+    <Drawer
+      classNames={{ content: 'flex flex-col overflow-y-hidden' }}
+      isOpen={isOpen}
+      onClose={handleCancel}
+    >
+      {/* Head */}
+      <div className={clsx('p-6', 'bg-[#334155]', 'border-b border-[#464554]')}>
+        <div className="flex justify-between items-center gap-4">
+          <h2 className={clsx('font-bold', 'text-[24px]')}>Create Task</h2>
+          <button
+            className={clsx('flex justify-center items-center', 'w-8 h-8')}
+            type="button"
+            onClick={handleCancel}
+          >
+            <IconClose1 className="min-w-3.5 w-3.5 h-auto" />
+          </button>
+        </div>
+      </div>
+      {/* Body */}
+      <div className="overflow-y-auto flex-1 h-full p-6">
+        <div className="flex flex-wrap gap-6">
+          {/* Title */}
+          <div className="basis-full">
+            <LabelField id="taskTitle" text="Task Title" />
+            <SingleLineField
+              classNames={{}}
+              id="taskTitle"
+              type="text"
+              placeholder="e.g. Task Title"
+              value={draftTaskForm.title}
+              onChange={(e) => {
+                const newValue = e.target.value;
+
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  title: newValue,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.title} />
+          </div>
+          {/* Description */}
+          <div className="basis-full">
+            <LabelField id="taskDescription" text="Task Description" />
+            <MultiLineField
+              classNames={{}}
+              placeholder="e.g. brief description of your task..."
+              value={draftTaskForm?.description ?? ''}
+              onChange={(e) => {
+                const newValue = e.target.value;
+
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  description: newValue,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.description} />
+          </div>
+          {/* Status */}
+          <div className="basis-full">
+            <LabelField id="taskStatus" text="Status" />
+            <SingleSelect
+              id="taskStatus"
+              placeholder="Select Status..."
+              value={{
+                id: draftTaskForm.status,
+                custom: <TaskStatusUI status={draftTaskForm.status} />,
+                label: draftTaskForm.status.replace('_', ' '),
+                value: draftTaskForm.status,
+              }}
+              options={TASK_STATUSES.map((item) => ({
+                id: item,
+                custom: <TaskStatusUI status={item} />,
+                label: item.replace('_', ' '),
+                value: item,
+              }))}
+              onChange={(selected) => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  status: selected.value as TaskStatus,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.status} />
+          </div>
+          {/* Priority */}
+          <div className="basis-full">
+            <LabelField id="taskPriority" text="Priority" />
+            <SingleSelect
+              id="taskPriority"
+              placeholder="Select Priority..."
+              value={{
+                id: draftTaskForm.priority,
+                custom: <TaskPriorityUI priority={draftTaskForm.priority} />,
+                label: draftTaskForm.priority,
+                value: draftTaskForm.priority,
+              }}
+              options={TASK_PRIORITIES.map((item) => ({
+                id: item,
+                custom: <TaskPriorityUI priority={item} />,
+                label: item,
+                value: item,
+              }))}
+              onChange={(selected) => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  priority: selected.value as TaskPriority,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.priority} />
+          </div>
+          {/* Start Date */}
+          <div className="basis-full">
+            <LabelField id="taskStartDate" text="Start Date" />
+            <DateTimePicker
+              type="date-time"
+              placeholder="Select Start Date..."
+              timezone={me?.timezone}
+              value={draftTaskForm.startDate}
+              onChange={(selected) => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  startDate: selected.iso,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.startDate} />
+          </div>
+          {/* End Date */}
+          <div className="basis-full">
+            <LabelField id="taskEndDate" text="End Date" />
+            <DateTimePicker
+              type="date-time"
+              placeholder="Select End Date..."
+              timezone={me?.timezone}
+              value={draftTaskForm.endDate}
+              onChange={(selected) => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  endDate: selected.iso,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.endDate} />
+          </div>
+          {/* Assignee */}
+          <div className="basis-full">
+            <LabelField id="projectAssignee" text="Assignee" />
+            <SingleSelect
+              id="singleSelect"
+              placeholder="Add Assignee..."
+              searchable
+              value={(() => {
+                const user = users.find(
+                  (user) => user.id === draftTaskForm.assigneeId,
+                );
+
+                return user
+                  ? {
+                      id: user.id,
+                      image: user.imageUrl,
+                      label: getFullName(user.firstName, user.lastName),
+                      value: user.id,
+                    }
+                  : undefined;
+              })()}
+              options={users.map((item: User) => ({
+                id: item.id,
+                image: item.imageUrl,
+                label: getFullName(item.firstName, item.lastName),
+                value: item.id,
+                data: { ...item },
+              }))}
+              onChange={(selected) => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  assigneeId: selected.id,
+                }));
+              }}
+            />
+            <ErrorTextField text={errors.assigneeId} />
+          </div>
+        </div>
+      </div>
+      {/* Foot */}
+      <div
+        className={clsx(
+          'flex justify-end items-center gap-4',
+          'shrink-0 h-[75px]',
+          'p-6',
+          'bg-[#131B2E]/50',
+          'border-t border-[#464554]',
+        )}
+      >
+        <Button
+          className=""
+          buttonStyle="secondary"
+          type="button"
+          text="Cancel"
+          onClick={handleCancel}
+        />
+        <Button
+          className=""
+          buttonStyle="primary"
+          type="button"
+          text={isCreateTaskPending ? 'Creating...' : 'Create Task'}
+          onClick={handleCreateTask}
+        />
+      </div>
+    </Drawer>
+  );
+}

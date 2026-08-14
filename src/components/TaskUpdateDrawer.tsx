@@ -33,19 +33,19 @@ import {
   IconExternalLink,
 } from '@/components/svgs/icons';
 
-interface TaskDrawer {
+interface TaskUpdateDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   taskId: string;
   projectId: string;
 }
 
-export default function TaskDrawer({
+export default function TaskUpdateDrawer({
   isOpen,
   onClose,
   taskId,
   projectId,
-}: TaskDrawer) {
+}: TaskUpdateDrawerProps) {
   const toast = useToastStore();
 
   const { data: users } = useUsers();
@@ -95,6 +95,10 @@ export default function TaskDrawer({
       },
     );
   }, 500);
+
+  const handelCancel = () => {
+    onClose();
+  };
 
   const timelineItems = [
     {
@@ -169,7 +173,7 @@ export default function TaskDrawer({
     <Drawer
       classNames={{ content: 'flex flex-col overflow-y-hidden' }}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handelCancel}
     >
       {/* Head */}
       <div className={clsx('p-6', 'bg-[#334155]', 'border-b border-[#464554]')}>
@@ -190,7 +194,7 @@ export default function TaskDrawer({
           <button
             className={clsx('flex justify-center items-center', 'w-8 h-8')}
             type="button"
-            onClick={onClose}
+            onClick={handelCancel}
           >
             <IconClose1 className="min-w-3.5 w-3.5 h-auto" />
           </button>

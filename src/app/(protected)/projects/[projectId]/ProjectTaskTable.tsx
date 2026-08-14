@@ -32,7 +32,9 @@ export default function ProjectTaskTable({
 
   const projectId = params.projectId as string;
 
-  const openTaskCreateModal = useUiStore((state) => state.openTaskCreateModal);
+  const openTaskCreateDrawer = useUiStore(
+    (state) => state.openTaskCreateDrawer,
+  );
 
   const openTaskUpdateDrawer = useUiStore(
     (state) => state.openTaskUpdateDrawer,
@@ -83,7 +85,7 @@ export default function ProjectTaskTable({
             icon={<IconPlus1 className="min-w-3.5 w-3.5 h-auto" />}
             text="Add Task"
             onClick={() => {
-              openTaskCreateModal(project);
+              openTaskCreateDrawer(project.id);
             }}
           />
         )}

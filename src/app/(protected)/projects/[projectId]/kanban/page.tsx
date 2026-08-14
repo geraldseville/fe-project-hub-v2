@@ -36,6 +36,10 @@ export default function ProjectKanbanPage() {
 
   const updateTask = useUpdateTask();
 
+  const openTaskCreateDrawer = useUiStore(
+    (state) => state.openTaskCreateDrawer,
+  );
+
   const openTaskUpdateDrawer = useUiStore(
     (state) => state.openTaskUpdateDrawer,
   );
@@ -109,6 +113,11 @@ export default function ProjectKanbanPage() {
           if (!project) return;
 
           openTaskUpdateDrawer(task.id, project.id);
+        }}
+        onAddCardClick={() => {
+          if (!project) return;
+
+          openTaskCreateDrawer(projectId);
         }}
         onCardMove={(task, fromColumn, toColumn) => {
           updateTask.mutate(

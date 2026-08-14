@@ -56,6 +56,7 @@ export default function KanbanBoard<T>({
   const [columns, setColumns] = useState<KanbanColumnData<T>[]>(initialColumns);
 
   const [activeItem, setActiveItem] = useState<T | null>(null);
+
   const [activeItemId, setActiveItemId] = useState<string | number | null>(
     null,
   );
@@ -280,7 +281,6 @@ export default function KanbanBoard<T>({
                         return (
                           <div
                             className={clsx(
-                              // 'flex justify-center items-center',
                               'p-4',
                               'min-h-20 h-auto',
                               'rounded-md',

@@ -14,7 +14,7 @@ import {
   IconNotifications,
   IconSettings3,
 } from '@/components/svgs/icons';
-import TaskCreateModal from '@/components/TaskCreateModal';
+import TaskCreateDrawer from '@/components/TaskCreateDrawer';
 import TaskUpdateDrawer from '@/components/TaskUpdateDrawer';
 import Toast from '@/components/Toast';
 
@@ -35,10 +35,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     (state) => state.closeProjectUpdateModal,
   );
 
-  const taskCreateModal = useUiStore((state) => state.taskCreateModal);
+  const taskCreateDrawer = useUiStore((state) => state.taskCreateDrawer);
 
-  const closeTaskCreateModal = useUiStore(
-    (state) => state.closeTaskCreateModal,
+  const closeTaskCreateDrawer = useUiStore(
+    (state) => state.closeTaskCreateDrawer,
   );
 
   const taskUpdateDrawer = useUiStore((state) => state.taskUpdateDrawer);
@@ -106,10 +106,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         onClose={closeProjectUpdateModal}
         project={projectUpdateModal.project}
       />
-      <TaskCreateModal
-        isOpen={taskCreateModal.isOpen}
-        onClose={closeTaskCreateModal}
-        project={taskCreateModal.project}
+      <TaskCreateDrawer
+        isOpen={taskCreateDrawer.isOpen}
+        onClose={closeTaskCreateDrawer}
+        projectId={taskCreateDrawer.projectId}
       />
       <TaskUpdateDrawer
         isOpen={taskUpdateDrawer.isOpen}
