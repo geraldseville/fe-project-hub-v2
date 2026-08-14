@@ -57,7 +57,7 @@ export default function Modal({
           <motion.div
             className={clsx(
               'absolute inset-0 z-1',
-              'h-full w-full',
+              'w-full h-full',
               'bg-black/60',
               'backdrop-blur-sm',
               classNames?.backdrop,
@@ -66,6 +66,7 @@ export default function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
+            aria-label="Close modal"
             onClick={onClose}
           />
 
@@ -73,11 +74,10 @@ export default function Modal({
           <motion.div
             className={clsx(
               'relative z-2',
-              'flex flex-col',
-              'max-w-md',
-              'max-h-[90dvh] min-h-[40dvh]',
-              'h-auto w-full',
               'overflow-hidden',
+              'flex flex-col',
+              'max-w-md w-full',
+              'max-h-[90dvh] min-h-[40dvh] h-auto',
               classNames?.content,
             )}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
