@@ -113,7 +113,7 @@ export default function ProjectListPage() {
   };
 
   return (
-    <main className={clsx('overflow-auto', 'w-full h-screen', 'py-10 px-4')}>
+    <main className={clsx('overflow-auto', 'w-full h-screen', 'py-10 px-6')}>
       {/* Head */}
       <div className="flex justify-between items-center gap-4 max-[1080px]:flex-wrap">
         <div className="flex-1 max-[1080px]:basis-full">
