@@ -15,7 +15,7 @@ import {
   IconSettings3,
 } from '@/components/svgs/icons';
 import TaskCreateModal from '@/components/TaskCreateModal';
-import TaskDrawer from '@/components/TaskDrawer';
+import TaskUpdateDrawer from '@/components/TaskUpdateDrawer';
 import TaskUpdateModal from '@/components/TaskUpdateModal';
 import Toast from '@/components/Toast';
 
@@ -48,9 +48,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     (state) => state.closeTaskUpdateModal,
   );
 
-  const taskDrawer = useUiStore((state) => state.taskDrawer);
+  const taskUpdateDrawer = useUiStore((state) => state.taskUpdateDrawer);
 
-  const closeTaskDrawer = useUiStore((state) => state.closeTaskDrawer);
+  const closeTaskUpdateDrawer = useUiStore(
+    (state) => state.closeTaskUpdateDrawer,
+  );
 
   return (
     <div
@@ -122,11 +124,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         task={taskUpdateModal.task}
         project={taskUpdateModal.project}
       />
-      <TaskDrawer
-        isOpen={taskDrawer.isOpen}
-        onClose={closeTaskDrawer}
-        taskId={taskDrawer.taskId}
-        projectId={taskDrawer.projectId}
+      <TaskUpdateDrawer
+        isOpen={taskUpdateDrawer.isOpen}
+        onClose={closeTaskUpdateDrawer}
+        taskId={taskUpdateDrawer.taskId}
+        projectId={taskUpdateDrawer.projectId}
       />
     </div>
   );

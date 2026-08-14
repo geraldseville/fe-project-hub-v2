@@ -10,6 +10,7 @@ import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
 import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
 import { useToastStore } from '@/hooks/ui/useToastStore';
+import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import type { Task, TaskStatus } from '@/types/task.types';
 
@@ -22,6 +23,8 @@ import { IconCalendar2, IconPlus1 } from '@/components/svgs/icons';
 import { defaultTimezone } from '@/lib/date-time';
 
 export default function ProjectKanbanPage() {
+  const toast = useToastStore();
+
   const params = useParams();
 
   const projectId = params.projectId as string;
@@ -29,11 +32,13 @@ export default function ProjectKanbanPage() {
   const { data: project = null, isPending: isProjectPending } =
     useProject(projectId);
 
+  const tasks = project?.tasks ?? [];
+
   const updateTask = useUpdateTask();
 
-  const toast = useToastStore();
-
-  const tasks = project?.tasks ?? [];
+  const openTaskUpdateDrawer = useUiStore(
+    (state) => state.openTaskUpdateDrawer,
+  );
 
   const columns = [
     {
@@ -101,7 +106,9 @@ export default function ProjectKanbanPage() {
           </div>
         }
         onCardClick={(task) => {
-          console.log('Clicked card:', task);
+          if (!project) return;
+
+          openTaskUpdateDrawer(task.id, project.id);
         }}
         onCardMove={(task, fromColumn, toColumn) => {
           updateTask.mutate(
