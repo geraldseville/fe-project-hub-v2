@@ -19,7 +19,7 @@ export default function ProjectMembersUI({ members }: ProjectMembersUIProps) {
           'text-[#DAE2FD] leading-tight truncate',
         )}
       >
-        No Assignees
+        No Members
       </div>
     );
   }
