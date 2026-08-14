@@ -34,9 +34,9 @@ export default function ProjectTaskTable({
 
   const openTaskCreateModal = useUiStore((state) => state.openTaskCreateModal);
 
-  const openTaskUpdateModal = useUiStore((state) => state.openTaskUpdateModal);
-
-  const openTaskDrawer = useUiStore((state) => state.openTaskDrawer);
+  const openTaskUpdateDrawer = useUiStore(
+    (state) => state.openTaskUpdateDrawer,
+  );
 
   const [taskDeleteModal, setTaskDeleteModal] = useState<{
     isOpen: boolean;
@@ -49,12 +49,6 @@ export default function ProjectTaskTable({
   const visibleTasks = project?.tasks ?? [];
 
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
-
-  const handleToggleEdit = (task: Task) => {
-    if (!project) return;
-
-    openTaskUpdateModal(task, project);
-  };
 
   const handleToggleDelete = (task: Task) => {
     setTaskDeleteModal((prev) => ({
@@ -175,8 +169,7 @@ export default function ProjectTaskTable({
                       label: 'Edit',
                       icon: <IconPen2 />,
                       onClick: () => {
-                        // handleToggleEdit(row);
-                        openTaskDrawer(row.id, projectId);
+                        openTaskUpdateDrawer(row.id, projectId);
                       },
                     },
                     {

@@ -33,8 +33,6 @@ import {
   IconExternalLink,
 } from '@/components/svgs/icons';
 
-import { defaultTimezone } from '@/lib/date-time';
-
 interface TaskDrawer {
   isOpen: boolean;
   onClose: () => void;

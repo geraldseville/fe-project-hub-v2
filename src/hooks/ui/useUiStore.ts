@@ -26,14 +26,6 @@ interface UiState {
   openTaskCreateModal: (project: Project) => void;
   closeTaskCreateModal: () => void;
 
-  taskUpdateModal: {
-    isOpen: boolean;
-    task: Task | null;
-    project: Project | null;
-  };
-  openTaskUpdateModal: (task: Task, project: Project) => void;
-  closeTaskUpdateModal: () => void;
-
   taskUpdateDrawer: {
     isOpen: boolean;
     taskId: string;
@@ -104,28 +96,6 @@ export const useUiStore = create<UiState>((set) => ({
     set({
       taskCreateModal: {
         isOpen: false,
-        project: null,
-      },
-    }),
-
-  taskUpdateModal: {
-    isOpen: false,
-    task: null,
-    project: null,
-  },
-  openTaskUpdateModal: (task, project) =>
-    set({
-      taskUpdateModal: {
-        isOpen: true,
-        task,
-        project,
-      },
-    }),
-  closeTaskUpdateModal: () =>
-    set({
-      taskUpdateModal: {
-        isOpen: false,
-        task: null,
         project: null,
       },
     }),
