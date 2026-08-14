@@ -1,0 +1,184 @@
+'use client';
+
+import React from 'react';
+import { useParams } from 'next/navigation';
+
+import clsx from 'clsx';
+import momentTimezone from 'moment-timezone';
+
+import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
+import { useMe } from '@/hooks/queries/useMe';
+import { useProject } from '@/hooks/queries/useProject';
+import { useToastStore } from '@/hooks/ui/useToastStore';
+
+import type { Task, TaskStatus } from '@/types/task.types';
+
+import KanbanBoard from '@/components/reusable/kanban/KanbanBoard';
+import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
+import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
+import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
+import { IconCalendar2, IconPlus1 } from '@/components/svgs/icons';
+
+import { defaultTimezone } from '@/lib/date-time';
+
+export default function ProjectKanbanPage() {
+  const params = useParams();
+
+  const projectId = params.projectId as string;
+
+  const { data: project = null, isPending: isProjectPending } =
+    useProject(projectId);
+
+  const updateTask = useUpdateTask();
+
+  const toast = useToastStore();
+
+  const tasks = project?.tasks ?? [];
+
+  const columns = [
+    {
+      id: 'TODO',
+      title: 'To Do',
+      items: tasks.filter((task) => task.status === 'TODO'),
+    },
+    {
+      id: 'IN_PROGRESS',
+      title: 'In Progress',
+      items: tasks.filter((task) => task.status === 'IN_PROGRESS'),
+    },
+    {
+      id: 'IN_REVIEW',
+      title: 'In Review',
+      items: tasks.filter((task) => task.status === 'IN_REVIEW'),
+    },
+    {
+      id: 'DONE',
+      title: 'Done',
+      items: tasks.filter((task) => task.status === 'DONE'),
+    },
+    {
+      id: 'ARCHIVE',
+      title: 'Archive',
+      items: tasks.filter((task) => task.status === 'ARCHIVE'),
+    },
+  ];
+
+  return (
+    <div className="flex-1 mt-6">
+      <KanbanBoard<Task>
+        classNames={{
+          root: 'max-h-full! h-full!',
+        }}
+        columns={columns}
+        isLoading={isProjectPending}
+        renderColumnTitle={(column) => (
+          <TaskStatusUI status={column.id as TaskStatus} />
+        )}
+        getCardId={(task) => task.id}
+        renderCard={(task) => <ProjectTaskCard task={task} />}
+        addCardRender={
+          <div
+            className={clsx(
+              'flex justify-center items-center gap-4',
+              'min-h-16',
+              'rounded-lg',
+              'hover:bg-[#1E293B]',
+              'border-2 border-dashed',
+              'border-transparent group-hover/add-card:border-primary',
+            )}
+          >
+            <div
+              className={clsx(
+                'flex justify-center items-center',
+                'w-8 h-8',
+                'rounded-xl',
+                'bg-[#171F33]',
+              )}
+            >
+              <IconPlus1 className="min-w-2.5 w-2.5 h-auto" />
+            </div>
+            <div className="leading-none">Add Task</div>
+          </div>
+        }
+        onCardClick={(task) => {
+          console.log('Clicked card:', task);
+        }}
+        onCardMove={(task, fromColumn, toColumn) => {
+          updateTask.mutate(
+            {
+              taskId: task.id,
+              projectId,
+              payload: {
+                status: toColumn.id as TaskStatus,
+              },
+            },
+            {
+              onSuccess: () => {
+                toast.success(`task moved to ${toColumn.title}`);
+              },
+              onError: () => {
+                toast.failed(`failed to move task to ${toColumn.title}`);
+              },
+            },
+          );
+        }}
+      />
+    </div>
+  );
+}
+
+function ProjectTaskCard({ task }: { task: Task }) {
+  const { data: user } = useMe();
+
+  const timezone = user?.timezone ?? defaultTimezone;
+
+  return (
+    <div
+      className={clsx(
+        'min-h-[110px]',
+        'p-3',
+        'rounded-lg',
+        'bg-[#1E293B]',
+        'border border-[#908FA0]/20',
+      )}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <TaskPriorityUI priority={task.priority} />
+      </div>
+
+      <h4
+        className={clsx(
+          'font-semibold',
+          'text-[#DAE2FD] leading-tight line-clamp-2',
+          'mt-3',
+        )}
+      >
+        {task.title}
+      </h4>
+
+      <p
+        className={clsx(
+          'text-[#C7C4D7] text-sm',
+          'leading-tight line-clamp-3',
+          'mt-2',
+        )}
+      >
+        {task.description}
+      </p>
+
+      <div className={clsx('flex justify-between items-center gap-4', 'mt-3')}>
+        <TaskAssigneeUI assignee={task.assignee} />
+        <div className={clsx('flex justify-center items-center gap-3')}>
+          <IconCalendar2 className="min-w-3.5 w-3.5 h-auto" />
+          <div
+            className={clsx(
+              'text-[#6B7280] text-[11px] leading-none whitespace-nowrap',
+            )}
+          >
+            {momentTimezone(task.startDate).tz(timezone).format('MMM DD')}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
