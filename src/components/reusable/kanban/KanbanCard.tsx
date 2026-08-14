@@ -29,18 +29,23 @@ export default function KanbanCard<T>({
   onCardClick,
   isPreview = false,
 }: KanbanCardProps<T>) {
+  const cardId = getCardId(cardItem);
+  // The preview renders the same item as the active card. Give it a distinct
+  // DnD id so it never replaces the real card's draggable registration.
+  const dndId = isPreview ? `preview-${cardId}` : cardId;
+
   const {
     attributes,
     listeners,
     setNodeRef: setDraggableNodeRef,
     isDragging,
   } = useDraggable({
-    id: getCardId(cardItem),
+    id: dndId,
     disabled: isPreview,
   });
 
   const { setNodeRef: setDroppableNodeRef } = useDroppable({
-    id: getCardId(cardItem),
+    id: dndId,
     disabled: isPreview,
   });
 
@@ -57,7 +62,7 @@ export default function KanbanCard<T>({
         classNames?.card,
         (isDragging || isPreview) && 'opacity-40',
       )}
-      data-id={getCardId(cardItem)}
+      data-id={cardId}
       ref={setNodeRef}
       onClick={isPreview ? undefined : () => onCardClick?.(cardItem)}
       {...(isPreview ? {} : listeners)}
