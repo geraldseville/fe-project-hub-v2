@@ -33,6 +33,14 @@ interface UiState {
   };
   openTaskUpdateModal: (task: Task, project: Project) => void;
   closeTaskUpdateModal: () => void;
+
+  taskDrawer: {
+    isOpen: boolean;
+    taskId: string;
+    projectId: string;
+  };
+  openTaskDrawer: (tasId: string, projectId: string) => void;
+  closeTaskDrawer: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -119,6 +127,28 @@ export const useUiStore = create<UiState>((set) => ({
         isOpen: false,
         task: null,
         project: null,
+      },
+    }),
+
+  taskDrawer: {
+    isOpen: false,
+    taskId: '',
+    projectId: '',
+  },
+  openTaskDrawer: (taskId, projectId) =>
+    set({
+      taskDrawer: {
+        isOpen: true,
+        taskId,
+        projectId,
+      },
+    }),
+  closeTaskDrawer: () =>
+    set({
+      taskDrawer: {
+        isOpen: false,
+        taskId: '',
+        projectId: '',
       },
     }),
 }));
