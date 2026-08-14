@@ -28,7 +28,7 @@ interface KanbanColumnProps<T> {
   renderCard?: (item: T) => React.ReactNode;
   onCardClick?: (item: T) => void;
   addCardRender?: React.ReactNode;
-  onAddCardClick?: () => void;
+  onAddCardClick?: (column: KanbanColumnData<T>) => void;
   previewItem?: T | null;
   previewIndex?: number;
   isPreviewFromAnotherColumn?: boolean;
@@ -154,7 +154,9 @@ export default function KanbanColumn<T>({
             classNames?.cardAddButton,
           )}
           type="button"
-          onClick={onAddCardClick}
+          onClick={() => {
+            onAddCardClick?.(column);
+          }}
         >
           {addCardRender ? (
             addCardRender

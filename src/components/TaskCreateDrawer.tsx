@@ -15,7 +15,11 @@ import type { TaskFormInput } from '@/validators/task.validator';
 import { blankTaskForm } from '@/validators/task.validator';
 import { validateTaskForm } from '@/validators/task.validator';
 
-import type { TaskPriority, TaskStatus } from '@/types/task.types';
+import type {
+  CreateTaskDto,
+  TaskPriority,
+  TaskStatus,
+} from '@/types/task.types';
 import type { User } from '@/types/user.types';
 
 import Button from '@/components/elements/Button';
@@ -34,12 +38,14 @@ interface TaskCreateDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: string;
+  initialTask: CreateTaskDto | null;
 }
 
 export default function TaskCreateDrawer({
   isOpen,
   onClose,
   projectId,
+  initialTask,
 }: TaskCreateDrawerProps) {
   const toast = useToastStore();
 
@@ -53,8 +59,11 @@ export default function TaskCreateDrawer({
 
   const isCreateTaskPending = createTask.isPending;
 
-  const [draftTaskForm, setDraftTaskForm] =
-    useState<TaskFormInput>(blankTaskForm);
+  const [draftTaskForm, setDraftTaskForm] = useState<TaskFormInput>({
+    ...blankTaskForm,
+    ...(initialTask ?? {}),
+    projectId,
+  });
 
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
@@ -81,12 +90,12 @@ export default function TaskCreateDrawer({
         assigneeId: draftTaskForm.assigneeId,
       });
 
-      toast.success('project created successfully.');
+      toast.success('successfully created task.');
 
       setDraftTaskForm(blankTaskForm);
     } catch (err) {
       toast.failed(
-        err instanceof Error ? err.message : 'failed to create project.',
+        err instanceof Error ? err.message : 'failed to create task.',
       );
     } finally {
       setHasSubmitted(false);
@@ -105,9 +114,10 @@ export default function TaskCreateDrawer({
 
     setDraftTaskForm((prev) => ({
       ...prev,
-      projectId: projectId,
+      ...(initialTask ?? {}),
+      projectId,
     }));
-  }, [projectId]);
+  }, [projectId, initialTask]);
 
   return (
     <Drawer
@@ -228,6 +238,7 @@ export default function TaskCreateDrawer({
             <LabelField id="taskStartDate" text="Start Date" />
             <DateTimePicker
               type="date-time"
+              formatDate="MMM DD, YYYY"
               placeholder="Select Start Date..."
               timezone={me?.timezone}
               value={draftTaskForm.startDate}
@@ -245,6 +256,7 @@ export default function TaskCreateDrawer({
             <LabelField id="taskEndDate" text="End Date" />
             <DateTimePicker
               type="date-time"
+              formatDate="MMM DD, YYYY"
               placeholder="Select End Date..."
               timezone={me?.timezone}
               value={draftTaskForm.endDate}
@@ -300,7 +312,7 @@ export default function TaskCreateDrawer({
       <div
         className={clsx(
           'flex justify-end items-center gap-4',
-          'shrink-0 h-[75px]',
+          'shrink-0 h-[92px]',
           'p-6',
           'bg-[#131B2E]/50',
           'border-t border-[#464554]',

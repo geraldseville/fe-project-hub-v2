@@ -110,12 +110,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         isOpen={taskCreateDrawer.isOpen}
         onClose={closeTaskCreateDrawer}
         projectId={taskCreateDrawer.projectId}
+        initialTask={taskCreateDrawer.initialTask}
       />
       <TaskUpdateDrawer
         isOpen={taskUpdateDrawer.isOpen}
         onClose={closeTaskUpdateDrawer}
-        taskId={taskUpdateDrawer.taskId}
         projectId={taskUpdateDrawer.projectId}
+        taskId={taskUpdateDrawer.taskId}
       />
     </div>
   );

@@ -38,7 +38,7 @@ interface KanbanBoardProps<T> {
     toColumn: KanbanColumnData<T>,
   ) => void;
   addCardRender?: React.ReactNode;
-  onAddCardClick?: () => void;
+  onAddCardClick?: (column: KanbanColumnData<T>) => void;
 }
 
 export default function KanbanBoard<T>({

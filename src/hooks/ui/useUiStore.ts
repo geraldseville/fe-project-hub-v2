@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import type { Project } from '@/types/project.types';
+import type { CreateTaskDto } from '@/types/task.types';
 
 interface UiState {
   projectCreateModal: {
@@ -21,8 +22,12 @@ interface UiState {
   taskCreateDrawer: {
     isOpen: boolean;
     projectId: string;
+    initialTask: CreateTaskDto | null;
   };
-  openTaskCreateDrawer: (projectId: string) => void;
+  openTaskCreateDrawer: (
+    projectId: string,
+    initialTask?: CreateTaskDto,
+  ) => void;
   closeTaskCreateDrawer: () => void;
 
   taskUpdateDrawer: {
@@ -81,19 +86,24 @@ export const useUiStore = create<UiState>((set) => ({
   taskCreateDrawer: {
     isOpen: false,
     projectId: '',
+    initialTask: null,
   },
-  openTaskCreateDrawer: (projectId) =>
+
+  openTaskCreateDrawer: (projectId, initialTask = undefined) =>
     set({
       taskCreateDrawer: {
         isOpen: true,
         projectId,
+        initialTask: initialTask ?? null,
       },
     }),
+
   closeTaskCreateDrawer: () =>
     set({
       taskCreateDrawer: {
         isOpen: false,
         projectId: '',
+        initialTask: null,
       },
     }),
 

@@ -24,6 +24,7 @@ import Drawer from '@/components/elements/Drawer';
 import EditableField from '@/components/elements/EditableField';
 import MultiLineField from '@/components/elements/MultiLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
+import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import ProjectTitleUI from '@/components/shared/projects/ProjectTitleUI';
 import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
@@ -96,7 +97,7 @@ export default function TaskUpdateDrawer({
     );
   }, 500);
 
-  const handelCancel = () => {
+  const handleCancel = () => {
     onClose();
   };
 
@@ -167,34 +168,41 @@ export default function TaskUpdateDrawer({
     setTaskAssigneeId(task.assigneeId ?? '');
   }, [task]);
 
-  if (!task || !project) return null;
-
   return (
     <Drawer
       classNames={{ content: 'flex flex-col overflow-y-hidden' }}
       isOpen={isOpen}
-      onClose={handelCancel}
+      onClose={handleCancel}
     >
       {/* Head */}
       <div className={clsx('p-6', 'bg-[#334155]', 'border-b border-[#464554]')}>
         <div className="flex justify-between items-center gap-4">
-          <h2 className={clsx('font-bold', 'text-[24px]')}>
-            <EditableField
-              classNames={{ root: 'p-0! hover:border-transparent!' }}
-              value={task?.title ?? ''}
-              onSave={(e) => {
-                const newValue = e;
+          {!isProjectPending ? (
+            <SkeletonLoading className="w-full h-6" />
+          ) : task ? (
+            <h2 className={clsx('font-bold', 'text-[24px]')}>
+              <EditableField
+                classNames={{ root: 'p-0! hover:border-transparent!' }}
+                value={task.title}
+                onSave={(e) => {
+                  const newValue = e;
 
-                debouncedUpdateTask({
-                  title: newValue,
-                });
-              }}
-            />
-          </h2>
+                  debouncedUpdateTask({
+                    title: newValue,
+                  });
+                }}
+              />
+            </h2>
+          ) : (
+            <i>No Task Foun</i>
+          )}
           <button
-            className={clsx('flex justify-center items-center', 'w-8 h-8')}
+            className={clsx(
+              'flex justify-center items-center self-end',
+              'w-8 h-8',
+            )}
             type="button"
-            onClick={handelCancel}
+            onClick={handleCancel}
           >
             <IconClose1 className="min-w-3.5 w-3.5 h-auto" />
           </button>
@@ -210,22 +218,27 @@ export default function TaskUpdateDrawer({
             >
               Project
             </div>
-            <div className="flex justify-start items-center gap-2">
-              <div
-                className="min-w-4 w-4 h-4 rounded-md"
-                style={{ backgroundColor: project.primaryColor }}
-              />
-              <ProjectTitleUI title={project.title} />
-            </div>
-            <Link
-              className="ml-4"
-              onClick={() => {
-                onClose();
-              }}
-              href={`/projects/${project.id}`}
-            >
-              <IconExternalLink className="min-w-3 w-3 h-auto" />
-            </Link>
+            {isProjectPending ? (
+              <SkeletonLoading className="w-full h-4" />
+            ) : project ? (
+              <div className="flex justify-start items-center gap-2">
+                <div
+                  className="min-w-4 w-4 h-4 rounded-md"
+                  style={{ backgroundColor: project.primaryColor }}
+                />
+                <ProjectTitleUI title={project.title} />
+                <Link
+                  onClick={() => {
+                    onClose();
+                  }}
+                  href={`/projects/${project.id}`}
+                >
+                  <IconExternalLink className="min-w-3 w-3 h-auto" />
+                </Link>
+              </div>
+            ) : (
+              <i>No Project Found</i>
+            )}
           </div>
           {/* Status */}
           <div className={clsx('flex justify-start items-center', 'py-1')}>
@@ -311,7 +324,7 @@ export default function TaskUpdateDrawer({
               Start Date
             </div>
             <DateTimePicker
-              type="date"
+              type="date-time"
               formatDate="MMM DD, YYYY"
               value={taskStartDate}
               onChange={(selected) => {
@@ -331,7 +344,7 @@ export default function TaskUpdateDrawer({
               End Date
             </div>
             <DateTimePicker
-              type="date"
+              type="date-time"
               formatDate="MMM DD, YYYY"
               value={taskEndDate}
               onChange={(selected) => {

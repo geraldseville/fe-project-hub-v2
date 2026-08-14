@@ -12,6 +12,8 @@ import { useProject } from '@/hooks/queries/useProject';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
+import { blankTaskForm } from '@/validators/task.validator';
+
 import type { Task, TaskStatus } from '@/types/task.types';
 
 import KanbanBoard from '@/components/reusable/kanban/KanbanBoard';
@@ -114,10 +116,17 @@ export default function ProjectKanbanPage() {
 
           openTaskUpdateDrawer(task.id, project.id);
         }}
-        onAddCardClick={() => {
+        onAddCardClick={(column) => {
           if (!project) return;
 
-          openTaskCreateDrawer(projectId);
+          const preSelectedTaskStatus = column.id;
+
+          console.log({ preSelectedTaskStatus });
+
+          openTaskCreateDrawer(projectId, {
+            ...blankTaskForm,
+            status: preSelectedTaskStatus as TaskStatus,
+          });
         }}
         onCardMove={(task, fromColumn, toColumn) => {
           updateTask.mutate(
