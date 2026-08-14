@@ -471,9 +471,13 @@ export default function DateTimePicker({
         )}
 
         {displayString ? (
-          <span>{displayString}</span>
+          <span className="text-left truncate block flex-1 min-w-0">
+            {displayString}
+          </span>
         ) : (
-          <span className="text-placeholder">{placeholder}</span>
+          <span className="text-placeholder text-left truncate block flex-1 min-w-0">
+            {placeholder}
+          </span>
         )}
 
         <IconAngleDown
