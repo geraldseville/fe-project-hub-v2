@@ -26,6 +26,7 @@ export default function TaskStatusUI({ status }: TaskStatusProps) {
         className={clsx(
           'font-inter font-medium',
           'text-[12px] leading-none',
+          'whitespace-nowrap',
           styles.text,
         )}
       >
