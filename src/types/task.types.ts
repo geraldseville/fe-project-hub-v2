@@ -21,6 +21,8 @@ export type Task = {
   createdBy: User;
   assigneeId: string;
   assignee: User;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type CreateTaskDto = {
@@ -43,4 +45,19 @@ export type UpdateTaskDto = {
   endDate?: string | undefined;
   projectId?: string | undefined;
   assigneeId?: string | undefined;
+};
+
+export type TaskComment = {
+  id: string;
+  content: string;
+  taskId: string;
+  authorId: string;
+  task: Task;
+  author: User;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateTaskCommentDto = {
+  content: string;
 };
