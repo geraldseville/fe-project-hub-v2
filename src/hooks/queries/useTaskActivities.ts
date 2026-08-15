@@ -4,7 +4,7 @@ import { getTaskActivities } from '@/api/task.api';
 
 export function useTaskActivities(taskId: string, limit = 20) {
   return useInfiniteQuery({
-    queryKey: ['tasks', taskId, 'activities', limit],
+    queryKey: ['tasks', taskId, 'task-activities', limit],
 
     queryFn: async ({ pageParam }) => {
       const response = await getTaskActivities(taskId, pageParam, limit);
