@@ -17,8 +17,6 @@ import ThreeDotActions from '@/components/elements/ThreeDotActions';
 import Avatar from '@/components/reusable/Avatar';
 import { IconBin1, IconPen2, IconPlus1 } from '@/components/svgs/icons';
 
-import TaskDeleteModal from './TaskDeleteModal';
-
 interface ProjectTaskTableProps {
   project?: Project | null;
   isProjectPending: boolean;
@@ -40,25 +38,11 @@ export default function ProjectTaskTable({
     (state) => state.openTaskUpdateDrawer,
   );
 
-  const [taskDeleteModal, setTaskDeleteModal] = useState<{
-    isOpen: boolean;
-    task: Task | null;
-  }>({
-    isOpen: false,
-    task: null,
-  });
+  const openTaskDeleteModal = useUiStore((state) => state.openTaskDeleteModal);
 
   const visibleTasks = project?.tasks ?? [];
 
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
-
-  const handleToggleDelete = (task: Task) => {
-    setTaskDeleteModal((prev) => ({
-      ...prev,
-      isOpen: true,
-      task,
-    }));
-  };
 
   return (
     <div
@@ -180,7 +164,7 @@ export default function ProjectTaskTable({
                       icon: <IconBin1 />,
                       label: 'Delete',
                       onClick: () => {
-                        handleToggleDelete(row);
+                        openTaskDeleteModal(row.id);
                       },
                     },
                   ]}
@@ -195,18 +179,6 @@ export default function ProjectTaskTable({
           setSelectedTasks(row);
         }}
         getRowId={(project) => project.id}
-      />
-      {/* Task Delete Modal */}
-      <TaskDeleteModal
-        isOpen={taskDeleteModal.isOpen}
-        onClose={() => {
-          setTaskDeleteModal((prev) => ({
-            ...prev,
-            isOpen: false,
-            task: null,
-          }));
-        }}
-        task={taskDeleteModal.task}
       />
     </div>
   );
