@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import {
   autoUpdate,
@@ -15,8 +15,6 @@ import {
 } from '@floating-ui/react';
 import clsx from 'clsx';
 
-import { PROJECT_STATUS_COLORS } from '@/utils/project.utils';
-
 import type { Project } from '@/types/project.types';
 
 import ProjectAsTag from '@/components/shared/projects/ProjectAsTag';
@@ -26,8 +24,6 @@ interface ProjectDropdownProps {
 }
 
 export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
-  const router = useRouter();
-
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { refs, floatingStyles, context } = useFloating({
@@ -81,7 +77,7 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
       >
         <ProjectAsTag
           title={projects[0].title}
-          color={PROJECT_STATUS_COLORS[projects[0].status].hex ?? '#000000'}
+          color={projects[0].primaryColor ?? '#000000'}
         />
       </button>
       {/* Dropdown */}
@@ -115,20 +111,20 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
               className={clsx('flex flex-wrap gap-1.5', 'p-2', 'bg-[#171F33]')}
             >
               {projects.map((project) => (
-                <button
+                <Link
                   className=""
                   key={project.id}
-                  type="button"
-                  onClick={() => {
-                    router.push(`/projects/${project.id}`);
+                  onClick={(event) => {
+                    event.stopPropagation();
                   }}
+                  href={`/projects/${project.id}`}
                 >
                   {/* Project tag goes here */}
                   <ProjectAsTag
                     title={project.title}
                     color={project.primaryColor ?? '#000000'}
                   />
-                </button>
+                </Link>
               ))}
             </div>
           </div>
