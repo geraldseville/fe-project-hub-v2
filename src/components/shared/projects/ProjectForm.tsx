@@ -11,7 +11,6 @@ import {
   PROJECT_COLOR_PRESETS,
   PROJECT_STATUSES,
   PROJECT_URGENCIES,
-  PROJECT_URGENCY_COLORS,
 } from '@/utils/project.utils';
 import { getFullName } from '@/utils/user.utils';
 
