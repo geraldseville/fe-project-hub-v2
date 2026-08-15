@@ -16,7 +16,10 @@ interface Column<T> {
 type SelectionMode = 'none' | 'single' | 'multiple';
 
 interface DataTableProps<T extends Record<string, unknown>> {
-  className?: string;
+  classNames?: {
+    root?: string;
+    table?: string;
+  };
   value: T[];
   columns: Column<T>[];
 
@@ -32,7 +35,7 @@ interface DataTableProps<T extends Record<string, unknown>> {
 }
 
 export default function DataTable<T extends Record<string, unknown>>({
-  className,
+  classNames,
   value,
   columns,
 
@@ -53,14 +56,19 @@ export default function DataTable<T extends Record<string, unknown>>({
     multiple && value.length > 0 && selectedRows.length === value.length;
 
   return (
-    <div className={clsx('overflow-auto')}>
-      <table className={clsx('text-left', 'w-full', className)}>
+    <div className={clsx('overflow-auto', classNames?.root)}>
+      <table className={clsx('text-left', 'w-full', classNames?.table)}>
         <thead
-          className={clsx('h-13', 'bg-[#131B2E]', 'border-y border-[#334155]')}
+          className={clsx(
+            'sticky top-0 z-20',
+            'h-13',
+            'bg-[#131B2E]',
+            'border-y border-[#334155]',
+          )}
         >
           <tr>
             {multiple && (
-              <th className="w-12 px-6">
+              <th className="w-12 p-4">
                 <InputCheckbox
                   id="selectAll"
                   type="checkbox"
@@ -74,7 +82,7 @@ export default function DataTable<T extends Record<string, unknown>>({
 
             {columns.map((column) => (
               <th
-                className={clsx('whitespace-nowrap', 'p-6', column.thClassName)}
+                className={clsx('whitespace-nowrap', 'p-4', column.thClassName)}
                 key={String(column.field ?? column.header)}
               >
                 {column.header}
@@ -88,14 +96,14 @@ export default function DataTable<T extends Record<string, unknown>>({
             Array.from({ length: loadingRows }).map((_, index) => (
               <tr className="h-10" key={`loading-${index}`}>
                 {multiple && (
-                  <td className="w-12 px-6">
+                  <td className="w-12 p-4">
                     <SkeletonLoading className="h-4 w-4" />
                   </td>
                 )}
 
                 {columns.map((column, columnIndex) => (
                   <td
-                    className={clsx('p-6', column.tdClassName)}
+                    className={clsx('p-4', column.tdClassName)}
                     key={`loading-${index}-${columnIndex}`}
                   >
                     <SkeletonLoading className="h-4 w-full max-w-48" />
@@ -112,7 +120,7 @@ export default function DataTable<T extends Record<string, unknown>>({
               return (
                 <tr
                   className={clsx(
-                    'h-10',
+                    // 'h-10',
                     'cursor-pointer',
                     isSelected
                       ? 'border-primary bg-primary/5'
@@ -123,7 +131,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                   onClick={() => onRowClick?.(row)}
                 >
                   {selectable && (
-                    <td className="w-12 px-6">
+                    <td className="w-12 p-4">
                       <InputCheckbox
                         id={getRowId(row).toString()}
                         value={isSelected}
@@ -148,7 +156,7 @@ export default function DataTable<T extends Record<string, unknown>>({
 
                   {columns.map((column) => (
                     <td
-                      className={clsx('p-6', column.tdClassName)}
+                      className={clsx('p-4', column.tdClassName)}
                       key={String(column.field ?? column.header)}
                     >
                       {column.render
@@ -164,7 +172,7 @@ export default function DataTable<T extends Record<string, unknown>>({
           ) : (
             <tr>
               <td
-                className="p-6"
+                className="p-4"
                 colSpan={columns.length + (selectable ? 1 : 0)}
               >
                 {emptyMessage ? (
