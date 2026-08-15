@@ -71,65 +71,60 @@ export default function ProjectItemsLayout({
 
   return (
     <main
-      className={clsx(
-        'overflow-hidden',
-        'flex flex-col',
-        'w-full h-screen',
-        'p-6',
-      )}
+      className={clsx('overflow-hidden', 'flex flex-col', 'w-full h-screen')}
     >
       {/* Head */}
-      <div className="w-full">
-        <div className={clsx('flex justify-start items-end gap-4')}>
-          <div className="flex-1">
-            {isProjectPending ? (
-              <SkeletonLoading className="w-1/4 h-4" />
-            ) : (
-              <div
-                className={clsx(
-                  'font-hanken-grotesk',
-                  'text-[#C7C4D7] leading-tight',
-                  'whitespace-nowrap',
-                  'flex justify-start items-center gap-2',
-                )}
-              >
-                <Link href="/projects">Projects</Link>
-                <IconAngleRight />
-                {project ? <span>{project.title}</span> : <i>Untitled</i>}
-              </div>
+      <div
+        className={clsx(
+          'min-h-20 h-20',
+          'py-4 px-6',
+          'border-b border-[#464554]',
+        )}
+      >
+        <div className="flex justify-start items-center gap-4 h-full">
+          <div
+            className={clsx(
+              'font-hanken-grotesk font-medium',
+              'text-[#DAE2FD] text-[20px] leading-tight',
+              'flex justify-start items-center gap-3',
             )}
-            <div
-              className={clsx('flex justify-start items-center gap-3', 'mt-1')}
-            >
-              {isProjectPending || !project ? (
-                <SkeletonLoading className="w-1/3 h-7.5" />
-              ) : (
-                <>
-                  <div
-                    className="min-w-5 w-5 h-5 rounded-md bg-foreground"
-                    style={{
-                      backgroundColor: project.primaryColor,
-                    }}
-                  />
-                  <h1
-                    className={clsx(
-                      'font-hanken-grotesk font-bold',
-                      'text-[#DAE2FD] text-[24px] leading-tight',
-                      'line-clamp-1',
-                    )}
-                  >
-                    {project ? project.title : <i>Untitled</i>}
-                  </h1>
-                  <ProjectStatusUI status={project.status} />
-                  <ProjectPriorityUI priority={project.priority} />
-                </>
-              )}
-            </div>
-            <p className={clsx('line-clamp-1', 'mt-2')}>
-              {project ? project.description : null}
-            </p>
+          >
+            <Link href="/projects">Projects</Link>
+            <IconAngleRight />
+            {project ? (
+              <>
+                <div
+                  className="min-w-4 w-4 h-4 rounded-md bg-foreground"
+                  style={{
+                    backgroundColor: project.primaryColor,
+                  }}
+                />
+                <h1
+                  className={clsx(
+                    'font-hanken-grotesk font-bold',
+                    'text-[#DAE2FD] text-[20px] leading-tight',
+                    'line-clamp-1',
+                  )}
+                >
+                  {project.title}
+                </h1>
+              </>
+            ) : (
+              <i>Untitled</i>
+            )}
           </div>
-
+          <div
+            className={clsx('flex justify-start items-center gap-3', 'ml-auto')}
+          >
+            {isProjectPending || !project ? (
+              <SkeletonLoading className="w-1/3 h-7.5" />
+            ) : (
+              <>
+                <ProjectStatusUI status={project.status} />
+                <ProjectPriorityUI priority={project.priority} />
+              </>
+            )}
+          </div>
           {project && !isProjectPending && (
             <>
               <ProjectMembersUI members={project.members} />
@@ -145,9 +140,11 @@ export default function ProjectItemsLayout({
             </>
           )}
         </div>
+      </div>
+      <div className="p-6">
         <SegmentedTab
           classNames={{
-            root: 'w-fit! mt-6! p-0! border-none!',
+            root: 'w-fit! p-0! border-none!',
             tabItem: 'min-w-[140px]! w-fit!',
             tabItemSelected: 'text-[#060e20]!',
             tabIndicator: 'bg-[#c0c1ff]!',

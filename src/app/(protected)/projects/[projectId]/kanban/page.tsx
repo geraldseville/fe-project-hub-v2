@@ -75,10 +75,17 @@ export default function ProjectKanbanPage() {
   ];
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col overflow-hidden mt-6">
+    <div
+      className={clsx(
+        'overflow-hidden',
+        'flex flex-col',
+        'flex-1 min-h-0',
+        'px-6',
+      )}
+    >
       <KanbanBoard<Task>
         classNames={{
-          root: 'flex-1 min-h-0 max-h-full! h-full!',
+          root: 'flex-1 min-h-0! max-h-full! h-full!',
         }}
         columns={columns}
         isLoading={isProjectPending}

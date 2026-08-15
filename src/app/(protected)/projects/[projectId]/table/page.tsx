@@ -56,7 +56,14 @@ export default function ProjectTablePage() {
   const paginatedTasks = tasks.slice(firstTaskIndex, lastTaskIndex);
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col overflow-hidden mt-6">
+    <div
+      className={clsx(
+        'overflow-hidden',
+        'flex flex-col',
+        'flex-1 min-h-0',
+        'px-6 pb-6',
+      )}
+    >
       <div
         className={clsx(
           'flex flex-col',

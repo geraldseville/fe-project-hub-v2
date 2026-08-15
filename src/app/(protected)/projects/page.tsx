@@ -113,91 +113,90 @@ export default function ProjectListPage() {
   };
 
   return (
-    <main className={clsx('overflow-auto', 'w-full h-screen', 'py-10 px-6')}>
+    <main
+      className={clsx('overflow-hidden', 'flex flex-col', 'w-full h-screen')}
+    >
       {/* Head */}
-      <div className="flex justify-between items-center gap-4 max-[1080px]:flex-wrap">
-        <div className="flex-1 max-[1080px]:basis-full">
+      <div
+        className={clsx(
+          'min-h-20 h-20',
+          'py-4 px-6',
+          'border-b border-[#464554]',
+        )}
+      >
+        <div className="flex justify-start items-center gap-4 h-full">
           <div
             className={clsx(
-              'font-hanken-grotesk font-bold',
-              'text-[#DAE2FD] text-[24px] leading-tight',
+              'font-hanken-grotesk font-medium',
+              'text-[#DAE2FD] text-[20px] leading-tight',
             )}
           >
-            Projects Page
+            Projects
           </div>
-          <div
-            className={clsx(
-              'font-inter',
-              'text-[#C7C4D7] text-[16px] leading-tight',
-              'mt-1',
-            )}
-          >
-            Manage and track your ongoing enterprise workstreams.
-          </div>
+          {/* Project Sort */}
+          <SingleSelect
+            classNames={{ root: 'max-w-[150px] ml-auto', trigger: 'h-10!' }}
+            id="projectSort"
+            value={projectSort}
+            options={[
+              {
+                id: 'title',
+                label: 'Title',
+                value: 'title',
+              },
+              {
+                id: 'status',
+                label: 'Status',
+                value: 'status',
+              },
+              {
+                id: 'startDate',
+                label: 'Start Date',
+                value: 'startDate',
+              },
+              {
+                id: 'tasks',
+                label: 'Tasks',
+                value: 'tasks',
+              },
+            ]}
+            onChange={(selected) => {
+              setProjectSort(selected);
+            }}
+          />
+          {/* Project View Tab */}
+          <SegmentedTab
+            classNames={{
+              root: 'h-[40px]!',
+            }}
+            id="projectView"
+            selected={projectView}
+            options={[
+              {
+                id: 'tab-grid',
+                icon: <IconGrid1 className="w-3.5 h-3.5" />,
+              },
+              {
+                id: 'tab-list',
+                icon: <IconListBullet className="w-3.5 h-3.5" />,
+              },
+            ]}
+            onSelect={(selected) => {
+              setProjectView(selected);
+            }}
+          />
+          {/* Project Create Button */}
+          <Button
+            className=""
+            type="button"
+            icon={<IconPlus1 className="min-w-3.5 w-3.5 h-auto" />}
+            text="Create Project"
+            onClick={openProjectCreateModal}
+          />
         </div>
-        {/* Project Sort */}
-        <SingleSelect
-          classNames={{ root: 'max-w-[150px]', trigger: 'h-10!' }}
-          id="projectSort"
-          value={projectSort}
-          options={[
-            {
-              id: 'title',
-              label: 'Title',
-              value: 'title',
-            },
-            {
-              id: 'status',
-              label: 'Status',
-              value: 'status',
-            },
-            {
-              id: 'startDate',
-              label: 'Start Date',
-              value: 'startDate',
-            },
-            {
-              id: 'tasks',
-              label: 'Tasks',
-              value: 'tasks',
-            },
-          ]}
-          onChange={(selected) => {
-            setProjectSort(selected);
-          }}
-        />
-        {/* Project View Tab */}
-        <SegmentedTab
-          classNames={{
-            root: 'h-[40px]!',
-          }}
-          id="projectView"
-          selected={projectView}
-          options={[
-            {
-              id: 'tab-grid',
-              icon: <IconGrid1 className="w-3.5 h-3.5" />,
-            },
-            {
-              id: 'tab-list',
-              icon: <IconListBullet className="w-3.5 h-3.5" />,
-            },
-          ]}
-          onSelect={(selected) => {
-            setProjectView(selected);
-          }}
-        />
-        {/* Project Create Button */}
-        <Button
-          className=""
-          type="button"
-          icon={<IconPlus1 className="min-w-3.5 w-3.5 h-auto" />}
-          text="Create Project"
-          onClick={openProjectCreateModal}
-        />
       </div>
       {/* Body */}
-      <div className="mt-10">
+      <div className={clsx('overflow-y-auto', 'flex-1 min-h-0', 'p-6')}>
         {/* Project Item View */}
         <div
           className={clsx(
