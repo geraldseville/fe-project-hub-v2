@@ -22,7 +22,7 @@ export const getTask = (taskId: string) => {
   });
 };
 
-export async function getTaskActivities(taskId: string, page = 1, limit = 20) {
+export const getTaskActivities = (taskId: string, page = 1, limit = 20) => {
   return apiClient<{
     activities: TaskActivity[];
     total: number;
@@ -32,7 +32,7 @@ export async function getTaskActivities(taskId: string, page = 1, limit = 20) {
   }>(`/tasks/${taskId}/activities?page=${page}&limit=${limit}`, {
     method: 'GET',
   });
-}
+};
 
 export const getTasks = () => {
   return apiClient<{ tasks: Task[] }>('/tasks', {
