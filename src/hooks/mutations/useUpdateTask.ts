@@ -17,10 +17,16 @@ export function useUpdateTask() {
     mutationFn: ({ taskId, payload }: UpdateTaskVariables) =>
       updateTask(taskId, payload),
 
-    onSuccess: async (_, { projectId }) => {
-      await queryClient.invalidateQueries({
-        queryKey: ['projects', projectId],
-      });
+    onSuccess: async (_, { taskId, projectId }) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['projects', projectId],
+        }),
+
+        queryClient.invalidateQueries({
+          queryKey: ['tasks', taskId, 'activities'],
+        }),
+      ]);
     },
   });
 }
