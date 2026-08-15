@@ -1,10 +1,26 @@
 import { apiClient } from '@/api/api';
 
-import type { CreateTaskDto, Task, UpdateTaskDto } from '@/types/task.types';
+import type {
+  CreateTaskCommentDto,
+  CreateTaskDto,
+  Task,
+  TaskComment,
+  UpdateTaskDto,
+} from '@/types/task.types';
 import type { TaskActivity } from '@/types/task-activity.types';
 
 export const createTask = (payload: CreateTaskDto) => {
   return apiClient<{ task: Task }>('/tasks', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+};
+
+export const createTaskComment = (
+  taskId: string,
+  payload: CreateTaskCommentDto,
+) => {
+  return apiClient<{ comment: TaskComment }>(`/tasks/${taskId}/comments`, {
     method: 'POST',
     body: JSON.stringify(payload),
   });
