@@ -17,7 +17,6 @@ import {
 import clsx from 'clsx';
 
 import SingleLineField from '@/components/elements/SingleLineField';
-import Avatar from '@/components/reusable/Avatar';
 import { IconAngleDown, IconSearch } from '@/components/svgs/icons';
 
 type SelectOption = {
@@ -27,7 +26,7 @@ type SelectOption = {
   image?: string;
   custom?: React.ReactNode;
   label: string;
-  value: string;
+  value: string | number;
 };
 
 interface SingleSelectProps {
@@ -300,7 +299,7 @@ function SelectOptionContent({
         <Image
           className="min-w-6 w-6 h-6 object-cover rounded-full"
           src={option.image}
-          alt={option.value}
+          alt={option.value.toString()}
           width={36}
           height={36}
         />
