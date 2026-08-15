@@ -11,6 +11,7 @@ import LoaderSpinner from '@/components/elements/LoaderSpinner';
 import {
   IconCalendar4,
   IconNotes1,
+  IconProfile1,
   IconTicket2,
 } from '@/components/svgs/icons';
 
@@ -88,7 +89,7 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
     PRIORITY_CHANGED: IconTicket2,
     START_DATE_CHANGED: IconNotes1,
     END_DATE_CHANGED: IconCalendar4,
-    ASSIGNEE_CHANGED: IconCalendar4,
+    ASSIGNEE_CHANGED: IconProfile1,
     COMMENT_ADDED: IconNotes1,
     ATTACHMENT_ADDED: IconNotes1,
     ATTACHMENT_REMOVED: IconNotes1,
