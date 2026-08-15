@@ -46,6 +46,7 @@ export { default as IconEnvelope } from './IconEnvelope';
 export { default as IconExternalLink } from './IconExternalLink';
 export { default as IconEyeClose } from './IconEyeClose';
 export { default as IconEyeOpen } from './IconEyeOpen';
+export { default as IconFlag1 } from './IconFlag1';
 export { default as IconFolder1 } from './IconFolder1';
 export { default as IconGlobe } from './IconGlobe';
 export { default as IconGrid1 } from './IconGrid1';
