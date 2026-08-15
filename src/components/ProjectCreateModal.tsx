@@ -55,7 +55,7 @@ export default function ProjectCreateModal({
         title: draftProjectForm.title,
         description: draftProjectForm.description,
         status: draftProjectForm.status,
-        urgency: draftProjectForm.urgency,
+        priority: draftProjectForm.priority,
         primaryColor: draftProjectForm.primaryColor,
         secondaryColor: draftProjectForm.secondaryColor,
         startDate: draftProjectForm.startDate,

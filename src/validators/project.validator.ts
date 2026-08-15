@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { PROJECT_STATUSES, PROJECT_URGENCIES } from '@/utils/project.utils';
+import { PROJECT_PRIORITIES, PROJECT_STATUSES } from '@/utils/project.utils';
 
 export const projectFormSchema = z
   .object({
@@ -14,9 +14,9 @@ export const projectFormSchema = z
       })
       .default('PLANNING'),
 
-    urgency: z
-      .enum(PROJECT_URGENCIES, {
-        error: 'Invalid project urgency.',
+    priority: z
+      .enum(PROJECT_PRIORITIES, {
+        error: 'Invalid project priority.',
       })
       .default('LOW'),
 
@@ -63,7 +63,7 @@ export const blankProjectForm: ProjectFormInput = {
   title: '',
   description: '',
   status: 'PLANNING',
-  urgency: 'MEDIUM',
+  priority: 'MEDIUM',
   startDate: '',
   endDate: '',
   primaryColor: '#000000',
@@ -75,7 +75,7 @@ export type ProjectFormErrors = {
   title?: string;
   description?: string;
   status?: string;
-  urgency?: string;
+  priority?: string;
   startDate?: string;
   endDate?: string;
   primaryColor?: string;
@@ -111,7 +111,7 @@ export const validateProjectForm = (
       title: fieldErrors.title?.[0],
       description: fieldErrors.description?.[0],
       status: fieldErrors.status?.[0],
-      urgency: fieldErrors.urgency?.[0],
+      priority: fieldErrors.priority?.[0],
       startDate: fieldErrors.startDate?.[0],
       endDate: fieldErrors.endDate?.[0],
       primaryColor: fieldErrors.primaryColor?.[0],

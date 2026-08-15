@@ -2,19 +2,21 @@ import React from 'react';
 
 import clsx from 'clsx';
 
-import { PROJECT_URGENCY_COLORS } from '@/utils/project.utils';
+import { PROJECT_PRIORITY_COLORS } from '@/utils/project.utils';
 import { toCapitalize } from '@/utils/string.utils';
 
-import type { ProjectUrgency } from '@/types/project.types';
+import type { ProjectPriority } from '@/types/project.types';
 
 import { IconFlag1 } from '@/components/svgs/icons';
 
-interface ProjectUrgencyUIProps {
-  urgency: ProjectUrgency;
+interface ProjectPriorityUIProps {
+  priority: ProjectPriority;
 }
 
-export default function ProjectUrgencyUI({ urgency }: ProjectUrgencyUIProps) {
-  const styles = PROJECT_URGENCY_COLORS[urgency];
+export default function ProjectPriorityUI({
+  priority,
+}: ProjectPriorityUIProps) {
+  const styles = PROJECT_PRIORITY_COLORS[priority];
 
   return (
     <div
@@ -38,7 +40,7 @@ export default function ProjectUrgencyUI({ urgency }: ProjectUrgencyUIProps) {
           'text-[12px] uppercase leading-none',
         )}
       >
-        {toCapitalize(urgency)}
+        {toCapitalize(priority)}
       </div>
     </div>
   );

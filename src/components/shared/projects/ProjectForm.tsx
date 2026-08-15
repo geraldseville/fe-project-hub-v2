@@ -9,8 +9,8 @@ import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 
 import {
   PROJECT_COLOR_PRESETS,
+  PROJECT_PRIORITIES,
   PROJECT_STATUSES,
-  PROJECT_URGENCIES,
 } from '@/utils/project.utils';
 import { getFullName } from '@/utils/user.utils';
 
@@ -19,7 +19,7 @@ import type {
   ProjectFormInput,
 } from '@/validators/project.validator';
 
-import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
+import type { ProjectPriority, ProjectStatus } from '@/types/project.types';
 import type { User } from '@/types/user.types';
 
 import ColorSelector, {
@@ -32,8 +32,8 @@ import MultiLineField from '@/components/elements/MultiLineField';
 import MultiSelect from '@/components/elements/MultiSelect';
 import SingleLineField from '@/components/elements/SingleLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
+import ProjectPriorityUI from '@/components/shared/projects/ProjectPriorityUI';
 import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
-import ProjectUrgencyUI from '@/components/shared/projects/ProjectUrgencyUI';
 
 interface ProjectFormProps {
   draftProjectForm: ProjectFormInput;
@@ -188,32 +188,32 @@ export default function ProjectForm({
         />
         <ErrorTextField text={errors.status} />
       </div>
-      {/* Urgency */}
+      {/* Priority */}
       <div className="basis-[calc(50%-(24px/2))]">
-        <LabelField id="projectUrgency" text="Urgency" />
+        <LabelField id="projectPriority" text="Priority" />
         <SingleSelect
-          id="projectUrgency"
-          placeholder="Select Urgency..."
+          id="projectPriority"
+          placeholder="Select Priority..."
           value={{
-            id: draftProjectForm.urgency,
-            custom: <ProjectUrgencyUI urgency={draftProjectForm.urgency} />,
-            label: draftProjectForm.urgency,
-            value: draftProjectForm.urgency,
+            id: draftProjectForm.priority,
+            custom: <ProjectPriorityUI priority={draftProjectForm.priority} />,
+            label: draftProjectForm.priority,
+            value: draftProjectForm.priority,
           }}
-          options={PROJECT_URGENCIES.map((item) => ({
+          options={PROJECT_PRIORITIES.map((item) => ({
             id: item,
-            custom: <ProjectUrgencyUI urgency={item} />,
+            custom: <ProjectPriorityUI priority={item} />,
             label: item,
             value: item,
           }))}
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
               ...prev,
-              urgency: selected.value as ProjectUrgency,
+              priority: selected.value as ProjectPriority,
             }));
           }}
         />
-        <ErrorTextField text={errors.urgency} />
+        <ErrorTextField text={errors.priority} />
       </div>
       {/* Start Date */}
       <div className="basis-[calc(50%-(24px/2))]">

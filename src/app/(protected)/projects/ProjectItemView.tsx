@@ -8,10 +8,10 @@ import type { Project } from '@/types/project.types';
 import ThreeDotActions from '@/components/elements/ThreeDotActions';
 import ProjectDescriptionUI from '@/components/shared/projects/ProjectDescriptionUI';
 import ProjectMembersUI from '@/components/shared/projects/ProjectMembersUI';
+import ProjectPriorityUI from '@/components/shared/projects/ProjectPriorityUI';
 import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
 import ProjectTaskCounterUI from '@/components/shared/projects/ProjectTaskCounterUI';
 import ProjectTitleUI from '@/components/shared/projects/ProjectTitleUI';
-import ProjectUrgencyUI from '@/components/shared/projects/ProjectUrgencyUI';
 import { IconBin2, IconExternalLink, IconPen2 } from '@/components/svgs/icons';
 
 interface ProjectItemViewProps {
@@ -56,8 +56,8 @@ export default function ProjectItemView({
               <div className="flex justify-start items-center gap-4">
                 {/* Project Status */}
                 <ProjectStatusUI status={project.status} />
-                {/* Project Urgency */}
-                <ProjectUrgencyUI urgency={project.urgency} />
+                {/* Project Priority */}
+                <ProjectPriorityUI priority={project.priority} />
               </div>
               {/* Project Action */}
               <ThreeDotActions
@@ -136,8 +136,8 @@ export default function ProjectItemView({
             >
               {/* Project Status */}
               <ProjectStatusUI status={project.status} />
-              {/* Project Urgency */}
-              <ProjectUrgencyUI urgency={project.urgency} />
+              {/* Project Priority */}
+              <ProjectPriorityUI priority={project.priority} />
             </div>
             {/* Project Members */}
             <div

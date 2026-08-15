@@ -1,18 +1,18 @@
-import { PROJECT_STATUSES, PROJECT_URGENCIES } from '@/utils/project.utils';
+import { PROJECT_PRIORITIES, PROJECT_STATUSES } from '@/utils/project.utils';
 
 import type { Task } from '@/types/task.types';
 import type { User } from '@/types/user.types';
 
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
-export type ProjectUrgency = (typeof PROJECT_URGENCIES)[number];
+export type ProjectPriority = (typeof PROJECT_PRIORITIES)[number];
 
 export type Project = {
   id: string;
   title: string;
   description?: string;
   status: ProjectStatus;
-  urgency: ProjectUrgency;
+  priority: ProjectPriority;
   startDate?: string;
   endDate?: string;
   primaryColor?: string;
@@ -29,7 +29,7 @@ export type CreateProjectDto = {
   title: string;
   description?: string;
   status: ProjectStatus;
-  urgency: ProjectUrgency;
+  priority: ProjectPriority;
   startDate: string;
   endDate: string;
   primaryColor: string;
@@ -41,7 +41,7 @@ export type UpdateProjectDto = {
   title?: string;
   description?: string;
   status?: ProjectStatus;
-  urgency?: ProjectUrgency;
+  priority?: ProjectPriority;
   startDate?: string;
   endDate?: string;
   primaryColor?: string;

@@ -15,8 +15,8 @@ import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import ProjectMembersUI from '@/components/shared/projects/ProjectMembersUI';
+import ProjectPriorityUI from '@/components/shared/projects/ProjectPriorityUI';
 import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
-import ProjectUrgencyUI from '@/components/shared/projects/ProjectUrgencyUI';
 import {
   IconAngleRight,
   IconCalendar2,
@@ -121,7 +121,7 @@ export default function ProjectItemsLayout({
                     {project ? project.title : <i>Untitled</i>}
                   </h1>
                   <ProjectStatusUI status={project.status} />
-                  <ProjectUrgencyUI urgency={project.urgency} />
+                  <ProjectPriorityUI priority={project.priority} />
                 </>
               )}
             </div>

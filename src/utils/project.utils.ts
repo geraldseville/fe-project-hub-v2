@@ -1,6 +1,6 @@
 import momentTimezone from 'moment-timezone';
 
-import type { ProjectStatus, ProjectUrgency } from '@/types/project.types';
+import type { ProjectPriority, ProjectStatus } from '@/types/project.types';
 
 export const PROJECT_COLOR_PRESETS = [
   '#EF4444', // Red
@@ -59,10 +59,15 @@ export const PROJECT_STATUS_COLORS: Record<
   },
 };
 
-export const PROJECT_URGENCIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
+export const PROJECT_PRIORITIES = [
+  'LOW',
+  'MEDIUM',
+  'HIGH',
+  'CRITICAL',
+] as const;
 
-export const PROJECT_URGENCY_COLORS: Record<
-  ProjectUrgency,
+export const PROJECT_PRIORITY_COLORS: Record<
+  ProjectPriority,
   {
     hex: string;
     text: string;
