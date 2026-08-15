@@ -121,8 +121,6 @@ export default function ProjectKanbanPage() {
 
           const preSelectedTaskStatus = column.id;
 
-          console.log({ preSelectedTaskStatus });
-
           openTaskCreateDrawer(projectId, {
             ...blankTaskForm,
             status: preSelectedTaskStatus as TaskStatus,
