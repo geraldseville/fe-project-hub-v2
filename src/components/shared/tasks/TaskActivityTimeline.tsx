@@ -37,7 +37,9 @@ export default function TaskActivityTimeline({
     return (
       <div className="flex justify-center items-center gap-4">
         <LoaderSpinner className="w-6! h-6!" />
-        Loading activities...
+        <div className="leading-none whitespace-nowrap">
+          Loading activities...
+        </div>
       </div>
     );
   }
