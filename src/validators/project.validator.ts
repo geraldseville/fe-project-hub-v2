@@ -46,7 +46,7 @@ export const projectFormSchema = z
       .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid secondary color.')
       .default('#000000'),
 
-    memberIds: z.array(z.string().uuid()).optional().default([]),
+    memberIds: z.array(z.string().cuid()).optional().default([]),
   })
   .refine(
     (data) =>

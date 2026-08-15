@@ -36,9 +36,9 @@ export const taskFormSchema = z
         message: 'Invalid end date.',
       }),
 
-    projectId: z.string().uuid('Invalid project ID.'),
+    projectId: z.string().cuid('Invalid project ID.'),
 
-    assigneeId: z.string().uuid('Please select an assignee.'),
+    assigneeId: z.string().cuid('Please select an assignee.'),
   })
   .refine(
     (data) =>
