@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 
 import { useDeleteTask } from '@/hooks/mutations/useDeleteTask';
+import { useTask } from '@/hooks/queries/useTask';
 import { useToastStore } from '@/hooks/ui/useToastStore';
-
-import type { Task } from '@/types/task.types';
 
 import Button from '@/components/elements/Button';
 import Modal from '@/components/elements/Modal';
@@ -15,15 +14,17 @@ import { IconCaution2, IconClose1 } from '@/components/svgs/icons';
 interface TaskDeleteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: Task | null;
+  taskId: string;
 }
 
 export default function TaskDeleteModal({
   isOpen,
   onClose,
-  task,
+  taskId,
 }: TaskDeleteModalProps) {
   const toast = useToastStore();
+
+  const { data: task } = useTask(taskId);
 
   const deleteTask = useDeleteTask();
 

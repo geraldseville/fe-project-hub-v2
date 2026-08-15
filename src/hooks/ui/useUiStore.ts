@@ -35,8 +35,15 @@ interface UiState {
     taskId: string;
     projectId: string;
   };
-  openTaskUpdateDrawer: (tasId: string, projectId: string) => void;
+  openTaskUpdateDrawer: (taskId: string, projectId: string) => void;
   closeTaskUpdateDrawer: () => void;
+
+  taskDeleteModal: {
+    isOpen: boolean;
+    taskId: string;
+  };
+  openTaskDeleteModal: (taskId: string) => void;
+  closeTaskDeleteModal: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -88,7 +95,6 @@ export const useUiStore = create<UiState>((set) => ({
     projectId: '',
     initialTask: null,
   },
-
   openTaskCreateDrawer: (projectId, initialTask = undefined) =>
     set({
       taskCreateDrawer: {
@@ -97,7 +103,6 @@ export const useUiStore = create<UiState>((set) => ({
         initialTask: initialTask ?? null,
       },
     }),
-
   closeTaskCreateDrawer: () =>
     set({
       taskCreateDrawer: {
@@ -128,4 +133,24 @@ export const useUiStore = create<UiState>((set) => ({
         projectId: '',
       },
     }),
+
+  taskDeleteModal: {
+    isOpen: false,
+    taskId: '',
+  },
+  openTaskDeleteModal: (taskId) =>
+    set({
+      taskDeleteModal: {
+        isOpen: true,
+        taskId,
+      },
+    }),
+  closeTaskDeleteModal: () => {
+    set({
+      taskDeleteModal: {
+        isOpen: false,
+        taskId: '',
+      },
+    });
+  },
 }));
