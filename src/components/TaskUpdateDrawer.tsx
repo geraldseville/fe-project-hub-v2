@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import clsx from 'clsx';
 
+import { useCreateTaskComment } from '@/hooks/mutations/useCreateTaskComment';
 import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUsers } from '@/hooks/queries/useUsers';
@@ -75,6 +76,10 @@ export default function TaskUpdateDrawer({
   const [taskDescription, setTaskDescription] = useState<string>(
     task?.description ?? '',
   );
+
+  const createTaskComment = useCreateTaskComment();
+
+  const [taskAddComment, setAddTaskComment] = useState<string>('');
 
   const debouncedUpdateTask = useDebouncedCallback((payload: UpdateTaskDto) => {
     if (!task || !project) return;
@@ -176,6 +181,7 @@ export default function TaskUpdateDrawer({
                   />
                   <ProjectTitleUI title={project.title} />
                   <Link
+                    title="Go To Project"
                     onClick={() => {
                       onClose();
                     }}
@@ -376,6 +382,38 @@ export default function TaskUpdateDrawer({
         <div className={clsx('pt-4 pb-4', 'border-t border-[#464554]')}>
           <div className={clsx('font-medium', 'text-[13px]', 'w-full', 'mb-4')}>
             Activity & Comments
+          </div>
+          <div className="relative mb-4 rounded-lg bg-[#060E20] border border-[#464554]">
+            <MultiLineField
+              classNames={{
+                input: 'min-h-24! border-none!',
+              }}
+              placeholder="Write a comment..."
+              value={taskAddComment}
+              onChange={(e) => {
+                const newValue = e.target.value;
+
+                setAddTaskComment(newValue);
+              }}
+            />
+            <div className="flex justify-end w-full p-4">
+              <Button
+                className="min-w-fit! h-6!"
+                buttonStyle="primary"
+                type="button"
+                text="Comment"
+                onClick={async () => {
+                  await createTaskComment.mutateAsync({
+                    taskId,
+                    payload: {
+                      content: taskAddComment,
+                    },
+                  });
+
+                  setAddTaskComment('');
+                }}
+              />
+            </div>
           </div>
           <TaskActivityTimeline taskId={taskId} />
         </div>
