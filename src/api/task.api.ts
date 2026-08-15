@@ -1,6 +1,7 @@
 import { apiClient } from '@/api/api';
 
 import type { CreateTaskDto, Task, UpdateTaskDto } from '@/types/task.types';
+import type { TaskActivity } from '@/types/task-activity.types';
 
 export const createTask = (payload: CreateTaskDto) => {
   return apiClient<{ task: Task }>('/tasks', {
@@ -20,6 +21,18 @@ export const getTask = (taskId: string) => {
     method: 'GET',
   });
 };
+
+export async function getTaskActivities(taskId: string, page = 1, limit = 20) {
+  return apiClient<{
+    activities: TaskActivity[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }>(`/tasks/${taskId}/activities?page=${page}&limit=${limit}`, {
+    method: 'GET',
+  });
+}
 
 export const getTasks = () => {
   return apiClient<{ tasks: Task[] }>('/tasks', {
