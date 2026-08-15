@@ -24,7 +24,7 @@ export function useUpdateTask() {
         }),
 
         queryClient.invalidateQueries({
-          queryKey: ['tasks', taskId, 'activities'],
+          queryKey: ['tasks', taskId, 'task-activities', 20],
         }),
       ]);
     },
