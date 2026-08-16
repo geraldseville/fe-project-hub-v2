@@ -18,8 +18,9 @@ interface CalendarToolbarProps<T> {
   date: Date;
   timezone: string;
   view: CalendarView;
-  onViewChange: (view: CalendarView) => void;
+  onDateChange: (direction: -1 | 1) => void;
   onToday: () => void;
+  onViewChange: (view: CalendarView) => void;
   onCreate?: () => void;
 }
 
@@ -28,8 +29,9 @@ export default function CalendarToolbar<T>({
   date,
   timezone,
   view,
-  onViewChange,
+  onDateChange,
   onToday,
+  onViewChange,
   onCreate,
 }: CalendarToolbarProps<T>) {
   return (
@@ -48,7 +50,7 @@ export default function CalendarToolbar<T>({
           text=""
           icon={<IconAngleLeft className="min-w-1.5 w-1.5 h-auto" />}
           aria-label="Previous period"
-          // onClick={() => onDateChange(-1)}
+          onClick={() => onDateChange(-1)}
         />
         <Button
           className="min-w-12! w-12! h-8! px-0"
@@ -57,7 +59,7 @@ export default function CalendarToolbar<T>({
           text=""
           icon={<IconAngleRight className="min-w-1.5 w-1.5 h-auto" />}
           aria-label="Next period"
-          // onClick={() => onDateChange(1)}
+          onClick={() => onDateChange(1)}
         />
         <Button
           className="min-w-22! w-22! h-8!"

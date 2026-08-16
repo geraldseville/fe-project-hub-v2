@@ -1,13 +1,10 @@
 import clsx from 'clsx';
-import momentTimezone from 'moment-timezone';
 
 import type { CalendarEvent } from './calendar.types';
 import {
   calendarMoment,
-  getEventPosition,
-  // getMinutesFromStartOfDay,
+  getOverlappingEventLayout,
   HOUR_HEIGHT,
-  minutesToPixels,
 } from './calendar.utils';
 
 interface CalendarBoardProps<T> {
@@ -148,46 +145,41 @@ export default function CalendarBoard<T>({
           })}
 
           {/* Events */}
-          {events.map((event) => {
-            const position = getEventPosition(
-              event.startDate,
-              event.endDate,
-              date,
-              timezone,
-            );
+          {getOverlappingEventLayout(events, date, timezone).map(
+            ({ event, position, columnIndex, columnCount }) => {
+              const widthPercentage = 100 / columnCount;
 
-            if (!position) {
-              return null;
-            }
-
-            return (
-              <div
-                className={clsx(
-                  'text-[#C7C4D7]',
-                  'overflow-hidden',
-                  'absolute left-1 right-1',
-                  'py-1 px-2',
-                  'rounded-md',
-                  'bg-[#8083FF]/30',
-                  'border border-[#8083FF]',
-                )}
-                key={event.id}
-                style={{
-                  top: position.top,
-                  height: position.height,
-                }}
-              >
+              return (
                 <div
                   className={clsx(
-                    'font-inter font-semibold',
-                    'text-xs truncate',
+                    'text-[#C7C4D7]',
+                    'overflow-hidden',
+                    'absolute',
+                    'py-1 px-2',
+                    'rounded-md',
+                    'bg-[#8083FF]/30',
+                    'border border-[#8083FF]',
                   )}
+                  key={event.id}
+                  style={{
+                    top: position.top,
+                    height: position.height,
+                    left: `calc(${widthPercentage * columnIndex}% + 4px)`,
+                    width: `calc(${widthPercentage}% - 8px)`,
+                  }}
                 >
-                  {event.title}
+                  <div
+                    className={clsx(
+                      'font-inter font-semibold',
+                      'text-xs truncate',
+                    )}
+                  >
+                    {event.title}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            },
+          )}
         </div>
       </div>
     </div>

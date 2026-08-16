@@ -3,7 +3,7 @@ import { useState } from 'react';
 import clsx from 'clsx';
 
 import type { CalendarEvent, CalendarView } from './calendar.types';
-import { nowInTimezone } from './calendar.utils';
+import { addDays, calendarMoment, nowInTimezone } from './calendar.utils';
 import CalendarBoard from './CalendarBoard';
 import CalendarEmpty from './CalendarEmpty';
 import CalendarToolbar from './CalendarToolbar';
@@ -27,6 +27,13 @@ export default function Calendix<T>({
 
   const [view, setView] = useState<CalendarView>('day');
 
+  const changePeriod = (direction: -1 | 1) =>
+    setDate((current) =>
+      view === 'month'
+        ? calendarMoment(current, timezone).add(direction, 'month').toDate()
+        : addDays(current, direction * (view === 'week' ? 7 : 1), timezone),
+    );
+
   console.log({ events });
 
   return (
@@ -46,6 +53,7 @@ export default function Calendix<T>({
         date={date}
         timezone={timezone}
         view={view}
+        onDateChange={changePeriod}
         onToday={() => setDate(nowInTimezone(timezone))}
         onViewChange={setView}
         onCreate={onCreate}
