@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import clsx from 'clsx';
 import momentTimezone from 'moment-timezone';
@@ -9,6 +9,7 @@ import {
   getOverlappingEventLayout,
   HOUR_HEIGHT,
   minutesToPixels,
+  nowInTimezone,
   pixelsToMinutes,
 } from './calendar.utils';
 
@@ -30,6 +31,7 @@ export default function CalendarBoard<T>({
   const [selectionAnchor, setSelectionAnchor] = useState<number | null>(null);
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
+  const [now, setNow] = useState(() => nowInTimezone(timezone));
 
   const canvasRef = useRef<HTMLDivElement | null>(null);
 
@@ -70,6 +72,12 @@ export default function CalendarBoard<T>({
 
     onCreateSelect?.({ startDate, endDate });
   };
+
+  const currentTime = calendarMoment(now, timezone);
+
+  const isToday = calendarMoment(date, timezone).isSame(currentTime, 'day');
+
+  const currentTimeMinutes = currentTime.hours() * 60 + currentTime.minutes();
 
   const selectionPreview = useMemo(() => {
     if (selectionStart === null || selectionEnd === null) {
@@ -180,6 +188,14 @@ export default function CalendarBoard<T>({
     setSelectionStart(null);
     setSelectionEnd(null);
   };
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(nowInTimezone(timezone));
+    }, 60_000);
+
+    return () => window.clearInterval(timer);
+  }, [timezone]);
 
   return (
     <div className="relative overflow-y-auto">
@@ -328,6 +344,49 @@ export default function CalendarBoard<T>({
               </div>
             );
           })}
+
+          {isToday && (
+            <div
+              className={clsx(
+                'group',
+                // 'pointer-events-none',
+                'absolute inset-x-0 z-10',
+              )}
+              style={{ top: `${minutesToPixels(currentTimeMinutes)}px` }}
+            >
+              <div className="relative h-px">
+                <div
+                  className={clsx(
+                    'absolute left-0 right-0',
+                    'border-t border-red-400',
+                  )}
+                />
+                <div
+                  className={clsx(
+                    'absolute -left-1 -top-1',
+                    'w-2 h-2',
+                    'rounded-full',
+                    'bg-red-400',
+                  )}
+                />
+                <div
+                  className={clsx(
+                    'font-medium',
+                    'text-white text-[9px]',
+                    'absolute -top-5 left-1.5',
+                    'px-1.5 py-0.5',
+                    'rounded-full',
+                    'bg-red-400/90',
+                    'shadow-sm',
+                    'invisible group-hover:visible',
+                  )}
+                >
+                  {currentTime.format(is12hrFormat ? 'h:mm A' : 'HH:mm')}{' '}
+                  {timezone}
+                </div>
+              </div>
+            </div>
+          )}
 
           {selectionPreview && (
             <div
