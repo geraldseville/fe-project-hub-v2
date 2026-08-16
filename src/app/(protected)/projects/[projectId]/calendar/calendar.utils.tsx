@@ -2,7 +2,7 @@ import momentTimezone from 'moment-timezone';
 
 import type { CalendarEvent } from './calendar.types';
 
-export const HOUR_HEIGHT = 72;
+export const HOUR_HEIGHT = 100;
 export const MINUTES_PER_HOUR = 60;
 export const MINUTES_PER_DAY = 24 * 60;
 export const DEFAULT_TIME_INTERVAL = 15;

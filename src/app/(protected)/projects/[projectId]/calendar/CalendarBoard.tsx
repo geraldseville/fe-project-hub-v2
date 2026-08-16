@@ -54,14 +54,39 @@ export default function CalendarBoard<T>({
     return Math.min(Math.max(minutes, 0), 24 * 60);
   };
 
+  const handleSlotSelect = (minutes: number) => {
+    const slotStart = Math.min(Math.max(minutes, 0), 24 * 60);
+    const slotEnd = Math.min(Math.max(slotStart + 15, slotStart + 15), 24 * 60);
+
+    const startDate = calendarMoment(date, timezone)
+      .startOf('day')
+      .add(slotStart, 'minutes')
+      .toISOString();
+
+    const endDate = calendarMoment(date, timezone)
+      .startOf('day')
+      .add(slotEnd, 'minutes')
+      .toISOString();
+
+    onCreateSelect?.({ startDate, endDate });
+  };
+
   const selectionPreview = useMemo(() => {
     if (selectionStart === null || selectionEnd === null) {
       return null;
     }
 
+    const minDelta = 15;
     const startMinutes = Math.min(selectionStart, selectionEnd);
     const endMinutes = Math.max(selectionStart, selectionEnd);
-    const durationMinutes = Math.max(endMinutes - startMinutes, 15);
+    const normalizedEndMinutes =
+      endMinutes - startMinutes < minDelta
+        ? startMinutes + minDelta
+        : endMinutes;
+    const durationMinutes = Math.max(
+      normalizedEndMinutes - startMinutes,
+      minDelta,
+    );
 
     return {
       top: minutesToPixels(startMinutes),
@@ -91,15 +116,29 @@ export default function CalendarBoard<T>({
     }
 
     const nextMinutes = getMinutesFromPointer(event.clientY);
+    const rawStart = Math.min(selectionAnchor, nextMinutes);
+    const rawEnd = Math.max(selectionAnchor, nextMinutes);
+    const minDelta = 15;
 
-    if (nextMinutes >= selectionAnchor) {
-      setSelectionStart(Math.min(selectionAnchor, nextMinutes));
-      setSelectionEnd(nextMinutes);
+    if (rawEnd - rawStart < minDelta) {
+      if (nextMinutes >= selectionAnchor) {
+        setSelectionStart(selectionAnchor);
+        setSelectionEnd(selectionAnchor + minDelta);
+      } else {
+        setSelectionStart(selectionAnchor - minDelta);
+        setSelectionEnd(selectionAnchor);
+      }
       return;
     }
 
-    setSelectionStart(nextMinutes);
-    setSelectionEnd(selectionAnchor);
+    if (nextMinutes >= selectionAnchor) {
+      setSelectionStart(rawStart);
+      setSelectionEnd(rawEnd);
+      return;
+    }
+
+    setSelectionStart(rawStart);
+    setSelectionEnd(rawEnd);
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -108,25 +147,28 @@ export default function CalendarBoard<T>({
     }
 
     const nextMinutes = getMinutesFromPointer(event.clientY);
+    const minDelta = 15;
+    const rawStart = Math.min(selectionAnchor, nextMinutes);
+    const rawEnd = Math.max(selectionAnchor, nextMinutes);
+    const startMinutes = rawEnd - rawStart < minDelta ? rawStart : rawStart;
+    const endMinutes =
+      rawEnd - rawStart < minDelta ? rawStart + minDelta : rawEnd;
 
-    if (nextMinutes >= selectionAnchor) {
-      setSelectionStart(Math.min(selectionAnchor, nextMinutes));
-      setSelectionEnd(nextMinutes);
-    } else {
-      setSelectionStart(nextMinutes);
-      setSelectionEnd(selectionAnchor);
-    }
+    setSelectionStart(startMinutes);
+    setSelectionEnd(endMinutes);
 
     event.currentTarget.releasePointerCapture(event.pointerId);
 
-    const startDateIso = momentTimezone()
+    const startDateIso = momentTimezone
+      .tz(timezone)
       .startOf('day')
-      .add(selectionStart, 'minutes')
+      .add(startMinutes, 'minutes')
       .toISOString();
 
-    const endDateIso = momentTimezone()
+    const endDateIso = momentTimezone
+      .tz(timezone)
       .startOf('day')
-      .add(selectionEnd, 'minutes')
+      .add(endMinutes, 'minutes')
       .toISOString();
 
     onCreateSelect?.({
@@ -241,36 +283,48 @@ export default function CalendarBoard<T>({
                   height: `${HOUR_HEIGHT}px`,
                 }}
               >
-                {/* 15-minute subdivisions */}
-                <div
-                  className={clsx(
-                    'absolute inset-x-0',
-                    'border-t border-dashed border-[#464554]/30',
-                  )}
-                  style={{
-                    top: `${HOUR_HEIGHT / 4}px`,
-                  }}
-                />
+                {[0, 1, 2, 3].map((slotIndex) => {
+                  const slotMinutes = hour * 60 + slotIndex * 15;
 
-                <div
-                  className={clsx(
-                    'absolute inset-x-0',
-                    'border-t border-dashed border-[#464554]/30',
-                  )}
-                  style={{
-                    top: `${HOUR_HEIGHT / 2}px`,
-                  }}
-                />
-
-                <div
-                  className={clsx(
-                    'absolute inset-x-0',
-                    'border-t border-dashed border-[#464554]/30',
-                  )}
-                  style={{
-                    top: `${(HOUR_HEIGHT * 3) / 4}px`,
-                  }}
-                />
+                  return (
+                    <div
+                      className={clsx(
+                        'group/slot',
+                        'absolute inset-x-0',
+                        'h-1/4',
+                        'px-1',
+                        'transition-colors duration-200 ease-out',
+                        'border-t border-dashed border-[#464554]/30',
+                      )}
+                      key={`${hour}-${slotIndex}`}
+                      style={{
+                        top: `${(HOUR_HEIGHT / 4) * slotIndex}px`,
+                      }}
+                    >
+                      <button
+                        className={clsx(
+                          'text-[10px]',
+                          'flex justify-center items-center',
+                          'w-full h-full',
+                          'rounded-md',
+                          'hover:bg-[#C7C4D7]/[0.4]',
+                          'active:bg-[#C7C4D7]/[0.08]',
+                          'focus:outline-none',
+                        )}
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleSlotSelect(slotMinutes);
+                        }}
+                        aria-label={`Select time slot ${slotMinutes} minutes`}
+                      >
+                        <div className="invisible group-hover/slot:visible">
+                          New Event
+                        </div>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}

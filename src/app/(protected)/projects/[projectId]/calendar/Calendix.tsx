@@ -36,7 +36,7 @@ export default function Calendix<T>({
         : addDays(current, direction * (view === 'week' ? 7 : 1), timezone),
     );
 
-  console.log({ events });
+  console.log({ events, timezone, date });
 
   return (
     <div

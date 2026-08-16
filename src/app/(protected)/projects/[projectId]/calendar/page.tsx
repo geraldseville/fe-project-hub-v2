@@ -9,6 +9,8 @@ import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
+import { blankTaskForm } from '@/validators/task.validator';
+
 import type { Task } from '@/types/task.types';
 
 import type { CalendarEvent } from './calendar.types';
@@ -73,8 +75,14 @@ export default function ProjectCalendarPage() {
         onCreate={() => {
           openTaskCreateDrawer(projectId);
         }}
-        onCreateSelect={({ startDate, endDate }) => {
-          console.log({ startDate, endDate });
+        onCreateSelect={(selection) => {
+          console.log(selection);
+
+          openTaskCreateDrawer(projectId, {
+            ...blankTaskForm,
+            startDate: selection.startDate,
+            endDate: selection.endDate,
+          });
         }}
       />
     </div>
