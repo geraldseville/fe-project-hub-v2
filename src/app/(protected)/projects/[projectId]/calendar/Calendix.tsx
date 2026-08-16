@@ -15,6 +15,7 @@ interface Calendix<T> {
   timezone?: string;
   is12hrFormat?: boolean;
   onCreate?: () => void;
+  onCreateSelect?: (selection: { startDate: string; endDate: string }) => void;
 }
 
 export default function Calendix<T>({
@@ -22,6 +23,7 @@ export default function Calendix<T>({
   timezone = defaultTimezone,
   is12hrFormat = true,
   onCreate,
+  onCreateSelect,
 }: Calendix<T>) {
   const [date, setDate] = useState(() => nowInTimezone(timezone));
 
@@ -67,6 +69,7 @@ export default function Calendix<T>({
           date={date}
           timezone={timezone}
           is12hrFormat={is12hrFormat}
+          onCreateSelect={onCreateSelect}
         />
       )}
       {/* <div className="flex-1 p-4">{today.toISOString()}</div> */}
