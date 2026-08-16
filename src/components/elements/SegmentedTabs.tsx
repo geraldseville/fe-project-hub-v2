@@ -11,13 +11,14 @@ type TabItem = {
 };
 
 interface SegmentedTabProps {
-  id?: string;
   classNames?: {
     root?: string;
     tabItem?: string;
     tabItemSelected?: string;
     tabIndicator?: string;
   };
+  id?: string;
+  disabled?: boolean;
   selected: TabItem;
   options: TabItem[];
   onSelect: (selected: TabItem) => void;
@@ -26,6 +27,7 @@ interface SegmentedTabProps {
 export default function SegmentedTab({
   classNames,
   id,
+  disabled = false,
   selected,
   options,
   onSelect,
@@ -44,6 +46,7 @@ export default function SegmentedTab({
         'rounded-md',
         'bg-[#060e20]',
         'border border-[#464554]',
+        disabled && 'is-disabled',
         classNames?.root,
       )}
     >
@@ -64,6 +67,7 @@ export default function SegmentedTab({
             )}
             key={tabItem.id}
             type="button"
+            disabled={disabled}
             onClick={() => onSelect(tabItem)}
           >
             {tabItem.icon}
