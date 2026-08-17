@@ -25,6 +25,7 @@ import {
   IconCaretLeft,
   IconCaretRight,
   IconClock1,
+  IconClose1,
   IconGlobe,
 } from '@/components/svgs/icons';
 
@@ -79,6 +80,7 @@ interface DateTimePickerProps {
   minuteStep?: number;
   value?: ISOString | null;
   onChange?: (selected: DateTimeSelectResult) => void;
+  onClear?: () => void;
 }
 
 export default function DateTimePicker({
@@ -93,6 +95,7 @@ export default function DateTimePicker({
   minuteStep = 1,
   value,
   onChange,
+  onClear,
 }: DateTimePickerProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [view, setView] = useState<CalendarView>('days');
@@ -479,6 +482,24 @@ export default function DateTimePicker({
           <span className="text-placeholder text-left truncate block flex-1 min-w-0">
             {placeholder}
           </span>
+        )}
+
+        {onClear && displayString && (
+          <div
+            className={clsx('min-w-2.5 w-2.5 h-2.5', 'group/clear')}
+            aria-label="Clear"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear?.();
+            }}
+          >
+            <IconClose1
+              className={clsx(
+                'text-placeholder group-hover/clear:text-white',
+                'w-full h-full',
+              )}
+            />
+          </div>
         )}
 
         <IconAngleDown
