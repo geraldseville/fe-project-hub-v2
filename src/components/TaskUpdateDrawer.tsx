@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 
 import clsx from 'clsx';
 
 import { useCreateTaskComment } from '@/hooks/mutations/useCreateTaskComment';
+import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
 import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
@@ -12,6 +13,7 @@ import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
+import { COLOR_PRESETS } from '@/utils/color.utils';
 import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/task.utils';
 import { getFullName } from '@/utils/user.utils';
 
@@ -23,6 +25,9 @@ import type {
 import type { User } from '@/types/user.types';
 
 import Button from '@/components/elements/Button';
+import ColorSelector, {
+  type SelectedColor,
+} from '@/components/elements/ColorSelector';
 import DateTimePicker from '@/components/elements/DateTimePicker';
 import Drawer from '@/components/elements/Drawer';
 import EditableField from '@/components/elements/EditableField';
@@ -53,40 +58,37 @@ export default function TaskUpdateDrawer({
   const toast = useToastStore();
 
   const { data: me } = useMe();
-
-  const timezone = me?.timezone ?? defaultTimezone;
-
   const { data: users } = useUsers();
-
   const { data: project, isPending: isProjectPending } = useProject(projectId);
 
-  const task = project?.tasks.find((task) => task.id === taskId) ?? null;
-
+  const updateSavedColors = useUpdateSavedColors();
+  const updateTask = useUpdateTask();
+  const createTaskComment = useCreateTaskComment();
   const openTaskDeleteModal = useUiStore((state) => state.openTaskDeleteModal);
 
-  const updateTask = useUpdateTask();
+  const timezone = me?.timezone ?? defaultTimezone;
+  const task = project?.tasks.find((task) => task.id === taskId) ?? null;
 
   const [taskStatus, setTaskStatus] = useState<TaskStatus>();
-
   const [taskPriority, setTaskPriority] = useState<TaskPriority>();
-
   const [taskStartDate, setTaskStartDate] = useState<string>(
     task?.startDate ?? '',
   );
-
   const [taskEndDate, setTaskEndDate] = useState<string>(task?.endDate ?? '');
-
   const [taskAssigneeId, setTaskAssigneeId] = useState<string>(
     task?.assigneeId ?? '',
   );
-
+  const [taskColor, setTaskColor] = useState<string>(task?.primaryColor ?? '');
   const [taskDescription, setTaskDescription] = useState<string>(
     task?.description ?? '',
   );
-
-  const createTaskComment = useCreateTaskComment();
-
   const [taskAddComment, setAddTaskComment] = useState<string>('');
+  const [savedColors, setSavedColors] = useState<string[]>([]);
+
+  const allColors = useMemo(
+    () => [...COLOR_PRESETS, ...savedColors],
+    [savedColors],
+  );
 
   const debouncedUpdateTask = useDebouncedCallback((payload: UpdateTaskDto) => {
     if (!task || !project) return;
@@ -108,9 +110,30 @@ export default function TaskUpdateDrawer({
     );
   }, 1000);
 
+  const handleAddColor = (color: SelectedColor) => {
+    if (savedColors.includes(color.hex)) {
+      return;
+    }
+
+    const nextColors = [...savedColors, color.hex];
+
+    setSavedColors(nextColors);
+    debounceSavedColors(nextColors);
+  };
+
+  const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
+    updateSavedColors.mutate(colors);
+  }, 1000);
+
   const handleCancel = () => {
     onClose();
   };
+
+  useEffect(() => {
+    if (me?.savedColors) {
+      setSavedColors(me.savedColors);
+    }
+  }, [me?.savedColors]);
 
   useEffect(() => {
     if (!task) return;
@@ -120,6 +143,7 @@ export default function TaskUpdateDrawer({
     setTaskStartDate(task.startDate ?? '');
     setTaskEndDate(task.endDate ?? '');
     setTaskDescription(task.description ?? '');
+    setTaskColor(task.primaryColor ?? '');
     setTaskAssigneeId(task.assigneeId ?? '');
   }, [task]);
 
@@ -385,6 +409,26 @@ export default function TaskUpdateDrawer({
                 description: newValue,
               });
             }}
+          />
+        </div>
+        {/* Task Color */}
+        <div className={clsx('pt-4 pb-4', 'border-t border-[#464554]')}>
+          <div className={clsx('font-medium', 'text-[13px]', 'w-full', 'mb-4')}>
+            Color
+          </div>
+          <ColorSelector
+            presetColors={allColors}
+            value={taskColor ?? ''}
+            onChange={(selected) => {
+              const newColor = selected.hex;
+
+              setTaskColor(newColor);
+
+              debouncedUpdateTask({
+                primaryColor: newColor,
+              });
+            }}
+            onAddColor={handleAddColor}
           />
         </div>
         {/* Task Activities */}
