@@ -17,6 +17,7 @@ interface Calendix<T> {
   events?: CalendarEvent<T>[];
   timezone?: string;
   is12hrFormat?: boolean;
+  viewOptions?: CalendarView[];
   renderEvent?: (event: CalendarEvent<T>) => React.ReactNode;
   onEventClick?: (event: CalendarEvent<T>) => void;
   onEventDragEnd?: (
@@ -32,6 +33,7 @@ export default function Calendix<T>({
   events = [],
   timezone = defaultTimezone,
   is12hrFormat = true,
+  viewOptions = ['day', 'week', 'month'],
   renderEvent,
   onEventClick,
   onEventDragEnd,
@@ -77,6 +79,7 @@ export default function Calendix<T>({
         date={date}
         timezone={timezone}
         view={view}
+        viewOptions={viewOptions}
         onDateChange={changePeriod}
         onToday={() => setDate(nowInTimezone(timezone))}
         onViewUnscheduled={() => setOpenUnscheduled(true)}

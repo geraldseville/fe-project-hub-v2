@@ -2,6 +2,8 @@ import React from 'react';
 
 import clsx from 'clsx';
 
+import { toCapitalize } from '@/utils/string.utils';
+
 import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
@@ -21,6 +23,7 @@ interface CalendarToolbarProps<T> {
   date: Date;
   timezone: string;
   view: CalendarView;
+  viewOptions: CalendarView[];
   onDateChange: (direction: -1 | 1) => void;
   onToday: () => void;
   onViewUnscheduled: () => void;
@@ -34,6 +37,7 @@ export default function CalendarToolbar<T>({
   date,
   timezone,
   view,
+  viewOptions,
   onDateChange,
   onToday,
   onViewUnscheduled,
@@ -116,23 +120,13 @@ export default function CalendarToolbar<T>({
               }}
               selected={{
                 id: view,
-                label: view.toUpperCase(),
+                label: toCapitalize(view),
               }}
               disabled={events.length === 0}
-              options={[
-                {
-                  id: 'day',
-                  label: 'Day',
-                },
-                {
-                  id: 'week',
-                  label: 'Week',
-                },
-                {
-                  id: 'month',
-                  label: 'Month',
-                },
-              ]}
+              options={viewOptions?.map((viewItem) => ({
+                id: viewItem,
+                label: toCapitalize(viewItem),
+              }))}
               onSelect={(selected) => {
                 onViewChange(selected.id as CalendarView);
               }}
