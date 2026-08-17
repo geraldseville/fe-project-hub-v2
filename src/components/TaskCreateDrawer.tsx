@@ -275,6 +275,12 @@ export default function TaskCreateDrawer({
                   startDate: selected.iso,
                 }));
               }}
+              onClear={() => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  startDate: null,
+                }));
+              }}
             />
             <ErrorTextField text={errors.startDate} />
           </div>
@@ -291,6 +297,12 @@ export default function TaskCreateDrawer({
                 setDraftTaskForm((prev) => ({
                   ...prev,
                   endDate: selected.iso,
+                }));
+              }}
+              onClear={() => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  endDate: null,
                 }));
               }}
             />
