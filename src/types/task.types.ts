@@ -10,17 +10,18 @@ export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 export type Task = {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   status: TaskStatus;
   priority: TaskPriority;
-  startDate?: string;
-  endDate?: string;
+  startDate: string | null;
+  endDate: string | null;
+  primaryColor: string | null;
   projectId: string;
   project: Project;
   createdById: string;
   createdBy: User;
-  assigneeId: string;
-  assignee: User;
+  assigneeId: string | null;
+  assignee: User | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -30,21 +31,23 @@ export type CreateTaskDto = {
   status: TaskStatus;
   priority: TaskPriority;
   projectId: string;
-  description?: string | undefined;
-  startDate?: string | undefined;
-  endDate?: string | undefined;
-  assigneeId?: string | undefined;
+  description?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  primaryColor?: string | null;
+  assigneeId?: string | null;
 };
 
 export type UpdateTaskDto = {
-  title?: string | undefined;
-  description?: string | undefined;
+  title?: string;
+  description?: string | null;
   status?: TaskStatus;
   priority?: TaskPriority;
-  startDate?: string | undefined;
-  endDate?: string | undefined;
-  projectId?: string | undefined;
-  assigneeId?: string | undefined;
+  startDate?: string | null;
+  endDate?: string | null;
+  primaryColor?: string | null;
+  projectId?: string;
+  assigneeId?: string | null;
 };
 
 export type TaskComment = {
