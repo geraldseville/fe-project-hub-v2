@@ -18,6 +18,7 @@ interface CalendarBoardProps<T> {
   date: Date;
   timezone: string;
   is12hrFormat?: boolean;
+  onEventClick?: (event: CalendarEvent<T>) => void;
   onCreateSelect?: (selection: { startDate: string; endDate: string }) => void;
 }
 
@@ -26,6 +27,7 @@ export default function CalendarBoard<T>({
   date,
   timezone,
   is12hrFormat = true,
+  onEventClick,
   onCreateSelect,
 }: CalendarBoardProps<T>) {
   const [selectionAnchor, setSelectionAnchor] = useState<number | null>(null);
@@ -391,7 +393,7 @@ export default function CalendarBoard<T>({
           {selectionPreview && (
             <div
               className={clsx(
-                'absolute z-99',
+                'absolute z-20',
                 'rounded-md',
                 'pointer-events-none',
                 'transition-[top,height,left,width] duration-200 ease-out',
@@ -437,11 +439,12 @@ export default function CalendarBoard<T>({
                   className={clsx(
                     'text-[#C7C4D7]',
                     'overflow-hidden',
-                    'absolute',
+                    'absolute z-30',
                     'py-1 px-2',
                     'rounded-md',
                     'bg-[#8083FF]/30',
                     'border border-[#8083FF]',
+                    'cursor-pointer',
                   )}
                   key={event.id}
                   style={{
@@ -449,6 +452,19 @@ export default function CalendarBoard<T>({
                     height: position.height,
                     left: `calc(${widthPercentage * columnIndex}% + 4px)`,
                     width: `calc(${widthPercentage}% - 8px)`,
+                  }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onPointerMove={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEventClick?.(event);
                   }}
                 >
                   <div

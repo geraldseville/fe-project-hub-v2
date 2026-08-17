@@ -14,6 +14,7 @@ interface Calendix<T> {
   events?: CalendarEvent<T>[];
   timezone?: string;
   is12hrFormat?: boolean;
+  onEventClick?: (event: CalendarEvent<T>) => void;
   onCreate?: () => void;
   onCreateSelect?: (selection: { startDate: string; endDate: string }) => void;
 }
@@ -22,6 +23,7 @@ export default function Calendix<T>({
   events = [],
   timezone = defaultTimezone,
   is12hrFormat = true,
+  onEventClick,
   onCreate,
   onCreateSelect,
 }: Calendix<T>) {
@@ -73,6 +75,7 @@ export default function Calendix<T>({
           date={date}
           timezone={timezone}
           is12hrFormat={is12hrFormat}
+          onEventClick={onEventClick}
           onCreateSelect={onCreateSelect}
         />
       )}

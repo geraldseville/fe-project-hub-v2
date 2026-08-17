@@ -40,6 +40,10 @@ export default function ProjectCalendarPage() {
     (state) => state.openTaskCreateDrawer,
   );
 
+  const openTaskUpdateDrawer = useUiStore(
+    (state) => state.openTaskUpdateDrawer,
+  );
+
   const [events, setEvents] = useState<CalendarEvent<Task>[]>(() => {
     return (
       tasks.map((taskItem) => ({
@@ -72,12 +76,13 @@ export default function ProjectCalendarPage() {
         events={events}
         timezone={timezone}
         is12hrFormat={true}
+        onEventClick={(event) => {
+          openTaskUpdateDrawer(event.id, projectId);
+        }}
         onCreate={() => {
           openTaskCreateDrawer(projectId);
         }}
         onCreateSelect={(selection) => {
-          console.log(selection);
-
           openTaskCreateDrawer(projectId, {
             ...blankTaskForm,
             startDate: selection.startDate,
