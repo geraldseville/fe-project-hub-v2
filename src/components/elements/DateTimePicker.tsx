@@ -94,10 +94,8 @@ export default function DateTimePicker({
   value,
   onChange,
 }: DateTimePickerProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [view, setView] = useState<CalendarView>('days');
-
   const [activeTab, setActiveTab] = useState<TabView>('date');
 
   const selectedHourRef = useRef<HTMLButtonElement | null>(null);
@@ -166,22 +164,6 @@ export default function DateTimePicker({
   const [viewDate, setViewDate] = useState<momentTimezone.Moment>(() =>
     getInitialViewDate(value),
   );
-
-  /**
-   * Keep the calendar view synchronized with the incoming value.
-   *
-   * This is important when:
-   *
-   * - editing an existing project
-   * - opening the picker with a new value
-   * - switching between different projects
-   * - changing timezone
-   *
-   * If value is empty or invalid, we use today in the selected timezone.
-   */
-  useEffect(() => {
-    setViewDate(getInitialViewDate(value));
-  }, [value, tz, getInitialViewDate]);
 
   /**
    * The selected value, otherwise the current calendar view.
@@ -375,6 +357,68 @@ export default function DateTimePicker({
     handleUpdate(updated);
   };
 
+  // Floating UI setup
+  const { refs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange: (open) => {
+      setIsOpen(open);
+
+      if (open) {
+        /**
+         * When opening, make sure the calendar starts
+         * at the selected value or today's date.
+         */
+        setViewDate(getInitialViewDate(value));
+        setView('days');
+      }
+    },
+    placement: 'bottom-start',
+    whileElementsMounted: autoUpdate,
+    middleware: [offset(8), flip(), shift({ padding: 8 })],
+  });
+
+  const click = useClick(context);
+
+  const dismiss = useDismiss(context);
+
+  const role = useRole(context, { role: 'listbox' });
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    click,
+    dismiss,
+    role,
+  ]);
+
+  const setReferenceRef = useCallback(
+    (node: HTMLButtonElement | null) => {
+      refs.setReference(node);
+    },
+    [refs],
+  );
+
+  const setFloatingRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      refs.setFloating(node);
+    },
+    [refs],
+  );
+
+  /**
+   * Keep the calendar view synchronized with the incoming value.
+   *
+   * This is important when:
+   *
+   * - editing an existing project
+   * - opening the picker with a new value
+   * - switching between different projects
+   * - changing timezone
+   *
+   * If value is empty or invalid, we use today in the selected timezone.
+   */
+  useEffect(() => {
+    setViewDate(getInitialViewDate(value));
+  }, [value, tz, getInitialViewDate]);
+
   /**
    * Scroll selected hour/minute into view when opening
    * the time selector.
@@ -398,49 +442,6 @@ export default function DateTimePicker({
 
     return () => clearTimeout(timer);
   }, [isOpen, activeTab, type, activeAnchor]);
-
-  const { refs, floatingStyles, context } = useFloating({
-    open: isOpen,
-    onOpenChange: (open) => {
-      setIsOpen(open);
-
-      if (open) {
-        /**
-         * When opening, make sure the calendar starts
-         * at the selected value or today's date.
-         */
-        setViewDate(getInitialViewDate(value));
-        setView('days');
-      }
-    },
-    placement: 'bottom-start',
-    whileElementsMounted: autoUpdate,
-    middleware: [offset(8), flip(), shift({ padding: 8 })],
-  });
-
-  const click = useClick(context);
-  const dismiss = useDismiss(context);
-  const role = useRole(context, { role: 'listbox' });
-
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    click,
-    dismiss,
-    role,
-  ]);
-
-  const setReferenceRef = useCallback(
-    (node: HTMLButtonElement | null) => {
-      refs.setReference(node);
-    },
-    [refs],
-  );
-
-  const setFloatingRef = useCallback(
-    (node: HTMLDivElement | null) => {
-      refs.setFloating(node);
-    },
-    [refs],
-  );
 
   return (
     <div className={clsx('relative w-full', classNames?.root)} id={id}>
