@@ -106,7 +106,7 @@ export default function TaskUpdateDrawer({
         },
       },
     );
-  }, 500);
+  }, 1000);
 
   const handleCancel = () => {
     onClose();
