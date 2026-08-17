@@ -7,6 +7,7 @@ import SegmentedTab from '@/components/elements/SegmentedTabs';
 import {
   IconAngleLeft,
   IconAngleRight,
+  IconCalendar1,
   IconPlus1,
 } from '@/components/svgs/icons';
 
@@ -20,6 +21,7 @@ interface CalendarToolbarProps<T> {
   view: CalendarView;
   onDateChange: (direction: -1 | 1) => void;
   onToday: () => void;
+  onViewUnscheduled: () => void;
   onViewChange: (view: CalendarView) => void;
   onCreate?: () => void;
 }
@@ -31,9 +33,14 @@ export default function CalendarToolbar<T>({
   view,
   onDateChange,
   onToday,
+  onViewUnscheduled,
   onViewChange,
   onCreate,
 }: CalendarToolbarProps<T>) {
+  const unscheduledEvents = events.filter(
+    (event) => !event.startDate || !event.endDate,
+  );
+
   return (
     <div
       className={clsx(
@@ -73,6 +80,16 @@ export default function CalendarToolbar<T>({
         {displayDate(date, view, timezone)}
       </h2>
       <div className={clsx('flex flex-wrap items-center gap-2', 'ml-auto')}>
+        {unscheduledEvents.length > 0 && (
+          <Button
+            className="min-w-0! px-4"
+            buttonStyle="secondary"
+            type="button"
+            icon={<IconCalendar1 className="min-w-3.5 w-3.5 h-auto" />}
+            text={`Unscheduled • ${unscheduledEvents.length}`}
+            onClick={onViewUnscheduled}
+          />
+        )}
         <SegmentedTab
           classNames={{
             root: 'h-10!',

@@ -7,6 +7,7 @@ import { addDays, calendarMoment, nowInTimezone } from './calendar.utils';
 import CalendarBoard from './CalendarBoard';
 import CalendarEmpty from './CalendarEmpty';
 import CalendarToolbar from './CalendarToolbar';
+import CalendarUnscheduled from './CalendarUnscheduled';
 
 import { defaultTimezone } from '@/lib/date-time';
 
@@ -31,9 +32,15 @@ export default function Calendix<T>({
 
   const [view, setView] = useState<CalendarView>('day');
 
-  const scheduled = events.filter((event) => event.startDate);
+  const [openUnscheduled, setOpenUnscheduled] = useState<boolean>(false);
 
-  const unscheduled = events.filter((event) => !event.startDate);
+  const scheduledEvents = events.filter(
+    (event) => event.startDate && event.endDate,
+  );
+
+  const unscheduledEvents = events.filter(
+    (event) => !event.startDate || !event.endDate,
+  );
 
   const changePeriod = (direction: -1 | 1) =>
     setDate((current) =>
@@ -42,7 +49,7 @@ export default function Calendix<T>({
         : addDays(current, direction * (view === 'week' ? 7 : 1), timezone),
     );
 
-  console.log({ scheduled, unscheduled, events, timezone, date });
+  console.log({ scheduledEvents, events, timezone, date });
 
   return (
     <div
@@ -63,6 +70,7 @@ export default function Calendix<T>({
         view={view}
         onDateChange={changePeriod}
         onToday={() => setDate(nowInTimezone(timezone))}
+        onViewUnscheduled={() => setOpenUnscheduled(true)}
         onViewChange={setView}
         onCreate={onCreate}
       />
@@ -71,7 +79,7 @@ export default function Calendix<T>({
         <CalendarEmpty onCreate={onCreate} />
       ) : (
         <CalendarBoard<T>
-          events={scheduled}
+          events={scheduledEvents}
           date={date}
           timezone={timezone}
           is12hrFormat={is12hrFormat}
@@ -79,6 +87,13 @@ export default function Calendix<T>({
           onCreateSelect={onCreateSelect}
         />
       )}
+      {/* Unscheduled Drawer */}
+      <CalendarUnscheduled<T>
+        isOpen={openUnscheduled}
+        onClose={() => setOpenUnscheduled(false)}
+        unscheduledEvents={unscheduledEvents}
+        onEventClick={onEventClick}
+      />
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
 
 interface CalendarBoardProps<T> {
   events?: CalendarEvent<T>[];
+  unscheduled?: CalendarEvent<T>[];
   date: Date;
   timezone: string;
   is12hrFormat?: boolean;
@@ -204,7 +205,7 @@ export default function CalendarBoard<T>({
       {/* Header */}
       <div
         className={clsx(
-          'sticky z-20 top-0',
+          'sticky z-2 top-0',
           'flex',
           'w-full h-14',
           'bg-[#171F33]',
@@ -236,7 +237,7 @@ export default function CalendarBoard<T>({
         </div>
       </div>
       {/* Timeline */}
-      <div className="flex w-full">
+      <div className="relative z-1 flex w-full">
         {/* Time gutter */}
         <div className="min-w-15 w-15">
           {hours.map((_, hour) => {
@@ -347,13 +348,10 @@ export default function CalendarBoard<T>({
             );
           })}
 
+          {/* Current Time Line Indicator */}
           {isToday && (
             <div
-              className={clsx(
-                'group',
-                // 'pointer-events-none',
-                'absolute inset-x-0 z-10',
-              )}
+              className={clsx('group', 'absolute z-10 inset-x-0')}
               style={{ top: `${minutesToPixels(currentTimeMinutes)}px` }}
             >
               <div className="relative h-px">
@@ -390,45 +388,6 @@ export default function CalendarBoard<T>({
             </div>
           )}
 
-          {selectionPreview && (
-            <div
-              className={clsx(
-                'absolute z-20',
-                'rounded-md',
-                'pointer-events-none',
-                'transition-[top,height,left,width] duration-200 ease-out',
-                'bg-[#7AA7FF]',
-                'border border-[#7AA7FF]',
-                'shadow-[0_0_0_1px_rgba(122,167,255,0.18)]',
-              )}
-              style={{
-                top: selectionPreview.top,
-                height: selectionPreview.height,
-                left: selectionPreview.left,
-                width: selectionPreview.width,
-              }}
-            >
-              <div
-                className={clsx(
-                  'font-medium',
-                  'text-[#D9E7FF] text-[10px]',
-                  'flex justify-center items-center',
-                  'h-full',
-                )}
-              >
-                {momentTimezone()
-                  .startOf('day')
-                  .add(selectionStart, 'minutes')
-                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
-                {' - '}
-                {momentTimezone()
-                  .startOf('day')
-                  .add(selectionEnd, 'minutes')
-                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
-              </div>
-            </div>
-          )}
-
           {/* Events */}
           {getOverlappingEventLayout(events, date, timezone).map(
             ({ event, position, columnIndex, columnCount }) => {
@@ -439,10 +398,10 @@ export default function CalendarBoard<T>({
                   className={clsx(
                     'text-[#C7C4D7]',
                     'overflow-hidden',
-                    'absolute z-30',
+                    'absolute z-20',
                     'py-1 px-2',
                     'rounded-md',
-                    'bg-[#8083FF]/30',
+                    'bg-[#8083FF]/30 hover:bg-[#8083FF]/60',
                     'border border-[#8083FF]',
                     'cursor-pointer',
                   )}
@@ -478,6 +437,46 @@ export default function CalendarBoard<T>({
                 </div>
               );
             },
+          )}
+
+          {/* Selection Preview */}
+          {selectionPreview && (
+            <div
+              className={clsx(
+                'absolute z-30',
+                'rounded-md',
+                'pointer-events-none',
+                'transition-[top,height,left,width] duration-200 ease-out',
+                'bg-[#7AA7FF]',
+                'border border-[#7AA7FF]',
+                'shadow-[0_0_0_1px_rgba(122,167,255,0.18)]',
+              )}
+              style={{
+                top: selectionPreview.top,
+                height: selectionPreview.height,
+                left: selectionPreview.left,
+                width: selectionPreview.width,
+              }}
+            >
+              <div
+                className={clsx(
+                  'font-medium',
+                  'text-[#D9E7FF] text-[10px]',
+                  'flex justify-center items-center',
+                  'h-full',
+                )}
+              >
+                {momentTimezone()
+                  .startOf('day')
+                  .add(selectionStart, 'minutes')
+                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
+                {' - '}
+                {momentTimezone()
+                  .startOf('day')
+                  .add(selectionEnd, 'minutes')
+                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
+              </div>
+            </div>
           )}
         </div>
       </div>
