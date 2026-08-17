@@ -323,8 +323,8 @@ export default function CalendarBoard<T>({
                           'flex justify-center items-center',
                           'w-full h-full',
                           'rounded-md',
-                          'hover:bg-[#C7C4D7]/[0.4]',
-                          'active:bg-[#C7C4D7]/[0.08]',
+                          'hover:bg-[#C7C4D7]/40',
+                          'active:bg-[#C7C4D7]/8',
                           'focus:outline-none',
                         )}
                         type="button"

@@ -29,6 +29,10 @@ export default function Calendix<T>({
 
   const [view, setView] = useState<CalendarView>('day');
 
+  const scheduled = events.filter((event) => event.startDate);
+
+  const unscheduled = events.filter((event) => !event.startDate);
+
   const changePeriod = (direction: -1 | 1) =>
     setDate((current) =>
       view === 'month'
@@ -36,7 +40,7 @@ export default function Calendix<T>({
         : addDays(current, direction * (view === 'week' ? 7 : 1), timezone),
     );
 
-  console.log({ events, timezone, date });
+  console.log({ scheduled, unscheduled, events, timezone, date });
 
   return (
     <div
@@ -65,14 +69,13 @@ export default function Calendix<T>({
         <CalendarEmpty onCreate={onCreate} />
       ) : (
         <CalendarBoard<T>
-          events={events}
+          events={scheduled}
           date={date}
           timezone={timezone}
           is12hrFormat={is12hrFormat}
           onCreateSelect={onCreateSelect}
         />
       )}
-      {/* <div className="flex-1 p-4">{today.toISOString()}</div> */}
     </div>
   );
 }
