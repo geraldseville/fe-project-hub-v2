@@ -20,7 +20,7 @@ export default function CalendarEmpty({ onCreate }: CalendarEmptyProps) {
       <h2 className={clsx('font-semibold', 'text-white text-xl')}>
         Nothing scheduled yet
       </h2>
-      <p className="leading-tight mb-3">
+      <p className={clsx('leading-tight', 'mb-3')}>
         Create a task or drag across the calendar to reserve time.
       </p>
       {onCreate && (
