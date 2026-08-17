@@ -1,3 +1,4 @@
+import type { Task } from '@/types/task.types';
 import type { User } from '@/types/user.types';
 
 export type TaskActivityType =
@@ -16,8 +17,10 @@ export type TaskActivityType =
   | 'ATTACHMENT_REMOVED';
 
 export interface TaskActivityMetadata {
-  from: string | null;
-  to: string | null;
+  from?: string | null;
+  to?: string | null;
+  commentId?: string;
+  comment?: TaskComment;
 }
 
 export interface TaskActivity {
@@ -25,7 +28,7 @@ export interface TaskActivity {
   taskId: string;
   actorId: string;
   type: TaskActivityType;
-  metadata: TaskActivityMetadata;
+  metadata?: TaskActivityMetadata;
   createdAt: string;
   actor: User;
 }
@@ -37,3 +40,14 @@ export interface TaskActivitiesPaginated {
   limit: number;
   totalPages: number;
 }
+
+export type TaskComment = {
+  id: string;
+  content: string;
+  taskId: string;
+  authorId: string;
+  task: Task;
+  author: User;
+  createdAt: string;
+  updatedAt: string;
+};
