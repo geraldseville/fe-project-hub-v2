@@ -58,10 +58,36 @@ export default function CalendarBoard<T>({
   const eventDragRef = useRef<EventDrag<T> | null>(null);
 
   const hours = Array.from({ length: 24 });
-
   const timeFormat = is12hrFormat ? 'h A' : 'HH:mm';
-
   const day = calendarMoment(date, timezone).startOf('day');
+  const currentTime = calendarMoment(now, timezone);
+  const isToday = calendarMoment(date, timezone).isSame(currentTime, 'day');
+  const currentTimeMinutes = currentTime.hours() * 60 + currentTime.minutes();
+
+  const selectionPreview = useMemo(() => {
+    if (selectionStart === null || selectionEnd === null) {
+      return null;
+    }
+
+    const minDelta = 15;
+    const startMinutes = Math.min(selectionStart, selectionEnd);
+    const endMinutes = Math.max(selectionStart, selectionEnd);
+    const normalizedEndMinutes =
+      endMinutes - startMinutes < minDelta
+        ? startMinutes + minDelta
+        : endMinutes;
+    const durationMinutes = Math.max(
+      normalizedEndMinutes - startMinutes,
+      minDelta,
+    );
+
+    return {
+      top: minutesToPixels(startMinutes),
+      height: minutesToPixels(durationMinutes),
+      left: '4px',
+      width: 'calc(100% - 8px)',
+    };
+  }, [selectionEnd, selectionStart]);
 
   const getMinutesFromPointer = (clientY: number) => {
     const canvas = canvasRef.current;
@@ -102,37 +128,6 @@ export default function CalendarBoard<T>({
 
     return { startMinutes, endMinutes };
   };
-
-  const currentTime = calendarMoment(now, timezone);
-
-  const isToday = calendarMoment(date, timezone).isSame(currentTime, 'day');
-
-  const currentTimeMinutes = currentTime.hours() * 60 + currentTime.minutes();
-
-  const selectionPreview = useMemo(() => {
-    if (selectionStart === null || selectionEnd === null) {
-      return null;
-    }
-
-    const minDelta = 15;
-    const startMinutes = Math.min(selectionStart, selectionEnd);
-    const endMinutes = Math.max(selectionStart, selectionEnd);
-    const normalizedEndMinutes =
-      endMinutes - startMinutes < minDelta
-        ? startMinutes + minDelta
-        : endMinutes;
-    const durationMinutes = Math.max(
-      normalizedEndMinutes - startMinutes,
-      minDelta,
-    );
-
-    return {
-      top: minutesToPixels(startMinutes),
-      height: minutesToPixels(durationMinutes),
-      left: '4px',
-      width: 'calc(100% - 8px)',
-    };
-  }, [selectionEnd, selectionStart]);
 
   const getDragSelection = (event: CalendarEvent<T>, offset: number) => {
     const startTime = calendarMoment(event.startDate, timezone);
@@ -474,11 +469,7 @@ export default function CalendarBoard<T>({
                     'text-[#C7C4D7]',
                     'overflow-hidden',
                     'absolute z-20',
-                    'py-1 px-2',
                     'rounded-md',
-                    draggedEventId === event.id
-                      ? 'bg-[#8083FF]/50 border-[#8083FF]/80 border-dashed opacity-60'
-                      : 'bg-[#8083FF]/30 hover:bg-[#8083FF]/60 border border-[#8083FF]',
                     'cursor-pointer',
                   )}
                   key={event.id}
@@ -518,7 +509,16 @@ export default function CalendarBoard<T>({
                   {renderEvent ? (
                     renderEvent(event)
                   ) : (
-                    <div className="relative block w-full">
+                    <div
+                      className={clsx(
+                        'relative block',
+                        'w-full',
+                        'py-1 px-2',
+                        draggedEventId === event.id
+                          ? 'bg-[#8083FF]/50 border-[#8083FF]/80 border-dashed opacity-60'
+                          : 'bg-[#8083FF]/30 hover:bg-[#8083FF]/60 border border-[#8083FF]',
+                      )}
+                    >
                       <div
                         className={clsx(
                           'font-inter font-semibold',
