@@ -12,7 +12,6 @@ import { CalendarEvent } from './calendar.types';
 interface CalendarUnscheduledProps<T> {
   isOpen: boolean;
   onClose: () => void;
-  // timezone: string;
   unscheduledEvents?: CalendarEvent<T>[];
   onEventClick?: (event: CalendarEvent<T>) => void;
 }
@@ -20,7 +19,6 @@ interface CalendarUnscheduledProps<T> {
 export default function CalendarUnscheduled<T>({
   isOpen,
   onClose,
-  // timezone,
   unscheduledEvents = [],
   onEventClick,
 }: CalendarUnscheduledProps<T>) {
@@ -37,7 +35,9 @@ export default function CalendarUnscheduled<T>({
 
   return (
     <Drawer
-      classNames={{ content: 'overflow-y-hidden flex flex-col max-w-100!' }}
+      classNames={{
+        content: clsx('overflow-y-hidden', 'flex flex-col', 'max-w-100!'),
+      }}
       isOpen={isOpen}
       onClose={handleCancel}
     >
@@ -65,7 +65,7 @@ export default function CalendarUnscheduled<T>({
         </div>
       </div>
       {/* Body */}
-      <div className="overflow-y-auto flex-1 h-full p-6">
+      <div className={clsx('overflow-y-auto', 'flex-1 h-full', 'p-6')}>
         <SingleLineField
           classNames={{ root: 'mb-4' }}
           id="searchUnscheduledEvent"
@@ -107,7 +107,12 @@ export default function CalendarUnscheduled<T>({
                     {eventItem.title}
                   </div>
                   <Button
-                    className="text-[12px] min-w-0! h-8! px-4! self-end"
+                    className={clsx(
+                      'text-[12px]',
+                      'self-end',
+                      'min-w-0! h-8!',
+                      'px-4!',
+                    )}
                     buttonStyle="tertiary"
                     text="Schedule"
                     onClick={() => {
