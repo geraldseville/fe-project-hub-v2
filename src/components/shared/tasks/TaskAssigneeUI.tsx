@@ -10,21 +10,38 @@ import type { User } from '@/types/user.types';
 import Avatar from '@/components/reusable/Avatar';
 
 interface TaskAssigneeUIProps {
-  className?: string;
-  assignee: User;
+  classNames?: {
+    root?: string;
+    avatar?: string;
+    name?: string;
+  };
+  assignee: User | null;
+  displayName?: 'fullName' | 'firstNameLastInitial';
 }
 
 export default function TaskAssigneeUI({
-  className,
+  classNames,
   assignee,
+  displayName = 'firstNameLastInitial',
 }: TaskAssigneeUIProps) {
   const assigneeFullName =
-    getFullName(assignee.firstName, assignee.lastName) ?? 'Unassgined';
+    getFullName(assignee?.firstName, assignee?.lastName) ?? 'Unassigned';
+
+  const assigneeDisplayName =
+    displayName === 'fullName'
+      ? assigneeFullName
+      : `${assignee?.firstName ?? ''} ${assignee?.lastName?.charAt(0) ?? ''}`.trim();
 
   return (
-    <div className="flex justify-start items-center gap-2 min-w-0">
-      <div className="min-w-7.5 w-7.5 h-7.5">
-        {assignee.imageUrl ? (
+    <div
+      className={clsx(
+        'flex justify-start items-center gap-2',
+        'min-w-0',
+        classNames?.root,
+      )}
+    >
+      <div className={clsx('min-w-7.5 w-7.5 h-7.5', classNames?.avatar)}>
+        {assignee?.imageUrl ? (
           <Image
             className={clsx(
               'w-full h-full',
@@ -44,8 +61,16 @@ export default function TaskAssigneeUI({
           />
         )}
       </div>
-      <div className={clsx('text-[#C7C4D7]', 'truncate', 'min-w-0')}>
-        {assignee.firstName + ' ' + assignee.lastName?.charAt(0)}
+
+      <div
+        className={clsx(
+          'text-[#C7C4D7]',
+          'truncate',
+          'min-w-0',
+          classNames?.name,
+        )}
+      >
+        {assigneeDisplayName}
       </div>
     </div>
   );
