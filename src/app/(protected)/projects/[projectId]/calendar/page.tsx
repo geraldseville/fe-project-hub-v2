@@ -11,13 +11,13 @@ import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
+import { generateColorPalette } from '@/utils/color.utils';
+
 import { blankTaskForm } from '@/validators/task.validator';
 
 import type { Task } from '@/types/task.types';
 
 import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
-import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
-import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 
 import type { CalendarEvent } from './calendar.types';
 import Calendix from './Calendix';
@@ -29,16 +29,12 @@ export default function ProjectCalendarPage() {
 
   const projectId = params.projectId as string;
 
+  const { data: me } = useMe();
   const { data: project, isPending: isProjectPending } = useProject(projectId);
-
-  const tasks = project?.tasks ?? [];
-
   const updateTask = useUpdateTask();
 
-  const { data: me } = useMe();
-
+  const tasks = project?.tasks ?? [];
   const timezone = me?.timezone ?? defaultTimezone;
-
   const is12hrFormat = false;
 
   const openTaskCreateDrawer = useUiStore(
@@ -110,12 +106,7 @@ export default function ProjectCalendarPage() {
   useEffect(() => {
     if (!project) return;
 
-    const taskSnapshot = project.tasks
-      .map(
-        (task) =>
-          `${task.id}:${task.title}:${task.startDate ?? ''}:${task.endDate ?? ''}`,
-      )
-      .join('|');
+    const taskSnapshot = JSON.stringify(project.tasks);
 
     if (
       initializedProjectIdRef.current === projectId &&
@@ -146,8 +137,31 @@ export default function ProjectCalendarPage() {
         is12hrFormat={is12hrFormat}
         viewOptions={['day']}
         renderEvent={(event) => {
+          const defaultEventBg = '#8083FF';
+
+          const taskColorPalette = generateColorPalette(
+            event.data.primaryColor ?? defaultEventBg,
+          );
+
           return (
-            <div className="relative block w-full">
+            <div
+              className={clsx(
+                'text-(--task-primaryForeground-color)',
+                'relative block',
+                'w-full h-full',
+                'py-1 px-2',
+                'bg-(--task-primaryActive-color) hover:bg-(--task-primaryHover-color)',
+              )}
+              style={
+                {
+                  '--task-primary-color': taskColorPalette.primary,
+                  '--task-primaryActive-color': taskColorPalette.primaryActive,
+                  '--task-primaryForeground-color':
+                    taskColorPalette.primaryForeground,
+                  '--task-primaryHover-color': taskColorPalette.primaryHover,
+                } as React.CSSProperties
+              }
+            >
               <div className="flex justify-start items-center gap-2">
                 <div
                   className={clsx(
@@ -157,8 +171,6 @@ export default function ProjectCalendarPage() {
                 >
                   {event.title}
                 </div>
-                <TaskPriorityUI priority={event.data.priority} />
-                <TaskStatusUI status={event.data.status} />
               </div>
               <div className="text-xs mt-2">
                 {momentTimezone(event.startDate)
@@ -170,7 +182,13 @@ export default function ProjectCalendarPage() {
                   .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
               </div>
               <div className="flex flex-col gap-2 mt-2">
-                <TaskAssigneeUI assignee={event.data.assignee} />
+                <TaskAssigneeUI
+                  classNames={{
+                    name: 'text-(--task-primaryForeground-color)',
+                  }}
+                  assignee={event.data.assignee}
+                  displayName="fullName"
+                />
               </div>
             </div>
           );
