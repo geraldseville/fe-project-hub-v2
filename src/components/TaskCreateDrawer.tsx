@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import clsx from 'clsx';
 
 import { useCreateTask } from '@/hooks/mutations/useCreateTask';
+import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUsers } from '@/hooks/queries/useUsers';
+import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
+import { COLOR_PRESETS } from '@/utils/color.utils';
 import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/task.utils';
 import { getFullName } from '@/utils/user.utils';
 
@@ -23,6 +26,9 @@ import type {
 import type { User } from '@/types/user.types';
 
 import Button from '@/components/elements/Button';
+import ColorSelector, {
+  type SelectedColor,
+} from '@/components/elements/ColorSelector';
 import DateTimePicker from '@/components/elements/DateTimePicker';
 import Drawer from '@/components/elements/Drawer';
 import ErrorTextField from '@/components/elements/ErrorTextField';
@@ -49,27 +55,42 @@ export default function TaskCreateDrawer({
 }: TaskCreateDrawerProps) {
   const toast = useToastStore();
 
-  const createTask = useCreateTask();
-
   const { data: me } = useMe();
-
   const { data: users = [] } = useUsers();
 
-  const { data: project, isPending: isProjectPending } = useProject(projectId);
+  const createTask = useCreateTask();
+  const updateSavedColors = useUpdateSavedColors();
 
-  const isCreateTaskPending = createTask.isPending;
-
+  const [savedColors, setSavedColors] = useState<string[]>([]);
   const [draftTaskForm, setDraftTaskForm] = useState<TaskFormInput>({
     ...blankTaskForm,
     ...(initialTask ?? {}),
     projectId,
   });
-
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const validationResult = validateTaskForm(draftTaskForm);
-
   const errors = hasSubmitted ? validationResult.errors : {};
+
+  const allColors = useMemo(
+    () => [...COLOR_PRESETS, ...savedColors],
+    [savedColors],
+  );
+
+  const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
+    updateSavedColors.mutate(colors);
+  }, 1000);
+
+  const handleAddColor = (color: SelectedColor) => {
+    if (savedColors.includes(color.hex)) {
+      return;
+    }
+
+    const nextColors = [...savedColors, color.hex];
+
+    setSavedColors(nextColors);
+    debounceSavedColors(nextColors);
+  };
 
   const handleCreateTask = async () => {
     setHasSubmitted(true);
@@ -108,6 +129,12 @@ export default function TaskCreateDrawer({
     setHasSubmitted(false);
     onClose();
   };
+
+  useEffect(() => {
+    if (me?.savedColors) {
+      setSavedColors(me.savedColors);
+    }
+  }, [me?.savedColors]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -269,9 +296,25 @@ export default function TaskCreateDrawer({
             />
             <ErrorTextField text={errors.endDate} />
           </div>
+          {/* Color */}
+          <div className="basis-full">
+            <LabelField id="taskColor" text="Color" />
+            <ColorSelector
+              presetColors={allColors}
+              value={draftTaskForm.primaryColor ?? ''}
+              onChange={(selected) => {
+                setDraftTaskForm((prev) => ({
+                  ...prev,
+                  primaryColor: selected.hex,
+                }));
+              }}
+              onAddColor={handleAddColor}
+            />
+            <ErrorTextField text={errors.primaryColor} />
+          </div>
           {/* Assignee */}
           <div className="basis-full">
-            <LabelField id="projectAssignee" text="Assignee" />
+            <LabelField id="taskAssignee" text="Assignee" />
             <SingleSelect
               id="singleSelect"
               placeholder="Add Assignee..."
@@ -329,7 +372,7 @@ export default function TaskCreateDrawer({
           className=""
           buttonStyle="primary"
           type="button"
-          text={isCreateTaskPending ? 'Creating...' : 'Create Task'}
+          text={createTask.isPending ? 'Creating...' : 'Create Task'}
           onClick={handleCreateTask}
         />
       </div>
