@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import momentTimezone from 'moment-timezone';
 
+import { useMe } from '@/hooks/queries/useMe';
 import { useTaskActivities } from '@/hooks/queries/useTaskActivities';
 
 import { getFullName } from '@/utils/user.utils';
@@ -8,6 +9,7 @@ import { getFullName } from '@/utils/user.utils';
 import type { TaskActivity } from '@/types/task-activity.types';
 
 import LoaderSpinner from '@/components/elements/LoaderSpinner';
+import MultiLineField from '@/components/elements/MultiLineField';
 import {
   IconCalendar4,
   IconNotes1,
@@ -82,6 +84,8 @@ interface TaskActivityItemProps {
 }
 
 function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
+  const { data: me } = useMe();
+
   const activityIcons = {
     CREATED: IconNotes1,
     UPDATED: IconNotes1,
@@ -99,6 +103,15 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
   };
 
   const Icon = activityIcons[activity.type];
+
+  const isCurrentUser = me?.id === activity.actor.id;
+
+  const actorFullName = getFullName(
+    activity.actor.firstName,
+    activity.actor.lastName,
+  );
+
+  const actor = isCurrentUser ? 'You' : actorFullName;
 
   return (
     <div className="relative flex gap-4">
@@ -133,8 +146,8 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
       </div>
 
       {/* Content */}
-      <div className="pb-6">
-        <div className="text-sm">{renderActivityMessage(activity)}</div>
+      <div className="flex-1 pb-6">
+        <div className="text-sm">{renderActivityMessage(activity, actor)}</div>
 
         <div
           className={clsx('text-placeholder text-xs', 'mt-1')}
@@ -144,14 +157,20 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
         >
           {momentTimezone(activity.createdAt).fromNow()}
         </div>
+        {activity.metadata?.comment && (
+          <MultiLineField
+            classNames={{ root: 'mt-4', input: 'min-h-20! h-20!' }}
+            disabled={true}
+            value={activity.metadata.comment.content ?? ''}
+            onChange={() => {}}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function renderActivityMessage(activity: TaskActivity) {
-  const actor = getFullName(activity.actor.firstName, activity.actor.lastName);
-
+function renderActivityMessage(activity: TaskActivity, actor: string) {
   switch (activity.type) {
     case 'CREATED':
       return (
