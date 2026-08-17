@@ -1,6 +1,6 @@
 import momentTimezone from 'moment-timezone';
 
-import type { CalendarEvent } from './calendar.types';
+import type { CalendarEvent, PositionedCalendarEvent } from './calendar.types';
 
 export const HOUR_HEIGHT = 100;
 export const MINUTES_PER_HOUR = 60;
@@ -74,13 +74,6 @@ export const getMinutesFromCalendarDay = (
 
   return value.diff(dayStart, 'minutes');
 };
-
-export interface PositionedCalendarEvent<T> {
-  event: CalendarEvent<T>;
-  position: ReturnType<typeof getEventPosition>;
-  columnIndex: number;
-  columnCount: number;
-}
 
 export const getOverlappingEventLayout = <T,>(
   events: CalendarEvent<T>[],
