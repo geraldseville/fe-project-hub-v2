@@ -135,7 +135,7 @@ export default function ProjectCalendarPage() {
         events={events}
         timezone={timezone}
         is12hrFormat={is12hrFormat}
-        viewOptions={['day']}
+        viewOptions={['day', 'week']}
         renderEvent={(event) => {
           const defaultEventBg = '#8083FF';
 

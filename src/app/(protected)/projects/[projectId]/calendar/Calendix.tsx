@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import type { CalendarEvent, CalendarView } from './calendar.types';
 import { addDays, calendarMoment, nowInTimezone } from './calendar.utils';
 import CalendarBoard from './CalendarBoard';
+import CalendarDayView from './CalendarDayView';
 import CalendarEmpty from './CalendarEmpty';
 import CalendarLoading from './CalendarLoading';
 import CalendarToolbar from './CalendarToolbar';
@@ -92,6 +93,7 @@ export default function Calendix<T>({
         <CalendarEmpty onCreate={onCreate} />
       ) : (
         <CalendarBoard<T>
+          view={view}
           events={scheduledEvents}
           date={date}
           timezone={timezone}
