@@ -20,21 +20,15 @@ export const taskFormSchema = z
       })
       .default('LOW'),
 
-    startDate: z
-      .string()
-      .trim()
-      .min(1, 'Start date is required.')
-      .refine((value) => !Number.isNaN(Date.parse(value)), {
-        message: 'Invalid start date.',
-      }),
+    startDate: z.union([
+      z.literal(''),
+      z.iso.datetime({ error: 'Invalid start date.' }),
+    ]),
 
-    endDate: z
-      .string()
-      .trim()
-      .min(1, 'End date is required.')
-      .refine((value) => !Number.isNaN(Date.parse(value)), {
-        message: 'Invalid end date.',
-      }),
+    endDate: z.union([
+      z.literal(''),
+      z.iso.datetime({ error: 'Invalid end date.' }),
+    ]),
 
     projectId: z.string().cuid('Invalid project ID.'),
 
