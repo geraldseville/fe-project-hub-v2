@@ -28,8 +28,9 @@ export default function ProjectCalendarPage() {
 
   const tasks = project?.tasks ?? [];
 
-  const { data: me } = useMe();
   const updateTask = useUpdateTask();
+
+  const { data: me } = useMe();
 
   const timezone = me?.timezone ?? defaultTimezone;
 
@@ -52,23 +53,6 @@ export default function ProjectCalendarPage() {
       })) ?? []
     );
   });
-
-  const initializedProjectIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (!project || initializedProjectIdRef.current === projectId) return;
-
-    setEvents(
-      project.tasks.map((taskItem) => ({
-        id: taskItem.id,
-        title: taskItem.title,
-        startDate: taskItem.startDate ?? '',
-        endDate: taskItem.endDate ?? '',
-        data: taskItem,
-      })),
-    );
-    initializedProjectIdRef.current = projectId;
-  }, [project, projectId]);
 
   const handleEventDragEnd = (
     event: CalendarEvent<Task>,
@@ -113,12 +97,45 @@ export default function ProjectCalendarPage() {
     );
   };
 
+  const initializedProjectIdRef = useRef<string | null>(null);
+  const taskSnapshotRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!project) return;
+
+    const taskSnapshot = project.tasks
+      .map(
+        (task) =>
+          `${task.id}:${task.title}:${task.startDate ?? ''}:${task.endDate ?? ''}`,
+      )
+      .join('|');
+
+    if (
+      initializedProjectIdRef.current === projectId &&
+      taskSnapshotRef.current === taskSnapshot
+    ) {
+      return;
+    }
+
+    setEvents(
+      project.tasks.map((taskItem) => ({
+        id: taskItem.id,
+        title: taskItem.title,
+        startDate: taskItem.startDate ?? '',
+        endDate: taskItem.endDate ?? '',
+        data: taskItem,
+      })),
+    );
+    initializedProjectIdRef.current = projectId;
+    taskSnapshotRef.current = taskSnapshot;
+  }, [project, projectId]);
+
   return (
     <div className={clsx('flex', 'flex-1 min-h-0', 'px-6 pb-6')}>
       <Calendix<Task>
         events={events}
         timezone={timezone}
-        is12hrFormat={true}
+        is12hrFormat={false}
         onEventClick={(event) => {
           openTaskUpdateDrawer(event.id, projectId);
         }}
