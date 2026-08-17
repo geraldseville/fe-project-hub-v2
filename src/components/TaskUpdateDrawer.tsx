@@ -31,6 +31,7 @@ import ColorSelector, {
 import DateTimePicker from '@/components/elements/DateTimePicker';
 import Drawer from '@/components/elements/Drawer';
 import EditableField from '@/components/elements/EditableField';
+import LabelField from '@/components/elements/LabelField';
 import MultiLineField from '@/components/elements/MultiLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
@@ -197,11 +198,7 @@ export default function TaskUpdateDrawer({
           <div className={clsx('flex flex-col gap-4')}>
             {/* Project */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
-              <div
-                className={clsx('font-medium', 'text-[13px]', 'min-w-28 w-28')}
-              >
-                Project
-              </div>
+              <LabelField className="min-w-28 w-28" text="Project" />
               {isProjectPending ? (
                 <SkeletonLoading className="w-full h-4" />
               ) : project ? (
@@ -227,11 +224,7 @@ export default function TaskUpdateDrawer({
             </div>
             {/* Status */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
-              <div
-                className={clsx('font-medium', 'text-[13px]', 'min-w-28 w-28')}
-              >
-                Status
-              </div>
+              <LabelField className="min-w-28 w-28" text="Status" />
               {isProjectPending ? null : taskStatus ? (
                 <SingleSelect
                   classNames={{ optionSelected: 'border-l-transparent!' }}
@@ -265,11 +258,7 @@ export default function TaskUpdateDrawer({
             </div>
             {/* Priority */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
-              <div
-                className={clsx('font-medium', 'text-[13px]', 'min-w-28 w-28')}
-              >
-                Priority
-              </div>
+              <LabelField className="min-w-28 w-28" text="Priority" />
               {isProjectPending ? null : taskPriority ? (
                 <SingleSelect
                   classNames={{ optionSelected: 'border-l-transparent!' }}
@@ -303,11 +292,7 @@ export default function TaskUpdateDrawer({
             </div>
             {/* Start Date */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
-              <div
-                className={clsx('font-medium', 'text-[13px]', 'min-w-28 w-28')}
-              >
-                Start Date
-              </div>
+              <LabelField className="min-w-28 w-28" text="Start Date" />
               <DateTimePicker
                 type="date-time"
                 formatDate="MMM DD, YYYY"
@@ -320,15 +305,18 @@ export default function TaskUpdateDrawer({
                     startDate: selected.iso,
                   });
                 }}
+                onClear={() => {
+                  setTaskStartDate('');
+
+                  debouncedUpdateTask({
+                    startDate: null,
+                  });
+                }}
               />
             </div>
             {/* End Date */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
-              <div
-                className={clsx('font-medium', 'text-[13px]', 'min-w-28 w-28')}
-              >
-                End Date
-              </div>
+              <LabelField className="min-w-28 w-28" text="End Date" />
               <DateTimePicker
                 type="date-time"
                 formatDate="MMM DD, YYYY"
@@ -341,19 +329,24 @@ export default function TaskUpdateDrawer({
                     endDate: selected.iso,
                   });
                 }}
+                onClear={() => {
+                  setTaskEndDate('');
+
+                  debouncedUpdateTask({
+                    endDate: null,
+                  });
+                }}
               />
             </div>
             {/* Assignee */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
-              <div
-                className={clsx('font-medium', 'text-[13px]', 'min-w-28 w-28')}
-              >
-                Assignee
-              </div>
-              {isProjectPending ? null : taskAssigneeId && users ? (
+              <LabelField className="min-w-28 w-28" text="Assignee" />
+              {isProjectPending ? null : users ? (
                 <SingleSelect
                   id="singleSelect"
-                  placeholder="Update Assignee..."
+                  placeholder={
+                    taskAssigneeId ? 'Update Assignee...' : 'Add Assignee...'
+                  }
                   searchable
                   value={(() => {
                     const user = users.find(
@@ -394,9 +387,7 @@ export default function TaskUpdateDrawer({
         </div>
         {/* Task Description */}
         <div className={clsx('pt-4 pb-4', 'border-t border-[#464554]')}>
-          <div className={clsx('font-medium', 'text-[13px]', 'w-full', 'mb-4')}>
-            Descripion
-          </div>
+          <LabelField text="Description" />
           <MultiLineField
             placeholder="No Description"
             value={taskDescription}
@@ -413,9 +404,7 @@ export default function TaskUpdateDrawer({
         </div>
         {/* Task Color */}
         <div className={clsx('pt-4 pb-4', 'border-t border-[#464554]')}>
-          <div className={clsx('font-medium', 'text-[13px]', 'w-full', 'mb-4')}>
-            Color
-          </div>
+          <LabelField text="Color" />
           <ColorSelector
             presetColors={allColors}
             value={taskColor ?? ''}
@@ -433,14 +422,13 @@ export default function TaskUpdateDrawer({
         </div>
         {/* Task Activities */}
         <div className={clsx('pt-4 pb-4', 'border-t border-[#464554]')}>
-          <div className={clsx('font-medium', 'text-[13px]', 'w-full', 'mb-4')}>
-            Activity & Comments
-          </div>
+          <LabelField id="taskActivity" text="Activity & Comments" />
           <div className="relative mb-4 rounded-lg bg-[#060E20] border border-[#464554]">
             <MultiLineField
               classNames={{
                 input: 'min-h-24! border-none!',
               }}
+              id="taskActivity"
               placeholder="Write a comment..."
               value={taskAddComment}
               onChange={(e) => {
