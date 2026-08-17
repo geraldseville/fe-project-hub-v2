@@ -91,6 +91,7 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
     PRIORITY_CHANGED: IconTicket2,
     START_DATE_CHANGED: IconNotes1,
     END_DATE_CHANGED: IconCalendar4,
+    PRIMARY_COLOR_CHANGED: IconNotes1,
     ASSIGNEE_CHANGED: IconProfile1,
     COMMENT_ADDED: IconNotes1,
     ATTACHMENT_ADDED: IconNotes1,
@@ -209,6 +210,13 @@ function renderActivityMessage(activity: TaskActivity) {
       return (
         <>
           <strong>{actor}</strong> changed the assignee.
+        </>
+      );
+
+    case 'PRIMARY_COLOR_CHANGED':
+      return (
+        <>
+          <strong>{actor}</strong> changed the task color.
         </>
       );
 
