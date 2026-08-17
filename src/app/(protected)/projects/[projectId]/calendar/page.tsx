@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 
 import clsx from 'clsx';
 
+import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
 import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
@@ -28,6 +29,7 @@ export default function ProjectCalendarPage() {
   const tasks = project?.tasks ?? [];
 
   const { data: me } = useMe();
+  const updateTask = useUpdateTask();
 
   const timezone = me?.timezone ?? defaultTimezone;
 
@@ -72,16 +74,42 @@ export default function ProjectCalendarPage() {
     event: CalendarEvent<Task>,
     selection: { startDate: string; endDate: string },
   ) => {
+    const previousEvent = event;
+    const optimisticEvent: CalendarEvent<Task> = {
+      ...event,
+      startDate: selection.startDate,
+      endDate: selection.endDate,
+      data: {
+        ...event.data,
+        startDate: selection.startDate,
+        endDate: selection.endDate,
+      },
+    };
+
     setEvents((currentEvents) =>
       currentEvents.map((currentEvent) =>
-        currentEvent.id === event.id
-          ? {
-              ...currentEvent,
-              startDate: selection.startDate,
-              endDate: selection.endDate,
-            }
-          : currentEvent,
+        currentEvent.id === event.id ? optimisticEvent : currentEvent,
       ),
+    );
+
+    updateTask.mutate(
+      {
+        taskId: event.id,
+        projectId,
+        payload: {
+          startDate: selection.startDate,
+          endDate: selection.endDate,
+        },
+      },
+      {
+        onError: () => {
+          setEvents((currentEvents) =>
+            currentEvents.map((currentEvent) =>
+              currentEvent.id === event.id ? previousEvent : currentEvent,
+            ),
+          );
+        },
+      },
     );
   };
 
