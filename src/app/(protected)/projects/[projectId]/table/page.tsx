@@ -107,10 +107,12 @@ export default function ProjectTablePage() {
             {
               field: 'title',
               header: 'Task Name',
+              sortable: true,
             },
             {
               field: 'status',
               header: 'Status',
+              sortable: true,
               render: (row: Task) => {
                 return <TaskStatusUI status={row.status} />;
               },
@@ -118,6 +120,7 @@ export default function ProjectTablePage() {
             {
               field: 'priority',
               header: 'Priority',
+              sortable: true,
               render: (row: Task) => {
                 return <TaskPriorityUI priority={row.priority} />;
               },

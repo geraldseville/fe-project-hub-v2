@@ -1,25 +1,29 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 
 import clsx from 'clsx';
 
 import InputCheckbox from '@/components/elements/InputCheckbox';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
+import { IconCaretDown, IconCaretUp } from '@/components/svgs/icons';
 
 interface Column<T> {
   field?: keyof T | string;
   header: string;
+  sortable?: boolean;
   thClassName?: string;
   tdClassName?: string;
   render?: (row: T) => React.ReactNode;
 }
 
 type SelectionMode = 'none' | 'single' | 'multiple';
+type SortDirection = 'asc' | 'desc';
 
 interface DataTableProps<T extends Record<string, unknown>> {
   classNames?: {
     root?: string;
     table?: string;
   };
+
   value: T[];
   columns: Column<T>[];
 
@@ -28,14 +32,15 @@ interface DataTableProps<T extends Record<string, unknown>> {
   onSelectionChange?: (rows: T[]) => void;
   onRowClick?: (row: T) => void;
   getRowId: (row: T) => string | number;
-  emptyMessage?: React.ReactNode;
 
+  emptyMessage?: React.ReactNode;
   isLoading?: boolean;
   loadingRows?: number;
 }
 
 export default function DataTable<T extends Record<string, unknown>>({
   classNames,
+
   value,
   columns,
 
@@ -44,16 +49,71 @@ export default function DataTable<T extends Record<string, unknown>>({
   onSelectionChange,
   onRowClick,
   getRowId,
-  emptyMessage,
 
+  emptyMessage,
   isLoading = false,
   loadingRows = 5,
 }: DataTableProps<T>) {
   const selectable = selectionMode !== 'none';
   const multiple = selectionMode === 'multiple';
 
+  const [sortField, setSortField] = useState<keyof T | string | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
   const allSelected =
     multiple && value.length > 0 && selectedRows.length === value.length;
+
+  const sortedValue = useMemo(() => {
+    if (!sortField) {
+      return value;
+    }
+
+    return [...value].sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+
+      if (aValue == null && bValue == null) {
+        return 0;
+      }
+
+      if (aValue == null) {
+        return 1;
+      }
+
+      if (bValue == null) {
+        return -1;
+      }
+
+      let result = 0;
+
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        result = aValue - bValue;
+      } else if (aValue instanceof Date && bValue instanceof Date) {
+        result = aValue.getTime() - bValue.getTime();
+      } else {
+        result = String(aValue).localeCompare(String(bValue), undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        });
+      }
+
+      return sortDirection === 'asc' ? result : -result;
+    });
+  }, [value, sortField, sortDirection]);
+
+  const handleSort = (column: Column<T>) => {
+    if (!column.sortable || !column.field) {
+      return;
+    }
+
+    if (sortField !== column.field) {
+      setSortField(column.field);
+      setSortDirection('asc');
+      return;
+    }
+
+    setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'));
+  };
 
   return (
     <div className={clsx('overflow-auto', classNames?.root)}>
@@ -80,14 +140,56 @@ export default function DataTable<T extends Record<string, unknown>>({
               </th>
             )}
 
-            {columns.map((column) => (
-              <th
-                className={clsx('whitespace-nowrap', 'p-4', column.thClassName)}
-                key={String(column.field ?? column.header)}
-              >
-                {column.header}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const isSorted = sortField === column.field;
+
+              return (
+                <th
+                  className={clsx(
+                    'whitespace-nowrap',
+                    'p-4',
+                    column.thClassName,
+                  )}
+                  key={String(column.field ?? column.header)}
+                >
+                  {column.sortable && column.field ? (
+                    <button
+                      className={clsx(
+                        'inline-flex items-center gap-2',
+                        'cursor-pointer',
+                        'select-none',
+                        'hover:text-primary',
+                      )}
+                      type="button"
+                      onClick={() => handleSort(column)}
+                    >
+                      <span>{column.header}</span>
+                      <div className="flex flex-col justify-center items-center -space-y-[1px]">
+                        <IconCaretUp
+                          className={clsx(
+                            'w-2.5 h-2.5',
+                            isSorted && sortDirection === 'asc'
+                              ? 'text-primary'
+                              : 'text-[#908FA0]/50',
+                          )}
+                        />
+
+                        <IconCaretDown
+                          className={clsx(
+                            'w-2.5 h-2.5',
+                            isSorted && sortDirection === 'desc'
+                              ? 'text-primary'
+                              : 'text-[#908FA0]/50',
+                          )}
+                        />
+                      </div>
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
 
@@ -111,8 +213,8 @@ export default function DataTable<T extends Record<string, unknown>>({
                 ))}
               </tr>
             ))
-          ) : value.length > 0 ? (
-            value.map((row) => {
+          ) : sortedValue.length > 0 ? (
+            sortedValue.map((row) => {
               const isSelected = selectedRows.some(
                 (item) => getRowId(item) === getRowId(row),
               );
@@ -120,7 +222,6 @@ export default function DataTable<T extends Record<string, unknown>>({
               return (
                 <tr
                   className={clsx(
-                    // 'h-10',
                     'cursor-pointer',
                     isSelected
                       ? 'border-primary bg-primary/5'
