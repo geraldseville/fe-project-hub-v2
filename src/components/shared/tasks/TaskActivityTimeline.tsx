@@ -135,7 +135,12 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
       <div className="pb-6">
         <div className="text-sm">{renderActivityMessage(activity)}</div>
 
-        <div className="mt-1 text-xs text-placeholder">
+        <div
+          className={clsx('text-placeholder text-xs', 'mt-1')}
+          title={momentTimezone(activity.createdAt).format(
+            'MMM DD, YYYY - hh:mm A',
+          )}
+        >
           {momentTimezone(activity.createdAt).fromNow()}
         </div>
       </div>
