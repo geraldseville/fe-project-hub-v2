@@ -8,13 +8,18 @@ export function useCreateTask() {
   return useMutation({
     mutationFn: createTask,
 
-    async onSuccess() {
-      await queryClient.invalidateQueries({
-        queryKey: ['tasks'],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ['projects'],
-      });
+    async onSuccess(_, variables) {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['tasks'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['projects'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['projects', variables.projectId],
+        }),
+      ]);
     },
   });
 }
