@@ -19,6 +19,7 @@ interface CalendarBoardProps<T> {
   date: Date;
   timezone: string;
   is12hrFormat?: boolean;
+  renderEvent?: (event: CalendarEvent<T>) => React.ReactNode;
   onEventClick?: (event: CalendarEvent<T>) => void;
   onEventDragEnd?: (
     event: CalendarEvent<T>,
@@ -38,6 +39,7 @@ export default function CalendarBoard<T>({
   date,
   timezone,
   is12hrFormat = true,
+  renderEvent,
   onEventClick,
   onEventDragEnd,
   onCreateSelect,
@@ -512,23 +514,30 @@ export default function CalendarBoard<T>({
                     }
                   }}
                 >
-                  <div
-                    className={clsx(
-                      'font-inter font-semibold',
-                      'text-sm truncate',
-                    )}
-                  >
-                    {event.title}
-                  </div>
-                  <div className="text-xs">
-                    {calendarMoment(event.startDate, timezone).format(
-                      is12hrFormat ? 'h:mm A' : 'HH:mm',
-                    )}
-                    {' - '}
-                    {calendarMoment(event.endDate, timezone).format(
-                      is12hrFormat ? 'h:mm A' : 'HH:mm',
-                    )}
-                  </div>
+                  {/* Event Content */}
+                  {renderEvent ? (
+                    renderEvent(event)
+                  ) : (
+                    <div className="relative block w-full">
+                      <div
+                        className={clsx(
+                          'font-inter font-semibold',
+                          'text-sm truncate',
+                        )}
+                      >
+                        {event.title}
+                      </div>
+                      <div className="text-xs">
+                        {calendarMoment(event.startDate, timezone).format(
+                          is12hrFormat ? 'h:mm A' : 'HH:mm',
+                        )}
+                        {' - '}
+                        {calendarMoment(event.endDate, timezone).format(
+                          is12hrFormat ? 'h:mm A' : 'HH:mm',
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div
                     className={clsx(
                       'absolute inset-x-0 bottom-0',

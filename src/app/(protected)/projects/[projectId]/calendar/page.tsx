@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import clsx from 'clsx';
+import momentTimezone from 'moment-timezone';
 
 import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
 import { useMe } from '@/hooks/queries/useMe';
@@ -13,6 +14,10 @@ import { useUiStore } from '@/hooks/ui/useUiStore';
 import { blankTaskForm } from '@/validators/task.validator';
 
 import type { Task } from '@/types/task.types';
+
+import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
+import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
+import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 
 import type { CalendarEvent } from './calendar.types';
 import Calendix from './Calendix';
@@ -24,7 +29,7 @@ export default function ProjectCalendarPage() {
 
   const projectId = params.projectId as string;
 
-  const { data: project } = useProject(projectId);
+  const { data: project, isPending: isProjectPending } = useProject(projectId);
 
   const tasks = project?.tasks ?? [];
 
@@ -33,6 +38,8 @@ export default function ProjectCalendarPage() {
   const { data: me } = useMe();
 
   const timezone = me?.timezone ?? defaultTimezone;
+
+  const is12hrFormat = false;
 
   const openTaskCreateDrawer = useUiStore(
     (state) => state.openTaskCreateDrawer,
@@ -133,9 +140,40 @@ export default function ProjectCalendarPage() {
   return (
     <div className={clsx('flex', 'flex-1 min-h-0', 'px-6 pb-6')}>
       <Calendix<Task>
+        isLoading={isProjectPending}
         events={events}
         timezone={timezone}
-        is12hrFormat={false}
+        is12hrFormat={is12hrFormat}
+        renderEvent={(event) => {
+          return (
+            <div className="relative block w-full">
+              <div className="flex justify-start items-center gap-2">
+                <div
+                  className={clsx(
+                    'font-inter font-semibold',
+                    'text-sm truncate',
+                  )}
+                >
+                  {event.title}
+                </div>
+                <TaskPriorityUI priority={event.data.priority} />
+                <TaskStatusUI status={event.data.status} />
+              </div>
+              <div className="text-xs mt-2">
+                {momentTimezone(event.startDate)
+                  .tz(timezone)
+                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
+                {' - '}
+                {momentTimezone(event.endDate)
+                  .tz(timezone)
+                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
+              </div>
+              <div className="flex flex-col gap-2 mt-2">
+                <TaskAssigneeUI assignee={event.data.assignee} />
+              </div>
+            </div>
+          );
+        }}
         onEventClick={(event) => {
           openTaskUpdateDrawer(event.id, projectId);
         }}

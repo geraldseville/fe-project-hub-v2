@@ -6,15 +6,18 @@ import type { CalendarEvent, CalendarView } from './calendar.types';
 import { addDays, calendarMoment, nowInTimezone } from './calendar.utils';
 import CalendarBoard from './CalendarBoard';
 import CalendarEmpty from './CalendarEmpty';
+import CalendarLoading from './CalendarLoading';
 import CalendarToolbar from './CalendarToolbar';
 import CalendarUnscheduled from './CalendarUnscheduled';
 
 import { defaultTimezone } from '@/lib/date-time';
 
 interface Calendix<T> {
+  isLoading?: boolean;
   events?: CalendarEvent<T>[];
   timezone?: string;
   is12hrFormat?: boolean;
+  renderEvent?: (event: CalendarEvent<T>) => React.ReactNode;
   onEventClick?: (event: CalendarEvent<T>) => void;
   onEventDragEnd?: (
     event: CalendarEvent<T>,
@@ -25,9 +28,11 @@ interface Calendix<T> {
 }
 
 export default function Calendix<T>({
+  isLoading = false,
   events = [],
   timezone = defaultTimezone,
   is12hrFormat = true,
+  renderEvent,
   onEventClick,
   onEventDragEnd,
   onCreate,
@@ -67,6 +72,7 @@ export default function Calendix<T>({
     >
       {/* Toolbar */}
       <CalendarToolbar<T>
+        isLoading={isLoading}
         events={events}
         date={date}
         timezone={timezone}
@@ -78,7 +84,9 @@ export default function Calendix<T>({
         onCreate={onCreate}
       />
       {/* Calendar */}
-      {events.length === 0 ? (
+      {isLoading ? (
+        <CalendarLoading />
+      ) : events.length === 0 ? (
         <CalendarEmpty onCreate={onCreate} />
       ) : (
         <CalendarBoard<T>
@@ -86,6 +94,7 @@ export default function Calendix<T>({
           date={date}
           timezone={timezone}
           is12hrFormat={is12hrFormat}
+          renderEvent={renderEvent}
           onEventClick={onEventClick}
           onEventDragEnd={onEventDragEnd}
           onCreateSelect={onCreateSelect}
