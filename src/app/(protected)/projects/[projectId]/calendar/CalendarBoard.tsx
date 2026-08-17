@@ -42,12 +42,12 @@ export default function CalendarBoard<T>({
   onEventDragEnd,
   onCreateSelect,
 }: CalendarBoardProps<T>) {
+  const [now, setNow] = useState(() => nowInTimezone(timezone));
   const [selectionAnchor, setSelectionAnchor] = useState<number | null>(null);
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
-  const [now, setNow] = useState(() => nowInTimezone(timezone));
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
-  const [dragOffset, setDragOffset] = useState(0);
+  const [dragOffset, setDragOffset] = useState<number>(0);
   const [resizedEventHeight, setResizedEventHeight] = useState<number | null>(
     null,
   );
@@ -304,11 +304,16 @@ export default function CalendarBoard<T>({
           className={clsx('flex-1', 'h-full', 'border-r border-[#464554]/70')}
         >
           <div className="flex flex-col justify-center items-center h-full">
-            <div className="font-inter text-xs text-[#908FA0]">
+            <div className={clsx('font-inter', 'text-[#908FA0] text-xs')}>
               {day.format('ddd')}
             </div>
 
-            <div className="font-inter text-sm font-semibold text-[#C7C4D7]">
+            <div
+              className={clsx(
+                'font-inter font-semibold',
+                'text-[#C7C4D7] text-sm',
+              )}
+            >
               {day.format('D')}
             </div>
           </div>
@@ -510,16 +515,29 @@ export default function CalendarBoard<T>({
                   <div
                     className={clsx(
                       'font-inter font-semibold',
-                      'text-xs truncate',
+                      'text-sm truncate',
                     )}
                   >
                     {event.title}
                   </div>
+                  <div className="text-xs">
+                    {calendarMoment(event.startDate, timezone).format(
+                      is12hrFormat ? 'h:mm A' : 'HH:mm',
+                    )}
+                    {' - '}
+                    {calendarMoment(event.endDate, timezone).format(
+                      is12hrFormat ? 'h:mm A' : 'HH:mm',
+                    )}
+                  </div>
                   <div
-                    aria-label={`Resize ${event.title}`}
-                    className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize"
+                    className={clsx(
+                      'absolute inset-x-0 bottom-0',
+                      'h-2',
+                      'cursor-ns-resize',
+                    )}
                     role="button"
                     tabIndex={-1}
+                    aria-label={`Resize ${event.title}`}
                     onPointerDown={(e) => {
                       e.stopPropagation();
                       if (e.button !== 0) return;
@@ -579,7 +597,6 @@ export default function CalendarBoard<T>({
               </div>
             </div>
           )}
-
         </div>
       </div>
     </div>
