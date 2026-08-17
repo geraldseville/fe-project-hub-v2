@@ -5,6 +5,7 @@ import clsx from 'clsx';
 
 import { useCreateTaskComment } from '@/hooks/mutations/useCreateTaskComment';
 import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
+import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
@@ -34,6 +35,8 @@ import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import { IconClose1, IconExternalLink } from '@/components/svgs/icons';
 
+import { defaultTimezone } from '@/lib/date-time';
+
 interface TaskUpdateDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -48,6 +51,10 @@ export default function TaskUpdateDrawer({
   projectId,
 }: TaskUpdateDrawerProps) {
   const toast = useToastStore();
+
+  const { data: me } = useMe();
+
+  const timezone = me?.timezone ?? defaultTimezone;
 
   const { data: users } = useUsers();
 
@@ -280,6 +287,7 @@ export default function TaskUpdateDrawer({
               <DateTimePicker
                 type="date-time"
                 formatDate="MMM DD, YYYY"
+                timezone={timezone}
                 value={taskStartDate}
                 onChange={(selected) => {
                   setTaskStartDate(selected.iso);
@@ -300,6 +308,7 @@ export default function TaskUpdateDrawer({
               <DateTimePicker
                 type="date-time"
                 formatDate="MMM DD, YYYY"
+                timezone={timezone}
                 value={taskEndDate}
                 onChange={(selected) => {
                   setTaskEndDate(selected.iso);
