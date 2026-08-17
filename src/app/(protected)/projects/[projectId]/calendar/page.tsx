@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import clsx from 'clsx';
@@ -23,12 +23,7 @@ export default function ProjectCalendarPage() {
 
   const projectId = params.projectId as string;
 
-  const {
-    data: project,
-    isPending: isProjectPending,
-    isError: isProjecterror,
-    refetch: refetchProject,
-  } = useProject(projectId);
+  const { data: project } = useProject(projectId);
 
   const tasks = project?.tasks ?? [];
 
@@ -56,11 +51,13 @@ export default function ProjectCalendarPage() {
     );
   });
 
+  const initializedProjectIdRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (isProjectPending) return;
+    if (!project || initializedProjectIdRef.current === projectId) return;
 
     setEvents(
-      tasks.map((taskItem) => ({
+      project.tasks.map((taskItem) => ({
         id: taskItem.id,
         title: taskItem.title,
         startDate: taskItem.startDate ?? '',
@@ -68,7 +65,25 @@ export default function ProjectCalendarPage() {
         data: taskItem,
       })),
     );
-  }, [isProjectPending, tasks]);
+    initializedProjectIdRef.current = projectId;
+  }, [project, projectId]);
+
+  const handleEventDragEnd = (
+    event: CalendarEvent<Task>,
+    selection: { startDate: string; endDate: string },
+  ) => {
+    setEvents((currentEvents) =>
+      currentEvents.map((currentEvent) =>
+        currentEvent.id === event.id
+          ? {
+              ...currentEvent,
+              startDate: selection.startDate,
+              endDate: selection.endDate,
+            }
+          : currentEvent,
+      ),
+    );
+  };
 
   return (
     <div className={clsx('flex', 'flex-1 min-h-0', 'px-6 pb-6')}>
@@ -79,6 +94,7 @@ export default function ProjectCalendarPage() {
         onEventClick={(event) => {
           openTaskUpdateDrawer(event.id, projectId);
         }}
+        onEventDragEnd={handleEventDragEnd}
         onCreate={() => {
           openTaskCreateDrawer(projectId);
         }}

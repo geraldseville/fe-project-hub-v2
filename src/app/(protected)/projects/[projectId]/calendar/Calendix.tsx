@@ -16,6 +16,10 @@ interface Calendix<T> {
   timezone?: string;
   is12hrFormat?: boolean;
   onEventClick?: (event: CalendarEvent<T>) => void;
+  onEventDragEnd?: (
+    event: CalendarEvent<T>,
+    selection: { startDate: string; endDate: string },
+  ) => void;
   onCreate?: () => void;
   onCreateSelect?: (selection: { startDate: string; endDate: string }) => void;
 }
@@ -25,6 +29,7 @@ export default function Calendix<T>({
   timezone = defaultTimezone,
   is12hrFormat = true,
   onEventClick,
+  onEventDragEnd,
   onCreate,
   onCreateSelect,
 }: Calendix<T>) {
@@ -48,8 +53,6 @@ export default function Calendix<T>({
         ? calendarMoment(current, timezone).add(direction, 'month').toDate()
         : addDays(current, direction * (view === 'week' ? 7 : 1), timezone),
     );
-
-  console.log({ scheduledEvents, events, timezone, date });
 
   return (
     <div
@@ -84,6 +87,7 @@ export default function Calendix<T>({
           timezone={timezone}
           is12hrFormat={is12hrFormat}
           onEventClick={onEventClick}
+          onEventDragEnd={onEventDragEnd}
           onCreateSelect={onCreateSelect}
         />
       )}

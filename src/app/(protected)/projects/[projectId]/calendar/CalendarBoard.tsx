@@ -20,7 +20,17 @@ interface CalendarBoardProps<T> {
   timezone: string;
   is12hrFormat?: boolean;
   onEventClick?: (event: CalendarEvent<T>) => void;
+  onEventDragEnd?: (
+    event: CalendarEvent<T>,
+    selection: { startDate: string; endDate: string },
+  ) => void;
   onCreateSelect?: (selection: { startDate: string; endDate: string }) => void;
+}
+
+interface EventDrag<T> {
+  event: CalendarEvent<T>;
+  mode: 'move' | 'resize';
+  startClientY: number;
 }
 
 export default function CalendarBoard<T>({
@@ -29,14 +39,21 @@ export default function CalendarBoard<T>({
   timezone,
   is12hrFormat = true,
   onEventClick,
+  onEventDragEnd,
   onCreateSelect,
 }: CalendarBoardProps<T>) {
   const [selectionAnchor, setSelectionAnchor] = useState<number | null>(null);
   const [selectionStart, setSelectionStart] = useState<number | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<number | null>(null);
   const [now, setNow] = useState(() => nowInTimezone(timezone));
+  const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [resizedEventHeight, setResizedEventHeight] = useState<number | null>(
+    null,
+  );
 
   const canvasRef = useRef<HTMLDivElement | null>(null);
+  const eventDragRef = useRef<EventDrag<T> | null>(null);
 
   const hours = Array.from({ length: 24 });
 
@@ -59,21 +76,29 @@ export default function CalendarBoard<T>({
     return Math.min(Math.max(minutes, 0), 24 * 60);
   };
 
-  const handleSlotSelect = (minutes: number) => {
-    const slotStart = Math.min(Math.max(minutes, 0), 24 * 60);
-    const slotEnd = Math.min(Math.max(slotStart + 15, slotStart + 15), 24 * 60);
+  const getSelectionRange = (anchor: number, current: number) => {
+    const minDuration = 15;
+    let startMinutes = Math.min(anchor, current);
+    let endMinutes = Math.max(anchor, current);
 
-    const startDate = calendarMoment(date, timezone)
-      .startOf('day')
-      .add(slotStart, 'minutes')
-      .toISOString();
+    if (endMinutes - startMinutes < minDuration) {
+      if (current < anchor) {
+        startMinutes = anchor - minDuration;
+        endMinutes = anchor;
+      } else {
+        startMinutes = anchor;
+        endMinutes = anchor + minDuration;
+      }
+    }
 
-    const endDate = calendarMoment(date, timezone)
-      .startOf('day')
-      .add(slotEnd, 'minutes')
-      .toISOString();
+    startMinutes = Math.max(0, startMinutes);
+    endMinutes = Math.min(24 * 60, endMinutes);
 
-    onCreateSelect?.({ startDate, endDate });
+    if (endMinutes - startMinutes < minDuration) {
+      startMinutes = Math.max(0, endMinutes - minDuration);
+    }
+
+    return { startMinutes, endMinutes };
   };
 
   const currentTime = calendarMoment(now, timezone);
@@ -107,6 +132,33 @@ export default function CalendarBoard<T>({
     };
   }, [selectionEnd, selectionStart]);
 
+  const getDragSelection = (event: CalendarEvent<T>, offset: number) => {
+    const startTime = calendarMoment(event.startDate, timezone);
+    const endTime = calendarMoment(event.endDate, timezone);
+    const deltaMinutes = pixelsToMinutes(offset, 15);
+
+    return {
+      startDate: startTime.clone().add(deltaMinutes, 'minutes').toISOString(),
+      endDate: endTime.clone().add(deltaMinutes, 'minutes').toISOString(),
+    };
+  };
+
+  const getResizeSelection = (event: CalendarEvent<T>, clientY: number) => {
+    const startTime = calendarMoment(event.startDate, timezone);
+    const startMinutes = startTime.hours() * 60 + startTime.minutes();
+    const endMinutes = Math.min(
+      24 * 60,
+      Math.max(startMinutes + 15, getMinutesFromPointer(clientY)),
+    );
+    const durationMinutes = endMinutes - startMinutes;
+
+    return {
+      startDate: startTime.toISOString(),
+      endDate: startTime.clone().add(durationMinutes, 'minutes').toISOString(),
+      height: minutesToPixels(durationMinutes),
+    };
+  };
+
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
       return;
@@ -122,48 +174,60 @@ export default function CalendarBoard<T>({
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (selectionAnchor === null) {
-      return;
-    }
-
-    const nextMinutes = getMinutesFromPointer(event.clientY);
-    const rawStart = Math.min(selectionAnchor, nextMinutes);
-    const rawEnd = Math.max(selectionAnchor, nextMinutes);
-    const minDelta = 15;
-
-    if (rawEnd - rawStart < minDelta) {
-      if (nextMinutes >= selectionAnchor) {
-        setSelectionStart(selectionAnchor);
-        setSelectionEnd(selectionAnchor + minDelta);
+    const eventDrag = eventDragRef.current;
+    if (eventDrag) {
+      if (eventDrag.mode === 'resize') {
+        setResizedEventHeight(
+          getResizeSelection(eventDrag.event, event.clientY).height,
+        );
       } else {
-        setSelectionStart(selectionAnchor - minDelta);
-        setSelectionEnd(selectionAnchor);
+        setDragOffset(event.clientY - eventDrag.startClientY);
       }
       return;
     }
 
-    if (nextMinutes >= selectionAnchor) {
-      setSelectionStart(rawStart);
-      setSelectionEnd(rawEnd);
-      return;
-    }
-
-    setSelectionStart(rawStart);
-    setSelectionEnd(rawEnd);
-  };
-
-  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
     if (selectionAnchor === null) {
       return;
     }
 
     const nextMinutes = getMinutesFromPointer(event.clientY);
-    const minDelta = 15;
-    const rawStart = Math.min(selectionAnchor, nextMinutes);
-    const rawEnd = Math.max(selectionAnchor, nextMinutes);
-    const startMinutes = rawEnd - rawStart < minDelta ? rawStart : rawStart;
-    const endMinutes =
-      rawEnd - rawStart < minDelta ? rawStart + minDelta : rawEnd;
+    const selection = getSelectionRange(selectionAnchor, nextMinutes);
+    setSelectionStart(selection.startMinutes);
+    setSelectionEnd(selection.endMinutes);
+  };
+
+  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const eventDrag = eventDragRef.current;
+    if (eventDrag) {
+      const offset = event.clientY - eventDrag.startClientY;
+
+      if (eventDrag.mode === 'resize') {
+        const selection = getResizeSelection(eventDrag.event, event.clientY);
+        onEventDragEnd?.(eventDrag.event, selection);
+      } else if (Math.abs(offset) >= 5) {
+        const selection = getDragSelection(eventDrag.event, offset);
+        onEventDragEnd?.(eventDrag.event, selection);
+      } else {
+        onEventClick?.(eventDrag.event);
+      }
+
+      eventDragRef.current = null;
+      setDraggedEventId(null);
+      setDragOffset(0);
+      setResizedEventHeight(null);
+      event.currentTarget.releasePointerCapture(event.pointerId);
+      return;
+    }
+
+    if (selectionAnchor === null) {
+      return;
+    }
+
+    const nextMinutes = getMinutesFromPointer(event.clientY);
+    const { startMinutes, endMinutes } = getSelectionRange(
+      selectionAnchor,
+      nextMinutes,
+    );
 
     setSelectionStart(startMinutes);
     setSelectionEnd(endMinutes);
@@ -190,6 +254,20 @@ export default function CalendarBoard<T>({
     setSelectionAnchor(null);
     setSelectionStart(null);
     setSelectionEnd(null);
+  };
+
+  const handlePointerCancel = (event: React.PointerEvent<HTMLDivElement>) => {
+    eventDragRef.current = null;
+    setDraggedEventId(null);
+    setDragOffset(0);
+    setResizedEventHeight(null);
+    setSelectionAnchor(null);
+    setSelectionStart(null);
+    setSelectionEnd(null);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   };
 
   useEffect(() => {
@@ -279,13 +357,7 @@ export default function CalendarBoard<T>({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerLeave={() => {
-            if (selectionAnchor !== null) {
-              setSelectionAnchor(null);
-              setSelectionStart(null);
-              setSelectionEnd(null);
-            }
-          }}
+          onPointerCancel={handlePointerCancel}
         >
           {/* Grid */}
           {hours.map((_, hour) => {
@@ -331,10 +403,6 @@ export default function CalendarBoard<T>({
                           'focus:outline-none',
                         )}
                         type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleSlotSelect(slotMinutes);
-                        }}
                         aria-label={`Select time slot ${slotMinutes} minutes`}
                       >
                         <div className="invisible group-hover/slot:visible">
@@ -401,29 +469,42 @@ export default function CalendarBoard<T>({
                     'absolute z-20',
                     'py-1 px-2',
                     'rounded-md',
-                    'bg-[#8083FF]/30 hover:bg-[#8083FF]/60',
-                    'border border-[#8083FF]',
+                    draggedEventId === event.id
+                      ? 'bg-[#8083FF]/50 border-[#8083FF]/80 border-dashed opacity-60'
+                      : 'bg-[#8083FF]/30 hover:bg-[#8083FF]/60 border border-[#8083FF]',
                     'cursor-pointer',
                   )}
                   key={event.id}
                   style={{
                     top: position.top,
-                    height: position.height,
+                    height:
+                      draggedEventId === event.id && resizedEventHeight !== null
+                        ? resizedEventHeight
+                        : position.height,
                     left: `calc(${widthPercentage * columnIndex}% + 4px)`,
                     width: `calc(${widthPercentage}% - 8px)`,
+                    transform:
+                      draggedEventId === event.id
+                        ? `translateY(${dragOffset}px)`
+                        : 'translateY(0)',
+                    transition:
+                      draggedEventId === event.id
+                        ? 'none'
+                        : 'transform 0.2s ease-out',
                   }}
                   onPointerDown={(e) => {
                     e.stopPropagation();
-                  }}
-                  onPointerMove={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onPointerUp={(e) => {
-                    e.stopPropagation();
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEventClick?.(event);
+                    if (e.button === 0) {
+                      e.preventDefault();
+                      eventDragRef.current = {
+                        event,
+                        mode: 'move',
+                        startClientY: e.clientY,
+                      };
+                      setDraggedEventId(event.id);
+                      setDragOffset(0);
+                      canvasRef.current?.setPointerCapture(e.pointerId);
+                    }
                   }}
                 >
                   <div
@@ -434,13 +515,33 @@ export default function CalendarBoard<T>({
                   >
                     {event.title}
                   </div>
+                  <div
+                    aria-label={`Resize ${event.title}`}
+                    className="absolute inset-x-0 bottom-0 h-2 cursor-ns-resize"
+                    role="button"
+                    tabIndex={-1}
+                    onPointerDown={(e) => {
+                      e.stopPropagation();
+                      if (e.button !== 0) return;
+
+                      e.preventDefault();
+                      eventDragRef.current = {
+                        event,
+                        mode: 'resize',
+                        startClientY: e.clientY,
+                      };
+                      setDraggedEventId(event.id);
+                      setResizedEventHeight(position.height);
+                      canvasRef.current?.setPointerCapture(e.pointerId);
+                    }}
+                  />
                 </div>
               );
             },
           )}
 
           {/* Selection Preview */}
-          {selectionPreview && (
+          {selectionPreview && !draggedEventId && (
             <div
               className={clsx(
                 'absolute z-30',
@@ -478,6 +579,7 @@ export default function CalendarBoard<T>({
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>
