@@ -145,17 +145,17 @@ export default function CalendarBoard<T>({
 
   const getResizeSelection = (event: CalendarEvent<T>, clientY: number) => {
     const startTime = calendarMoment(event.startDate, timezone);
-    const startMinutes = startTime.hours() * 60 + startTime.minutes();
+    const visibleStart = momentTimezone.max(startTime, day);
+    const startMinutes = Math.max(0, visibleStart.diff(day, 'minutes'));
     const endMinutes = Math.min(
       24 * 60,
       Math.max(startMinutes + 15, getMinutesFromPointer(clientY)),
     );
-    const durationMinutes = endMinutes - startMinutes;
 
     return {
       startDate: startTime.toISOString(),
-      endDate: startTime.clone().add(durationMinutes, 'minutes').toISOString(),
-      height: minutesToPixels(durationMinutes),
+      endDate: day.clone().add(endMinutes, 'minutes').toISOString(),
+      height: minutesToPixels(endMinutes - startMinutes),
     };
   };
 

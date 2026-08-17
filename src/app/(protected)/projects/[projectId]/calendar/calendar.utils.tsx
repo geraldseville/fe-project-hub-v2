@@ -87,6 +87,10 @@ export const getOverlappingEventLayout = <T,>(
   date: Date,
   timezone: string,
 ) => {
+  // Use the supplied event order as a stable tie-breaker so equal events keep
+  // the same lane whenever this layout is calculated for another day.
+  const eventOrder = new Map(events.map((event, index) => [event.id, index]));
+
   const visibleEvents = events.flatMap((event) => {
     const position = getEventPosition(
       event.startDate,
@@ -174,7 +178,10 @@ export const getOverlappingEventLayout = <T,>(
     const sorted = [...group].sort(
       (left, right) =>
         left.position.startMinutes - right.position.startMinutes ||
-        right.position.durationMinutes - left.position.durationMinutes,
+        right.position.durationMinutes - left.position.durationMinutes ||
+        (eventOrder.get(left.event.id) ?? 0) -
+          (eventOrder.get(right.event.id) ?? 0) ||
+        left.event.id.localeCompare(right.event.id),
     );
 
     let maxConcurrent = 1;
