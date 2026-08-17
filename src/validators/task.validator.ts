@@ -6,7 +6,7 @@ export const taskFormSchema = z
   .object({
     title: z.string().trim().min(1, 'Title is required.'),
 
-    description: z.string().trim().optional(),
+    description: z.string().trim().nullable().optional(),
 
     status: z
       .enum(TASK_STATUSES, {
@@ -20,19 +20,26 @@ export const taskFormSchema = z
       })
       .default('LOW'),
 
-    startDate: z.union([
-      z.literal(''),
-      z.iso.datetime({ error: 'Invalid start date.' }),
-    ]),
+    startDate: z.iso.datetime().nullable().optional(),
 
-    endDate: z.union([
-      z.literal(''),
-      z.iso.datetime({ error: 'Invalid end date.' }),
-    ]),
+    endDate: z.iso.datetime().nullable().optional(),
+
+    primaryColor: z
+      .string()
+      .trim()
+      .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, {
+        error: 'Invalid primary color.',
+      })
+      .nullable()
+      .optional(),
 
     projectId: z.string().cuid('Invalid project ID.'),
 
-    assigneeId: z.string().cuid('Please select an assignee.'),
+    assigneeId: z
+      .string()
+      .cuid('Please select an assignee.')
+      .nullable()
+      .optional(),
   })
   .refine(
     (data) =>
@@ -47,13 +54,14 @@ export type TaskFormInput = z.infer<typeof taskFormSchema>;
 
 export const blankTaskForm: TaskFormInput = {
   title: '',
-  description: '',
+  description: null,
   status: 'TODO',
   priority: 'LOW',
-  startDate: '',
-  endDate: '',
+  startDate: null,
+  endDate: null,
+  primaryColor: null,
   projectId: '',
-  assigneeId: '',
+  assigneeId: null,
 };
 
 export type TaskFormErrors = {
@@ -63,6 +71,7 @@ export type TaskFormErrors = {
   priority?: string;
   startDate?: string;
   endDate?: string;
+  primaryColor?: string;
   projectId?: string;
   assigneeId?: string;
 };
@@ -98,6 +107,7 @@ export const validateTaskForm = (
       priority: fieldErrors.priority?.[0],
       startDate: fieldErrors.startDate?.[0],
       endDate: fieldErrors.endDate?.[0],
+      primaryColor: fieldErrors.primaryColor?.[0],
       projectId: fieldErrors.projectId?.[0],
       assigneeId: fieldErrors.assigneeId?.[0],
     },
