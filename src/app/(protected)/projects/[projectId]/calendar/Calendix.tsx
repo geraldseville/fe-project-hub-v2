@@ -40,10 +40,8 @@ export default function Calendix<T>({
   onCreate,
   onCreateSelect,
 }: Calendix<T>) {
-  const [date, setDate] = useState(() => nowInTimezone(timezone));
-
+  const [date, setDate] = useState<Date>(() => nowInTimezone(timezone));
   const [view, setView] = useState<CalendarView>('day');
-
   const [openUnscheduled, setOpenUnscheduled] = useState<boolean>(false);
 
   const scheduledEvents = events.filter(
@@ -54,12 +52,13 @@ export default function Calendix<T>({
     (event) => !event.startDate || !event.endDate,
   );
 
-  const changePeriod = (direction: -1 | 1) =>
+  const changePeriod = (direction: -1 | 1) => {
     setDate((current) =>
       view === 'month'
         ? calendarMoment(current, timezone).add(direction, 'month').toDate()
         : addDays(current, direction * (view === 'week' ? 7 : 1), timezone),
     );
+  };
 
   return (
     <div
