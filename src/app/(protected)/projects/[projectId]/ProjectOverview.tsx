@@ -5,11 +5,11 @@ import momentTimezone from 'moment-timezone';
 
 import { useMe } from '@/hooks/queries/useMe';
 
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
+
 import type { Project } from '@/types/project.types';
 
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
-
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface ProjectOverviewProps {
   project?: Project | null;

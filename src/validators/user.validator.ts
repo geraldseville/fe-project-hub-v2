@@ -1,8 +1,7 @@
 import { z } from 'zod';
 
 import { COMMON_PASSWORDS } from '@/utils/auth.utils';
-
-import { isValidTimezone } from '@/lib/date-time';
+import { isValidTimezone } from '@/utils/date-time';
 
 export const changeUserPasswordSchema = z
   .object({

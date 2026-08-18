@@ -4,6 +4,7 @@ import clsx from 'clsx';
 
 import { useMe } from '@/hooks/queries/useMe';
 
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import { getProjectTimeline } from '@/utils/project.utils';
 
 import type { Project } from '@/types/project.types';
@@ -11,8 +12,6 @@ import type { Project } from '@/types/project.types';
 import ProgressBar from '@/components/elements/ProgressBar';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import { IconTimer } from '@/components/svgs/icons';
-
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface ProjectStatusCardProps {
   project?: Project | null;

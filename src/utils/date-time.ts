@@ -1,4 +1,4 @@
-import { TimeFormat } from '@/types/user.types';
+import type { TimeFormat } from '@/types/user.types';
 
 export const TIMEZONES = Intl.supportedValuesOf('timeZone');
 

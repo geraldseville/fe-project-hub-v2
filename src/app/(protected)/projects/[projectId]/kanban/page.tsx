@@ -13,6 +13,7 @@ import { useToastStore } from '@/hooks/ui/useToastStore';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { generateColorPalette } from '@/utils/color.utils';
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import { DEFAULT_EVENT_BG } from '@/utils/task.utils';
 
 import { blankTaskForm } from '@/validators/task.validator';
@@ -24,8 +25,6 @@ import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
 import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import { IconCalendar2, IconPlus1 } from '@/components/svgs/icons';
-
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 export default function ProjectKanbanPage() {
   const params = useParams();

@@ -2,6 +2,8 @@ import { useState } from 'react';
 
 import clsx from 'clsx';
 
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
+
 import type { CalendarEvent, CalendarView } from './calendar.types';
 import { addDays, calendarMoment, nowInTimezone } from './calendar.utils';
 import CalendarBoard from './CalendarBoard';
@@ -9,8 +11,6 @@ import CalendarEmpty from './CalendarEmpty';
 import CalendarLoading from './CalendarLoading';
 import CalendarToolbar from './CalendarToolbar';
 import CalendarUnscheduled from './CalendarUnscheduled';
-
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface Calendix<T> {
   isLoading?: boolean;

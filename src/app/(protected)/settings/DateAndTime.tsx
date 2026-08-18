@@ -9,6 +9,12 @@ import { useMe } from '@/hooks/queries/useMe';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
 import {
+  DEFAULT_TIME_FORMAT,
+  DEFAULT_TIMEZONE,
+  TIMEZONES,
+} from '@/utils/date-time';
+
+import {
   type UpdateUserInput,
   validateUpdateUser,
 } from '@/validators/user.validator';
@@ -21,12 +27,6 @@ import LabelField from '@/components/elements/LabelField';
 import LoaderSpinner from '@/components/elements/LoaderSpinner';
 import SingleSelect from '@/components/elements/SingleSelect';
 import { IconCalendar2 } from '@/components/svgs/icons';
-
-import {
-  DEFAULT_TIME_FORMAT,
-  DEFAULT_TIMEZONE,
-  TIMEZONES,
-} from '@/lib/date-time';
 
 export default function DateAndTime() {
   const toast = useToastStore();
