@@ -1,5 +1,6 @@
 import type { CalendarEvent, CalendarView } from './calendar.types';
 import CalendarDayView from './CalendarDayView';
+import CalendarWeekView from './CalendarWeekView';
 
 interface CalendarBoardProps<T> {
   view?: CalendarView;
@@ -32,6 +33,17 @@ export default function CalendarBoard<T>({
     <>
       {view === 'day' ? (
         <CalendarDayView
+          events={events}
+          date={date}
+          timezone={timezone}
+          is12hrFormat={is12hrFormat}
+          renderEvent={renderEvent}
+          onEventClick={onEventClick}
+          onEventDragEnd={onEventDragEnd}
+          onCreateSelect={onCreateSelect}
+        />
+      ) : view === 'week' ? (
+        <CalendarWeekView
           events={events}
           date={date}
           timezone={timezone}
