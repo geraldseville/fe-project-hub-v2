@@ -29,8 +29,6 @@ import {
   IconProfile1,
 } from '@/components/svgs/icons';
 
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
-
 type RegisterForm = {
   name: string;
   email: string;
@@ -44,7 +42,7 @@ export default function Register() {
 
   const { data: me, isPending: isMePending } = useMe();
 
-  const registerMutation = useRegister();
+  const register = useRegister();
 
   const [registerForm, setRegisterForm] = useState<RegisterForm>({
     name: '',
@@ -53,17 +51,12 @@ export default function Register() {
     confirmPassword: '',
     agreeTerms: false,
   });
-
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const validationResult = validateRegister(registerForm);
-
   const errors = hasSubmitted ? validationResult.errors : {};
-
-  const isSubmitting = registerMutation.isPending;
-
+  const isSubmitting = register.isPending;
   const passwordRules = getPasswordRules(registerForm.password);
 
   const handleRegister = async (e: FormEvent) => {
@@ -78,12 +71,11 @@ export default function Register() {
     try {
       const { firstName, lastName } = splitFullName(registerForm.name);
 
-      await registerMutation.mutateAsync({
+      await register.mutateAsync({
         email: registerForm.email,
         password: registerForm.password,
         firstName,
         lastName,
-        timezone: DEFAULT_TIMEZONE,
       });
 
       router.push('/dashboard');
