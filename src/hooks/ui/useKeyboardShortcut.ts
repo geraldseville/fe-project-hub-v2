@@ -19,13 +19,19 @@ export function useKeyboardShortcut({
 }: UseKeyboardShortcutOptions) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const isCtrlOrMeta = ctrl && (event.ctrlKey || event.metaKey);
+      const keyMatches = event.key.toLowerCase() === key.toLowerCase();
+
+      const ctrlMatches = event.ctrlKey === ctrl;
+      const metaMatches = event.metaKey === meta;
+      const shiftMatches = event.shiftKey === shift;
+      const altMatches = event.altKey === alt;
 
       if (
-        event.key.toLowerCase() === key.toLowerCase() &&
-        isCtrlOrMeta &&
-        event.shiftKey === shift &&
-        event.altKey === alt
+        keyMatches &&
+        ctrlMatches &&
+        metaMatches &&
+        shiftMatches &&
+        altMatches
       ) {
         event.preventDefault();
         callback();
@@ -37,5 +43,5 @@ export function useKeyboardShortcut({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [key, ctrl, shift, alt, callback]);
+  }, [key, ctrl, meta, shift, alt, callback]);
 }
