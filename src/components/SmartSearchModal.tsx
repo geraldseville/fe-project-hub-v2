@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import clsx from 'clsx';
 
 import { useProjects } from '@/hooks/queries/useProjects';
 import { useTasks } from '@/hooks/queries/useTasks';
 import { useUsers } from '@/hooks/queries/useUsers';
+import { useUiStore } from '@/hooks/ui/useUiStore';
 
-import { toCapitalize } from '@/utils/string.utils';
 import { getFullName } from '@/utils/user.utils';
 
 import type { Project } from '@/types/project.types';
@@ -68,6 +69,10 @@ export default function SmartSearchModal({
   const { data: users } = useUsers();
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks();
+
+  const openTaskUpdateDrawer = useUiStore(
+    (state) => state.openTaskUpdateDrawer,
+  );
 
   const SEARCH_FILTERS = [
     {
@@ -154,7 +159,7 @@ export default function SmartSearchModal({
     };
   }, [filteredResults]);
 
-  const handleCancel = () => {
+  const handleClose = () => {
     setSearch('');
     onClose();
   };
@@ -177,7 +182,7 @@ export default function SmartSearchModal({
         ),
       }}
       isOpen={isOpen}
-      onClose={handleCancel}
+      onClose={handleClose}
     >
       {/* Head */}
       <div className="min-h-15 h-15">
@@ -293,11 +298,13 @@ export default function SmartSearchModal({
 
                   <div className="flex flex-col">
                     {groupedResults.users.map((result) => (
-                      <SearchResultItem
+                      <Link
                         key={`${result.type}-${result.id}`}
-                        result={result}
-                        search={search}
-                      />
+                        onClick={handleClose}
+                        href={`/teams/${result.id}`}
+                      >
+                        <SearchResultItem result={result} search={search} />
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -310,11 +317,13 @@ export default function SmartSearchModal({
 
                   <div className="flex flex-col">
                     {groupedResults.projects.map((result) => (
-                      <SearchResultItem
+                      <Link
                         key={`${result.type}-${result.id}`}
-                        result={result}
-                        search={search}
-                      />
+                        onClick={handleClose}
+                        href={`/projects/${result.id}`}
+                      >
+                        <SearchResultItem result={result} search={search} />
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -327,11 +336,22 @@ export default function SmartSearchModal({
 
                   <div className="flex flex-col">
                     {groupedResults.tasks.map((result) => (
-                      <SearchResultItem
+                      <button
                         key={`${result.type}-${result.id}`}
-                        result={result}
-                        search={search}
-                      />
+                        onClick={() => {
+                          openTaskUpdateDrawer(
+                            result.data.id,
+                            result.data.projectId,
+                          );
+                          handleClose();
+                        }}
+                      >
+                        <SearchResultItem
+                          key={`${result.type}-${result.id}`}
+                          result={result}
+                          search={search}
+                        />
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -459,7 +479,7 @@ function SearchResultItem({
 
 function UserSearchResult({ user, search }: { user: User; search: string }) {
   return (
-    <button
+    <div
       className={clsx(
         'flex justify-start items-center gap-4',
         'p-3',
@@ -467,8 +487,6 @@ function UserSearchResult({ user, search }: { user: User; search: string }) {
         'hover:bg-[#1E293B]',
       )}
       key={user.id}
-      type="button"
-      aria-label="Click User"
     >
       <div className="min-w-10 w-10 h-10 rounded-full">
         {user.imageUrl ? (
@@ -506,7 +524,7 @@ function UserSearchResult({ user, search }: { user: User; search: string }) {
         </div>
       </div>
       <TeamRoleUI role={user.role} />
-    </button>
+    </div>
   );
 }
 
@@ -518,7 +536,7 @@ function ProjectSearchResult({
   search: string;
 }) {
   return (
-    <button
+    <div
       className={clsx(
         'flex justify-start items-center gap-4',
         'p-3',
@@ -526,8 +544,6 @@ function ProjectSearchResult({
         'hover:bg-[#1E293B]',
       )}
       key={project.id}
-      type="button"
-      aria-label="Click User"
     >
       <div
         className={clsx(
@@ -572,13 +588,13 @@ function ProjectSearchResult({
           <HighlightMatch text={project.description} query={search} />
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
 function TaskSearchResult({ task, search }: { task: Task; search: string }) {
   return (
-    <button
+    <div
       className={clsx(
         'flex justify-start items-center gap-4',
         'p-3',
@@ -586,8 +602,6 @@ function TaskSearchResult({ task, search }: { task: Task; search: string }) {
         'hover:bg-[#1E293B]',
       )}
       key={task.id}
-      type="button"
-      aria-label="Click User"
     >
       <div
         className={clsx(
@@ -648,7 +662,7 @@ function TaskSearchResult({ task, search }: { task: Task; search: string }) {
           <Avatar initial={task.assignee?.firstName?.charAt(0)} />
         )}
       </div>
-    </button>
+    </div>
   );
 }
 
