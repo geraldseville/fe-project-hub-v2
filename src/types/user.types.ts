@@ -1,4 +1,5 @@
 import type { Project } from '@/types/project.types';
+import type { TaskActivity } from '@/types/task-activity.types';
 
 export type AuthLoginDto = {
   email: string;
@@ -10,21 +11,24 @@ export type AuthRegisterDto = {
   password: string;
   firstName: string;
   lastName: string;
-  timezone: string;
 };
+
+export type TimeFormat = 'H12' | 'H24';
 
 export type User = {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  imageUrl?: string;
-  role?: string;
-  bio?: string;
-  timezone?: string;
-  savedColors?: string[];
-  ownedProjects?: Project[];
-  memberProjects?: Project[];
+  firstName: string | null;
+  lastName: string | null;
+  imageUrl: string | null;
+  role: string | null;
+  bio: string | null;
+  timezone: string | null;
+  timeFormat: TimeFormat;
+  savedColors: string[];
+  ownedProjects: Project[];
+  memberProjects: Project[];
+  taskActivities: TaskActivity[];
   createdAt?: string;
   updatedAt?: string;
 };
@@ -36,9 +40,10 @@ export type UserChangePasswordDto = {
 export type UserDto = {
   firstName?: string;
   lastName?: string;
-  role?: string;
-  bio?: string;
-  imageUrl?: string;
-  timezone?: string;
+  role?: string | null;
+  bio?: string | null;
+  imageUrl?: string | null;
+  timezone?: string | null;
+  timeFormat?: TimeFormat;
   savedColors?: string[];
 };
