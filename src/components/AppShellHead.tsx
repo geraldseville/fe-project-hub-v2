@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 
+import { useUiStore } from '@/hooks/ui/useUiStore';
+
 import Breadcrumb from '@/components/Breadcrumbs';
 import { IconQuestionMarkCircle1, IconSearch } from '@/components/svgs/icons';
 
@@ -11,6 +13,10 @@ interface AppShellHeadProps {
 }
 
 export default function AppShellHead({ breadcrumb }: AppShellHeadProps) {
+  const openSmartSearchModal = useUiStore(
+    (state) => state.openSmartSearchModal,
+  );
+
   return (
     <div
       className={clsx(
@@ -40,6 +46,7 @@ export default function AppShellHead({ breadcrumb }: AppShellHeadProps) {
               'border border-[#464554] hover:border-white',
             )}
             type="button"
+            onClick={openSmartSearchModal}
           >
             <IconSearch className="min-w-3.5 w-3.5 h-3.5" />
             <div>Search</div>
