@@ -296,6 +296,7 @@ export default function SmartSearchModal({
                       <SearchResultItem
                         key={`${result.type}-${result.id}`}
                         result={result}
+                        search={search}
                       />
                     ))}
                   </div>
@@ -312,6 +313,7 @@ export default function SmartSearchModal({
                       <SearchResultItem
                         key={`${result.type}-${result.id}`}
                         result={result}
+                        search={search}
                       />
                     ))}
                   </div>
@@ -328,6 +330,7 @@ export default function SmartSearchModal({
                       <SearchResultItem
                         key={`${result.type}-${result.id}`}
                         result={result}
+                        search={search}
                       />
                     ))}
                   </div>
@@ -435,20 +438,26 @@ export default function SmartSearchModal({
   );
 }
 
-function SearchResultItem({ result }: { result: SearchResult }) {
+function SearchResultItem({
+  result,
+  search,
+}: {
+  result: SearchResult;
+  search: string;
+}) {
   switch (result.type) {
     case 'user':
-      return <UserSearchResult user={result.data} />;
+      return <UserSearchResult user={result.data} search={search} />;
 
     case 'project':
-      return <ProjectSearchResult project={result.data} />;
+      return <ProjectSearchResult project={result.data} search={search} />;
 
     case 'task':
-      return <TaskSearchResult task={result.data} />;
+      return <TaskSearchResult task={result.data} search={search} />;
   }
 }
 
-function UserSearchResult({ user }: { user: User }) {
+function UserSearchResult({ user, search }: { user: User; search: string }) {
   return (
     <button
       className={clsx(
@@ -487,10 +496,13 @@ function UserSearchResult({ user }: { user: User }) {
             'truncate',
           )}
         >
-          {getFullName(user.firstName, user.lastName)}
+          <HighlightMatch
+            text={getFullName(user.firstName, user.lastName)}
+            query={search}
+          />
         </div>
         <div className={clsx('text-[#94A3B8] text-[12px] text-left')}>
-          {user.email}
+          <HighlightMatch text={user.email} query={search} />
         </div>
       </div>
       <TeamRoleUI role={user.role} />
@@ -498,7 +510,13 @@ function UserSearchResult({ user }: { user: User }) {
   );
 }
 
-function ProjectSearchResult({ project }: { project: Project }) {
+function ProjectSearchResult({
+  project,
+  search,
+}: {
+  project: Project;
+  search: string;
+}) {
   return (
     <button
       className={clsx(
@@ -541,7 +559,7 @@ function ProjectSearchResult({ project }: { project: Project }) {
               'truncate',
             )}
           >
-            {project.title}
+            <HighlightMatch text={project.title} query={search} />
           </div>
           <ProjectStatusUI status={project.status} />
         </div>
@@ -551,14 +569,14 @@ function ProjectSearchResult({ project }: { project: Project }) {
             'line-clamp-1',
           )}
         >
-          {project.description}
+          <HighlightMatch text={project.description} query={search} />
         </div>
       </div>
     </button>
   );
 }
 
-function TaskSearchResult({ task }: { task: Task }) {
+function TaskSearchResult({ task, search }: { task: Task; search: string }) {
   return (
     <button
       className={clsx(
@@ -597,7 +615,7 @@ function TaskSearchResult({ task }: { task: Task }) {
             'truncate',
           )}
         >
-          {task.title}
+          <HighlightMatch text={task.title} query={search} />
         </div>
         <div
           className={clsx(
@@ -605,7 +623,7 @@ function TaskSearchResult({ task }: { task: Task }) {
             'line-clamp-1',
           )}
         >
-          {task.description}
+          <HighlightMatch text={task.description} query={search} />
         </div>
       </div>
       <TaskPriorityUI priority={task.priority} />
@@ -631,5 +649,54 @@ function TaskSearchResult({ task }: { task: Task }) {
         )}
       </div>
     </button>
+  );
+}
+
+function HighlightMatch({
+  query,
+  className,
+  text,
+}: {
+  query: string;
+  className?: string;
+  text?: string | null;
+}) {
+  if (!text) {
+    return null;
+  }
+
+  const trimmedQuery = query.trim();
+
+  if (!trimmedQuery) {
+    return <span className={className}>{text}</span>;
+  }
+  const escapeRegExp = (value: string) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  const matcher = new RegExp(`(${escapeRegExp(trimmedQuery)})`, 'gi');
+
+  return (
+    <span className={className}>
+      {text.split(matcher).map((part, index) => {
+        const isMatch = part.toLowerCase() === trimmedQuery.toLowerCase();
+
+        return isMatch ? (
+          <mark
+            key={`${part}-${index}`}
+            className={clsx(
+              'text-[#F8FAFC]',
+              'bg-[#7C3AED]/40',
+              'rounded-[2px]',
+              'px-0.5',
+            )}
+          >
+            {part}
+          </mark>
+        ) : (
+          <span key={`${part}-${index}`}>{part}</span>
+        );
+      })}
+    </span>
   );
 }
