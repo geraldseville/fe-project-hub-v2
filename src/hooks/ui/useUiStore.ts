@@ -4,6 +4,12 @@ import type { Project } from '@/types/project.types';
 import type { CreateTaskDto } from '@/types/task.types';
 
 interface UiState {
+  smartSearchModal: {
+    isOpen: boolean;
+  };
+  openSmartSearchModal: () => void;
+  closeSmartSearchModal: () => void;
+
   projectCreateModal: {
     isOpen: boolean;
   };
@@ -47,6 +53,22 @@ interface UiState {
 }
 
 export const useUiStore = create<UiState>((set) => ({
+  smartSearchModal: {
+    isOpen: false,
+  },
+  openSmartSearchModal: () =>
+    set({
+      smartSearchModal: {
+        isOpen: true,
+      },
+    }),
+  closeSmartSearchModal: () =>
+    set({
+      smartSearchModal: {
+        isOpen: false,
+      },
+    }),
+
   projectCreateModal: {
     isOpen: false,
   },
