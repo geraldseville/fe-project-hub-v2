@@ -1,6 +1,10 @@
 import momentTimezone from 'moment-timezone';
 
-import type { CalendarEvent, PositionedCalendarEvent } from './calendar.types';
+import type {
+  CalendarEvent,
+  HorizontalRegion,
+  PositionedCalendarEvent,
+} from './calendar.types';
 
 export const HOUR_HEIGHT = 100;
 export const MINUTES_PER_HOUR = 60;
@@ -225,6 +229,72 @@ export const getOverlappingEventLayout = <T,>(
       } satisfies PositionedCalendarEvent<T>;
     });
   });
+};
+
+export const getFreeHorizontalRegions = <T,>(
+  slotStartMinutes: number,
+  slotEndMinutes: number,
+  layout: PositionedCalendarEvent<T>[],
+): HorizontalRegion[] => {
+  const blocked: Array<{ start: number; end: number }> = [];
+
+  layout.forEach(({ position, columnIndex, columnCount }) => {
+    if (!position || columnCount <= 0) {
+      return;
+    }
+
+    const eventStart = position.startMinutes;
+    const eventEnd = position.startMinutes + position.durationMinutes;
+
+    if (eventStart < slotEndMinutes && slotStartMinutes < eventEnd) {
+      blocked.push({
+        start: (columnIndex / columnCount) * 100,
+        end: ((columnIndex + 1) / columnCount) * 100,
+      });
+    }
+  });
+
+  if (blocked.length === 0) {
+    return [{ leftPercent: 0, widthPercent: 100 }];
+  }
+
+  blocked.sort((left, right) => left.start - right.start);
+
+  const merged: Array<{ start: number; end: number }> = [];
+
+  blocked.forEach((interval) => {
+    const last = merged[merged.length - 1];
+
+    if (last && interval.start <= last.end) {
+      last.end = Math.max(last.end, interval.end);
+      return;
+    }
+
+    merged.push({ ...interval });
+  });
+
+  const free: HorizontalRegion[] = [];
+  let cursor = 0;
+
+  merged.forEach((interval) => {
+    if (interval.start > cursor) {
+      free.push({
+        leftPercent: cursor,
+        widthPercent: interval.start - cursor,
+      });
+    }
+
+    cursor = Math.max(cursor, interval.end);
+  });
+
+  if (cursor < 100) {
+    free.push({
+      leftPercent: cursor,
+      widthPercent: 100 - cursor,
+    });
+  }
+
+  return free.filter((region) => region.widthPercent > 0);
 };
 
 export const minutesToPixels = (minutes: number) => {
