@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 
 import clsx from 'clsx';
@@ -29,7 +29,32 @@ import {
   IconTask1,
 } from '@/components/svgs/icons';
 
-type SearchFilter = 'all' | 'users' | 'projects' | 'tasks';
+type SearchResultType = 'user' | 'project' | 'task';
+
+type SearchFilter = 'all' | SearchResultType;
+
+type SearchResult =
+  | {
+      type: 'user';
+      id: string;
+      title: string;
+      description: string;
+      data: User;
+    }
+  | {
+      type: 'project';
+      id: string;
+      title: string;
+      description?: string;
+      data: Project;
+    }
+  | {
+      type: 'task';
+      id: string;
+      title: string;
+      description?: string;
+      data: Task;
+    };
 
 interface SmartSearchModalProps {
   isOpen: boolean;
@@ -44,8 +69,90 @@ export default function SmartSearchModal({
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks();
 
+  const SEARCH_FILTERS = [
+    {
+      value: 'all',
+      label: 'All',
+    },
+    {
+      value: 'user',
+      label: 'Users',
+    },
+    {
+      value: 'project',
+      label: 'Projects',
+    },
+    {
+      value: 'task',
+      label: 'Tasks',
+    },
+  ] satisfies {
+    value: SearchFilter;
+    label: string;
+  }[];
+
   const [search, setSearch] = useState<string>('');
   const [filter, setFilter] = useState<SearchFilter>('all');
+
+  const searchResults = useMemo<SearchResult[]>(() => {
+    return [
+      ...(users ?? []).map((user) => ({
+        type: 'user' as const,
+        id: user.id,
+        title: getFullName(user.firstName, user.lastName),
+        description: user.email,
+        data: user,
+      })),
+
+      ...(projects ?? []).map((project) => ({
+        type: 'project' as const,
+        id: project.id,
+        title: project.title,
+        description: project.description ?? '',
+        data: project,
+      })),
+
+      ...(tasks ?? []).map((task) => ({
+        type: 'task' as const,
+        id: task.id,
+        title: task.title,
+        description: task.description ?? '',
+        data: task,
+      })),
+    ];
+  }, [users, projects, tasks]);
+
+  const filteredResults = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return searchResults.filter((result) => {
+      // Filter by type
+      if (filter !== 'all' && result.type !== filter) {
+        return false;
+      }
+
+      // No search text
+      if (!query) {
+        return true;
+      }
+
+      // Search title + description
+      return (
+        result.title.toLowerCase().includes(query) ||
+        result.description?.toLowerCase().includes(query)
+      );
+    });
+  }, [searchResults, search, filter]);
+
+  const groupedResults = useMemo(() => {
+    return {
+      users: filteredResults.filter((result) => result.type === 'user'),
+
+      projects: filteredResults.filter((result) => result.type === 'project'),
+
+      tasks: filteredResults.filter((result) => result.type === 'task'),
+    };
+  }, [filteredResults]);
 
   const handleCancel = () => {
     setSearch('');
@@ -64,7 +171,7 @@ export default function SmartSearchModal({
           !search
             ? 'max-h-15! min-h-15! h-15!'
             : 'max-h-[80dvh]! min-h-[80dvh]! h-[80dvh]!',
-          'transition-all duration-200',
+          'transition-all duration-200 ease-in-out',
           'rounded-lg',
           'border border-[#464554]',
         ),
@@ -109,8 +216,8 @@ export default function SmartSearchModal({
         className={clsx(
           'overflow-hidden',
           'flex flex-col',
-          !search ? 'h-0' : 'h-full',
-          'transition-all duration-200',
+          !search ? 'h-0 opacity-0' : 'h-full opacity-100',
+          'transition-all duration-200 ease-in-out',
           'bg-[#0F172A]',
         )}
       >
@@ -122,7 +229,7 @@ export default function SmartSearchModal({
             'border-y border-y-[#1E293B]',
           )}
         >
-          {['all', 'users', 'projects', 'tasks'].map((filterItem) => (
+          {SEARCH_FILTERS.map((filterItem) => (
             <button
               className={clsx(
                 'font-medium',
@@ -134,223 +241,100 @@ export default function SmartSearchModal({
                 'rounded-lg',
                 'transition-all duration-200',
                 'border border-[#334155]',
-                filterItem === filter && 'text-[#F8FAFC] bg-[#7C3AED]',
+                filterItem.value === filter && 'text-[#F8FAFC] bg-[#7C3AED]',
               )}
-              key={`filter-${filterItem}`}
+              key={`filter-${filterItem.value}`}
               type="button"
-              aria-label={`Filter by ${toCapitalize(filterItem)}`}
+              aria-label={`Filter by ${filterItem.label}`}
               onClick={() => {
-                setFilter(filterItem as SearchFilter);
+                setFilter(filterItem.value);
               }}
             >
-              {toCapitalize(filterItem)}
+              {filterItem.label}
             </button>
           ))}
         </div>
         {/* Results */}
         <div className={clsx('overflow-y-auto', 'flex-1', 'py-4 px-6')}>
-          {/* Users Result */}
-          <div className="w-full">
-            <LabelField text="TEAM" />
-            <div className="flex flex-col">
-              {users?.map((userItem) => (
-                <button
-                  className={clsx(
-                    'flex justify-start items-center gap-4',
-                    'p-3',
-                  )}
-                  key={userItem.id}
-                  type="button"
-                  aria-label="Click User"
-                >
-                  <div className="min-w-10 w-10 h-10 rounded-full">
-                    {userItem.imageUrl ? (
-                      <Image
-                        className={clsx(
-                          'w-full h-full',
-                          'object-cover object-center',
-                          'rounded-full',
-                        )}
-                        src={userItem.imageUrl}
-                        alt={getFullName(userItem.firstName, userItem.lastName)}
-                        title={getFullName(
-                          userItem.firstName,
-                          userItem.lastName,
-                        )}
-                        width={40}
-                        height={40}
-                      />
-                    ) : (
-                      <Avatar initial={userItem.firstName?.charAt(0)} />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div
-                      className={clsx(
-                        'font-semibold',
-                        'text-[#F8FAFC] text-left leading-normal',
-                        'truncate',
-                      )}
-                    >
-                      {getFullName(userItem.firstName, userItem.lastName)}
-                    </div>
-                    <div
-                      className={clsx('text-[#94A3B8] text-[12px] text-left')}
-                    >
-                      {userItem.email}
-                    </div>
-                  </div>
-                  <TeamRoleUI role={userItem.role} />
-                </button>
-              ))}
+          {filteredResults.length === 0 ? (
+            <div
+              className={clsx(
+                'text-center',
+                'flex flex-col justify-center items-center',
+                'h-full',
+              )}
+            >
+              <div
+                className={clsx(
+                  'flex justify-center items-center',
+                  'w-10 h-10 mb-3',
+                  'rounded-full',
+                  'bg-[#1E293B]',
+                  'border border-[#334155]',
+                )}
+              >
+                <IconSearch
+                  className={clsx('min-w-4 w-4 h-4', 'text-[#64748B]')}
+                />
+              </div>
+              <div className={clsx('font-semibold', 'text-[#F8FAFC]')}>
+                No matches found
+              </div>
+              <div className={clsx('text-[#64748B] text-[12px]', 'mt-1')}>
+                Try a different search term or filter.
+              </div>
             </div>
-          </div>
-          {/* Projects Result */}
-          <div className="w-full">
-            <LabelField text="PROJECTS" />
-            <div className="flex flex-col">
-              {projects?.map((projectItem) => (
-                <button
-                  className={clsx(
-                    'flex justify-start items-center gap-4',
-                    'p-3',
-                  )}
-                  key={projectItem.id}
-                  type="button"
-                  aria-label="Click User"
-                >
-                  <div
-                    className={clsx(
-                      'flex justify-center items-center',
-                      'min-w-10 w-10 h-10',
-                      'rounded-[10px]',
-                      'bg-[#1E293B]/50',
-                      'border border-[#334155]',
-                    )}
-                    style={
-                      {
-                        '--search-project-color': projectItem.primaryColor,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <IconFolder1
-                      className={clsx(
-                        'text-(--search-project-color)',
-                        'min-w-4 w-4 h-auto',
-                      )}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-start items-center gap-2">
-                      <div
-                        className={clsx(
-                          'font-semibold',
-                          'text-[#F8FAFC] text-left leading-normal',
-                          'truncate',
-                        )}
-                      >
-                        {projectItem.title}
-                      </div>
-                      <ProjectStatusUI status={projectItem.status} />
-                    </div>
-                    <div
-                      className={clsx(
-                        'text-[#94A3B8] text-[12px] text-left',
-                        'line-clamp-1',
-                      )}
-                    >
-                      {projectItem.description}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* Tasks Result */}
-          <div className="w-full">
-            <LabelField text="TASKS" />
-            <div className="flex flex-col">
-              {tasks?.map((taskItem) => (
-                <button
-                  className={clsx(
-                    'flex justify-start items-center gap-4',
-                    'p-3',
-                  )}
-                  key={taskItem.id}
-                  type="button"
-                  aria-label="Click User"
-                >
-                  <div
-                    className={clsx(
-                      'flex justify-center items-center',
-                      'min-w-10 w-10 h-10',
-                      'rounded-[10px]',
-                      'bg-[#1E293B]/50',
-                      'border border-[#334155]',
-                    )}
-                    style={
-                      {
-                        '--search-task-color': taskItem.primaryColor,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <IconTask1
-                      className={clsx(
-                        'text-(--search-task-color)',
-                        'min-w-4 w-4 h-auto',
-                      )}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div
-                      className={clsx(
-                        'font-semibold',
-                        'text-[#F8FAFC] text-left leading-normal',
-                        'truncate',
-                      )}
-                    >
-                      {taskItem.title}
-                    </div>
-                    <div
-                      className={clsx(
-                        'text-[#94A3B8] text-[12px] text-left',
-                        'line-clamp-1',
-                      )}
-                    >
-                      {taskItem.description}
-                    </div>
-                  </div>
-                  <TaskPriorityUI priority={taskItem.priority} />
-                  <div className="min-w-7.5 w-7.5 h-7.5">
-                    {taskItem.assignee?.imageUrl ? (
-                      <Image
-                        className={clsx(
-                          'w-full h-full',
-                          'object-cover object-center',
-                          'rounded-full',
-                        )}
-                        src={taskItem.assignee?.imageUrl}
-                        alt={getFullName(
-                          taskItem.assignee?.firstName,
-                          taskItem.assignee?.lastName,
-                        )}
-                        title={getFullName(
-                          taskItem.assignee?.firstName,
-                          taskItem.assignee?.lastName,
-                        )}
-                        width={40}
-                        height={40}
+          ) : (
+            <>
+              {/* Users Result */}
+              {groupedResults.users.length > 0 && (
+                <div className="w-full">
+                  <LabelField text="TEAM" />
+
+                  <div className="flex flex-col">
+                    {groupedResults.users.map((result) => (
+                      <SearchResultItem
+                        key={`${result.type}-${result.id}`}
+                        result={result}
                       />
-                    ) : (
-                      <Avatar
-                        initial={taskItem.assignee?.firstName?.charAt(0)}
-                      />
-                    )}
+                    ))}
                   </div>
-                </button>
-              ))}
-            </div>
-          </div>
+                </div>
+              )}
+
+              {/* Projects Result */}
+              {groupedResults.projects.length > 0 && (
+                <div className="w-full">
+                  <LabelField text="PROJECTS" />
+
+                  <div className="flex flex-col">
+                    {groupedResults.projects.map((result) => (
+                      <SearchResultItem
+                        key={`${result.type}-${result.id}`}
+                        result={result}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tasks Result */}
+              {groupedResults.tasks.length > 0 && (
+                <div className="w-full">
+                  <LabelField text="TASKS" />
+
+                  <div className="flex flex-col">
+                    {groupedResults.tasks.map((result) => (
+                      <SearchResultItem
+                        key={`${result.type}-${result.id}`}
+                        result={result}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
         {/* Foot */}
         <div
@@ -448,5 +432,204 @@ export default function SmartSearchModal({
         </div>
       </div>
     </Modal>
+  );
+}
+
+function SearchResultItem({ result }: { result: SearchResult }) {
+  switch (result.type) {
+    case 'user':
+      return <UserSearchResult user={result.data} />;
+
+    case 'project':
+      return <ProjectSearchResult project={result.data} />;
+
+    case 'task':
+      return <TaskSearchResult task={result.data} />;
+  }
+}
+
+function UserSearchResult({ user }: { user: User }) {
+  return (
+    <button
+      className={clsx(
+        'flex justify-start items-center gap-4',
+        'p-3',
+        'rounded-lg',
+        'hover:bg-[#1E293B]',
+      )}
+      key={user.id}
+      type="button"
+      aria-label="Click User"
+    >
+      <div className="min-w-10 w-10 h-10 rounded-full">
+        {user.imageUrl ? (
+          <Image
+            className={clsx(
+              'w-full h-full',
+              'object-cover object-center',
+              'rounded-full',
+            )}
+            src={user.imageUrl}
+            alt={getFullName(user.firstName, user.lastName)}
+            title={getFullName(user.firstName, user.lastName)}
+            width={40}
+            height={40}
+          />
+        ) : (
+          <Avatar initial={user.firstName?.charAt(0)} />
+        )}
+      </div>
+      <div className="flex-1">
+        <div
+          className={clsx(
+            'font-semibold',
+            'text-[#F8FAFC] text-left leading-normal',
+            'truncate',
+          )}
+        >
+          {getFullName(user.firstName, user.lastName)}
+        </div>
+        <div className={clsx('text-[#94A3B8] text-[12px] text-left')}>
+          {user.email}
+        </div>
+      </div>
+      <TeamRoleUI role={user.role} />
+    </button>
+  );
+}
+
+function ProjectSearchResult({ project }: { project: Project }) {
+  return (
+    <button
+      className={clsx(
+        'flex justify-start items-center gap-4',
+        'p-3',
+        'rounded-lg',
+        'hover:bg-[#1E293B]',
+      )}
+      key={project.id}
+      type="button"
+      aria-label="Click User"
+    >
+      <div
+        className={clsx(
+          'flex justify-center items-center',
+          'min-w-10 w-10 h-10',
+          'rounded-[10px]',
+          'bg-[#1E293B]/50',
+          'border border-[#334155]',
+        )}
+        style={
+          {
+            '--search-project-color': project.primaryColor,
+          } as React.CSSProperties
+        }
+      >
+        <IconFolder1
+          className={clsx(
+            'text-(--search-project-color)',
+            'min-w-4 w-4 h-auto',
+          )}
+        />
+      </div>
+      <div className="flex-1">
+        <div className="flex justify-start items-center gap-2">
+          <div
+            className={clsx(
+              'font-semibold',
+              'text-[#F8FAFC] text-left leading-normal',
+              'truncate',
+            )}
+          >
+            {project.title}
+          </div>
+          <ProjectStatusUI status={project.status} />
+        </div>
+        <div
+          className={clsx(
+            'text-[#94A3B8] text-[12px] text-left',
+            'line-clamp-1',
+          )}
+        >
+          {project.description}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function TaskSearchResult({ task }: { task: Task }) {
+  return (
+    <button
+      className={clsx(
+        'flex justify-start items-center gap-4',
+        'p-3',
+        'rounded-lg',
+        'hover:bg-[#1E293B]',
+      )}
+      key={task.id}
+      type="button"
+      aria-label="Click User"
+    >
+      <div
+        className={clsx(
+          'flex justify-center items-center',
+          'min-w-10 w-10 h-10',
+          'rounded-[10px]',
+          'bg-[#1E293B]/50',
+          'border border-[#334155]',
+        )}
+        style={
+          {
+            '--search-task-color': task.primaryColor,
+          } as React.CSSProperties
+        }
+      >
+        <IconTask1
+          className={clsx('text-(--search-task-color)', 'min-w-4 w-4 h-auto')}
+        />
+      </div>
+      <div className="flex-1">
+        <div
+          className={clsx(
+            'font-semibold',
+            'text-[#F8FAFC] text-left leading-normal',
+            'truncate',
+          )}
+        >
+          {task.title}
+        </div>
+        <div
+          className={clsx(
+            'text-[#94A3B8] text-[12px] text-left',
+            'line-clamp-1',
+          )}
+        >
+          {task.description}
+        </div>
+      </div>
+      <TaskPriorityUI priority={task.priority} />
+      <div className="min-w-7.5 w-7.5 h-7.5">
+        {task.assignee?.imageUrl ? (
+          <Image
+            className={clsx(
+              'w-full h-full',
+              'object-cover object-center',
+              'rounded-full',
+            )}
+            src={task.assignee?.imageUrl}
+            alt={getFullName(task.assignee?.firstName, task.assignee?.lastName)}
+            title={getFullName(
+              task.assignee?.firstName,
+              task.assignee?.lastName,
+            )}
+            width={40}
+            height={40}
+          />
+        ) : (
+          <Avatar initial={task.assignee?.firstName?.charAt(0)} />
+        )}
+      </div>
+    </button>
   );
 }
