@@ -154,12 +154,18 @@ export default function TaskUpdateDrawer({
       onClose={handleCancel}
     >
       {/* Head */}
-      <div className={clsx('p-6', 'bg-[#334155]', 'border-b border-[#464554]')}>
+      <div
+        className={clsx(
+          'py-4 px-6',
+          'bg-[#334155]',
+          'border-b border-[#464554]',
+        )}
+      >
         <div className="flex justify-between items-center gap-4">
           {isProjectPending ? (
             <SkeletonLoading className="w-full h-6" />
           ) : task ? (
-            <h2 className={clsx('font-bold', 'text-[24px]')}>
+            <h2 className={clsx('font-bold', 'text-[20px]')}>
               <EditableField
                 classNames={{ root: 'p-0! hover:border-transparent!' }}
                 value={task.title}
@@ -173,7 +179,7 @@ export default function TaskUpdateDrawer({
               />
             </h2>
           ) : (
-            <i>No Task Foun</i>
+            <i className={clsx('font-bold', 'text-[20px]')}>No Task Found</i>
           )}
           <button
             className={clsx(

@@ -154,9 +154,15 @@ export default function TaskCreateDrawer({
       onClose={handleCancel}
     >
       {/* Head */}
-      <div className={clsx('p-6', 'bg-[#334155]', 'border-b border-[#464554]')}>
+      <div
+        className={clsx(
+          'py-4 px-6',
+          'bg-[#334155]',
+          'border-b border-[#464554]',
+        )}
+      >
         <div className="flex justify-between items-center gap-4">
-          <h2 className={clsx('font-bold', 'text-[24px]')}>Create Task</h2>
+          <h2 className={clsx('font-bold', 'text-[20px]')}>Create Task</h2>
           <button
             className={clsx('flex justify-center items-center', 'w-8 h-8')}
             type="button"

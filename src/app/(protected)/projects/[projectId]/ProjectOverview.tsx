@@ -6,10 +6,14 @@ import momentTimezone from 'moment-timezone';
 import { useMe } from '@/hooks/queries/useMe';
 
 import { DEFAULT_TIMEZONE } from '@/utils/date-time';
+import { PROJECT_DEFAULT_COLOR } from '@/utils/project.utils';
 
 import type { Project } from '@/types/project.types';
 
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
+import ProjectMembersUI from '@/components/shared/projects/ProjectMembersUI';
+import ProjectPriorityUI from '@/components/shared/projects/ProjectPriorityUI';
+import ProjectStatusUI from '@/components/shared/projects/ProjectStatusUI';
 
 interface ProjectOverviewProps {
   project?: Project | null;
@@ -38,17 +42,38 @@ export default function ProjectOverview({
         'p-6',
         'rounded-xl',
         'bg-[#171F33]',
-        'border border-[#334155]',
+        'border border-l-[6px] border-[#334155]',
       )}
+      style={{
+        borderLeftColor: project?.primaryColor ?? PROJECT_DEFAULT_COLOR,
+      }}
     >
-      <h2
-        className={clsx(
-          'font-hanken-grotesk font-semibold',
-          'text-[#DAE2FD] text-[24px] leading-normal',
+      <div className="flex justify-start items-center gap-4">
+        <h2
+          className={clsx(
+            'font-hanken-grotesk font-semibold',
+            'text-[#DAE2FD] text-[24px]',
+            'leading-normal truncate',
+          )}
+        >
+          Project Overview
+        </h2>
+        {isProjectPending || !project?.status ? (
+          <SkeletonLoading className="w-20 h-6" />
+        ) : (
+          <ProjectStatusUI status={project?.status} />
         )}
-      >
-        Project Overview
-      </h2>
+        {isProjectPending || !project?.priority ? (
+          <SkeletonLoading className="w-20 h-6" />
+        ) : (
+          <ProjectPriorityUI priority={project?.priority} />
+        )}
+      </div>
+      <ProjectMembersUI
+        classNames={{ root: 'mt-4' }}
+        members={project?.members ?? []}
+        maxDisplay={10}
+      />
       {isProjectPending ? (
         <div className="w-full space-y-1.5 mt-4">
           <SkeletonLoading className="w-full h-4" />
