@@ -5,12 +5,12 @@ import clsx from 'clsx';
 import { useCreateTask } from '@/hooks/mutations/useCreateTask';
 import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useMe } from '@/hooks/queries/useMe';
-import { useProject } from '@/hooks/queries/useProject';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
 import { COLOR_PRESETS } from '@/utils/color.utils';
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/task.utils';
 import { getFullName } from '@/utils/user.utils';
 
@@ -69,6 +69,7 @@ export default function TaskCreateDrawer({
   });
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
   const validationResult = validateTaskForm(draftTaskForm);
   const errors = hasSubmitted ? validationResult.errors : {};
 
@@ -267,7 +268,7 @@ export default function TaskCreateDrawer({
               type="date-time"
               formatDate="MMM DD, YYYY"
               placeholder="Select Start Date..."
-              timezone={me?.timezone}
+              timezone={timezone}
               value={draftTaskForm.startDate}
               onChange={(selected) => {
                 setDraftTaskForm((prev) => ({
@@ -291,7 +292,7 @@ export default function TaskCreateDrawer({
               type="date-time"
               formatDate="MMM DD, YYYY"
               placeholder="Select End Date..."
-              timezone={me?.timezone}
+              timezone={timezone}
               value={draftTaskForm.endDate}
               onChange={(selected) => {
                 setDraftTaskForm((prev) => ({
@@ -339,7 +340,7 @@ export default function TaskCreateDrawer({
                 return user
                   ? {
                       id: user.id,
-                      image: user.imageUrl,
+                      image: user.imageUrl ?? '',
                       label: getFullName(user.firstName, user.lastName),
                       value: user.id,
                     }
@@ -347,7 +348,7 @@ export default function TaskCreateDrawer({
               })()}
               options={users.map((item: User) => ({
                 id: item.id,
-                image: item.imageUrl,
+                image: item.imageUrl ?? '',
                 label: getFullName(item.firstName, item.lastName),
                 value: item.id,
                 data: { ...item },
