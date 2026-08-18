@@ -2,6 +2,8 @@ import momentTimezone from 'moment-timezone';
 
 import type { ProjectPriority, ProjectStatus } from '@/types/project.types';
 
+export const PROJECT_DEFAULT_COLOR = '#8083FF';
+
 export const PROJECT_COLOR_PRESETS = [
   '#EF4444', // Red
   '#F97316', // Orange

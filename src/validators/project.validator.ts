@@ -1,6 +1,10 @@
 import { z } from 'zod';
 
-import { PROJECT_PRIORITIES, PROJECT_STATUSES } from '@/utils/project.utils';
+import {
+  PROJECT_DEFAULT_COLOR,
+  PROJECT_PRIORITIES,
+  PROJECT_STATUSES,
+} from '@/utils/project.utils';
 
 export const projectFormSchema = z
   .object({
@@ -39,12 +43,12 @@ export const projectFormSchema = z
     primaryColor: z
       .string()
       .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid primary color.')
-      .default('#000000'),
+      .default(PROJECT_DEFAULT_COLOR),
 
     secondaryColor: z
       .string()
       .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, 'Invalid secondary color.')
-      .default('#000000'),
+      .default(PROJECT_DEFAULT_COLOR),
 
     memberIds: z.array(z.string().cuid()).optional().default([]),
   })
@@ -66,8 +70,8 @@ export const blankProjectForm: ProjectFormInput = {
   priority: 'MEDIUM',
   startDate: '',
   endDate: '',
-  primaryColor: '#000000',
-  secondaryColor: '#000000',
+  primaryColor: PROJECT_DEFAULT_COLOR,
+  secondaryColor: PROJECT_DEFAULT_COLOR,
   memberIds: [],
 };
 
