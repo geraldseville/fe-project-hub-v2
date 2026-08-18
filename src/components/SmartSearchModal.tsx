@@ -64,6 +64,34 @@ interface SmartSearchModalProps {
   onClose: () => void;
 }
 
+const SEARCH_FILTERS = [
+  {
+    value: 'all',
+    label: 'All',
+  },
+  {
+    value: 'user',
+    label: 'Users',
+  },
+  {
+    value: 'project',
+    label: 'Projects',
+  },
+  {
+    value: 'task',
+    label: 'Tasks',
+  },
+] satisfies {
+  value: SearchFilter;
+  label: string;
+}[];
+
+const RESULT_SECTION_LABELS: Record<SearchResultType, string> = {
+  user: 'TEAM',
+  project: 'PROJECTS',
+  task: 'TASKS',
+};
+
 export default function SmartSearchModal({
   isOpen,
   onClose,
@@ -78,80 +106,69 @@ export default function SmartSearchModal({
     (state) => state.openTaskUpdateDrawer,
   );
 
-  const SEARCH_FILTERS = [
-    {
-      value: 'all',
-      label: 'All',
-    },
-    {
-      value: 'user',
-      label: 'Users',
-    },
-    {
-      value: 'project',
-      label: 'Projects',
-    },
-    {
-      value: 'task',
-      label: 'Tasks',
-    },
-  ] satisfies {
-    value: SearchFilter;
-    label: string;
-  }[];
-
-  const [search, setSearch] = useState<string>('');
+  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<SearchFilter>('all');
-  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
   const resultRefs = useRef<
     Record<string, HTMLAnchorElement | HTMLButtonElement | null>
   >({});
 
-  const searchResults = useMemo<SearchResult[]>(() => {
-    return [
-      ...(users ?? []).map((user) => ({
-        type: 'user' as const,
-        id: user.id,
-        title: getFullName(user.firstName, user.lastName),
-        description: user.email,
-        data: user,
-      })),
+  /**
+   * Normalize all searchable entities into one structure.
+   */
+  const searchResults = useMemo<SearchResult[]>(
+    () => [
+      ...(users ?? []).map(
+        (user): SearchResult => ({
+          type: 'user',
+          id: user.id,
+          title: getFullName(user.firstName, user.lastName),
+          description: user.email,
+          data: user,
+        }),
+      ),
 
-      ...(projects ?? []).map((project) => ({
-        type: 'project' as const,
-        id: project.id,
-        title: project.title,
-        description: project.description ?? '',
-        data: project,
-      })),
+      ...(projects ?? []).map(
+        (project): SearchResult => ({
+          type: 'project',
+          id: project.id,
+          title: project.title,
+          description: project.description ?? '',
+          data: project,
+        }),
+      ),
 
-      ...(tasks ?? []).map((task) => ({
-        type: 'task' as const,
-        id: task.id,
-        title: task.title,
-        description: task.description ?? '',
-        data: task,
-      })),
-    ];
-  }, [users, projects, tasks]);
+      ...(tasks ?? []).map(
+        (task): SearchResult => ({
+          type: 'task',
+          id: task.id,
+          title: task.title,
+          description: task.description ?? '',
+          data: task,
+        }),
+      ),
+    ],
+    [users, projects, tasks],
+  );
 
+  /**
+   * Filter results by selected filter and search query.
+   */
   const filteredResults = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     return searchResults.filter((result) => {
-      // Filter by type
       if (filter !== 'all' && result.type !== filter) {
         return false;
       }
 
-      // No search text
       if (!query) {
         return true;
       }
 
-      // Search title + description
       return (
         result.title.toLowerCase().includes(query) ||
         result.description?.toLowerCase().includes(query)
@@ -159,18 +176,22 @@ export default function SmartSearchModal({
     });
   }, [searchResults, search, filter]);
 
+  /**
+   * Group filtered results by entity type.
+   */
   const groupedResults = useMemo(() => {
     return {
-      users: filteredResults.filter((result) => result.type === 'user'),
-
-      projects: filteredResults.filter((result) => result.type === 'project'),
-
-      tasks: filteredResults.filter((result) => result.type === 'task'),
+      user: filteredResults.filter((result) => result.type === 'user'),
+      project: filteredResults.filter((result) => result.type === 'project'),
+      task: filteredResults.filter((result) => result.type === 'task'),
     };
   }, [filteredResults]);
 
   const getResultKey = (result: SearchResult) => `${result.type}-${result.id}`;
 
+  /**
+   * Move between search filters using Tab.
+   */
   useKeyboardShortcut({
     key: 'Tab',
     callback: () => {
@@ -189,6 +210,9 @@ export default function SmartSearchModal({
     },
   });
 
+  /**
+   * Navigate results with ArrowDown.
+   */
   useKeyboardShortcut({
     key: 'ArrowDown',
     callback: () => {
@@ -202,6 +226,9 @@ export default function SmartSearchModal({
     },
   });
 
+  /**
+   * Navigate results with ArrowUp.
+   */
   useKeyboardShortcut({
     key: 'ArrowUp',
     callback: () => {
@@ -215,6 +242,9 @@ export default function SmartSearchModal({
     },
   });
 
+  /**
+   * Select the currently highlighted result.
+   */
   useKeyboardShortcut({
     key: 'Enter',
     callback: () => {
@@ -253,18 +283,33 @@ export default function SmartSearchModal({
     onClose();
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      requestAnimationFrame(() => {
-        searchInputRef.current?.focus();
-      });
-    }
-  }, [isOpen]);
+  const handleFilterChange = (value: SearchFilter) => {
+    setFilter(value);
+  };
 
+  /**
+   * Reset result selection whenever the search context changes.
+   */
   useEffect(() => {
     setSelectedIndex(0);
   }, [search, filter]);
 
+  /**
+   * Focus search input when modal opens.
+   */
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      searchInputRef.current?.focus();
+    });
+  }, [isOpen]);
+
+  /**
+   * Keep the selected result visible while navigating.
+   */
   useEffect(() => {
     if (!isOpen || !filteredResults.length) {
       return;
@@ -276,8 +321,7 @@ export default function SmartSearchModal({
       return;
     }
 
-    const key = getResultKey(selectedResult);
-    const element = resultRefs.current[key];
+    const element = resultRefs.current[getResultKey(selectedResult)];
 
     element?.scrollIntoView({
       block: 'nearest',
@@ -288,10 +332,7 @@ export default function SmartSearchModal({
   return (
     <Modal
       classNames={{
-        root: clsx(
-          'items-start py-[10dvh]',
-          // isCreatingProjectPending && 'is-disabled opacity-100!'
-        ),
+        root: clsx('items-start py-[10dvh]'),
         content: clsx(
           'max-w-3xl!',
           !search
@@ -305,7 +346,7 @@ export default function SmartSearchModal({
       isOpen={isOpen}
       onClose={handleClose}
     >
-      {/* Head */}
+      {/* Header */}
       <div className="min-h-15 h-15">
         <div className="relative">
           <SingleLineField
@@ -318,12 +359,11 @@ export default function SmartSearchModal({
             placeholder="Search anything..."
             icon={<IconSearch className="min-w-4 w-4 h-4" />}
             value={search}
-            onChange={(e) => {
-              const newValue = e.target.value;
-
-              setSearch(newValue);
+            onChange={(event) => {
+              setSearch(event.target.value);
             }}
           />
+
           <div
             className={clsx(
               'font-jetbrains-mono font-bold',
@@ -338,6 +378,7 @@ export default function SmartSearchModal({
           </div>
         </div>
       </div>
+
       {/* Body */}
       <div
         className={clsx(
@@ -349,268 +390,167 @@ export default function SmartSearchModal({
         )}
       >
         {/* Filters */}
-        <div
-          className={clsx(
-            'flex justify-start items-center gap-2',
-            'py-4 px-6',
-            'border-y border-y-[#1E293B]',
-          )}
-        >
-          {SEARCH_FILTERS.map((filterItem) => (
-            <button
-              className={clsx(
-                'font-medium',
-                'text-[#94A3B8]',
-                'leading-none',
-                'block',
-                'h-7',
-                'py-1 px-3',
-                'rounded-lg',
-                'transition-all duration-200',
-                'border border-[#334155]',
-                filterItem.value === filter && 'text-[#F8FAFC] bg-[#7C3AED]',
-              )}
-              key={`filter-${filterItem.value}`}
-              type="button"
-              aria-label={`Filter by ${filterItem.label}`}
-              onClick={() => {
-                setFilter(filterItem.value);
-              }}
-            >
-              {filterItem.label}
-            </button>
-          ))}
-        </div>
+        <SearchFilters value={filter} onChange={handleFilterChange} />
+
         {/* Results */}
         <div className={clsx('overflow-y-auto', 'flex-1', 'py-4 px-6')}>
           {filteredResults.length === 0 ? (
-            <div
-              className={clsx(
-                'text-center',
-                'flex flex-col justify-center items-center',
-                'h-full',
-              )}
-            >
-              <div
-                className={clsx(
-                  'flex justify-center items-center',
-                  'w-10 h-10 mb-3',
-                  'rounded-full',
-                  'bg-[#1E293B]',
-                  'border border-[#334155]',
-                )}
-              >
-                <IconSearch
-                  className={clsx('min-w-4 w-4 h-4', 'text-[#64748B]')}
-                />
-              </div>
-              <div className={clsx('font-semibold', 'text-[#F8FAFC]')}>
-                No matches found
-              </div>
-              <div className={clsx('text-[#64748B] text-[12px]', 'mt-1')}>
-                Try a different search term or filter.
-              </div>
-            </div>
+            <NoResults />
           ) : (
-            <>
-              {/* Users Result */}
-              {groupedResults.users.length > 0 && (
-                <div className="w-full">
-                  <LabelField text="TEAM" />
-                  <div className="flex flex-col">
-                    {groupedResults.users.map((result) => {
-                      const index = filteredResults.findIndex(
-                        (item) =>
-                          item.id === result.id && item.type === result.type,
-                      );
+            <div className="flex flex-col gap-4">
+              {(['user', 'project', 'task'] as const).map((type) => {
+                const results = groupedResults[type];
 
-                      return (
-                        <Link
-                          key={`${result.type}-${result.id}`}
-                          ref={(element) => {
-                            resultRefs.current[getResultKey(result)] = element;
-                          }}
-                          onClick={handleClose}
-                          href={`/teams/${result.id}`}
-                        >
-                          <SearchResultItem
-                            result={result}
-                            search={search}
-                            selected={index === selectedIndex}
-                          />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              {/* Projects Result */}
-              {groupedResults.projects.length > 0 && (
-                <div className="w-full">
-                  <LabelField text="PROJECTS" />
-                  <div className="flex flex-col">
-                    {groupedResults.projects.map((result) => {
-                      const index = filteredResults.findIndex(
-                        (item) =>
-                          item.id === result.id && item.type === result.type,
-                      );
-                      return (
-                        <Link
-                          key={`${result.type}-${result.id}`}
-                          ref={(element) => {
-                            resultRefs.current[getResultKey(result)] = element;
-                          }}
-                          onClick={handleClose}
-                          href={`/projects/${result.id}`}
-                        >
-                          <SearchResultItem
-                            result={result}
-                            search={search}
-                            selected={index === selectedIndex}
-                          />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-              {/* Tasks Result */}
-              {groupedResults.tasks.length > 0 && (
-                <div className="w-full">
-                  <LabelField text="TASKS" />
+                if (!results.length) {
+                  return null;
+                }
 
-                  <div className="flex flex-col">
-                    {groupedResults.tasks.map((result) => {
-                      const index = filteredResults.findIndex(
-                        (item) =>
-                          item.id === result.id && item.type === result.type,
-                      );
-
-                      return (
-                        <button
-                          key={`${result.type}-${result.id}`}
-                          ref={(element) => {
-                            resultRefs.current[getResultKey(result)] = element;
-                          }}
-                          onClick={() => {
-                            openTaskUpdateDrawer(
-                              result.data.id,
-                              result.data.projectId,
-                            );
-                            handleClose();
-                          }}
-                        >
-                          <SearchResultItem
-                            key={`${result.type}-${result.id}`}
-                            result={result}
-                            search={search}
-                            selected={index === selectedIndex}
-                          />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
+                return (
+                  <SearchResultGroup
+                    key={type}
+                    type={type}
+                    results={results}
+                    filteredResults={filteredResults}
+                    selectedIndex={selectedIndex}
+                    search={search}
+                    resultRefs={resultRefs}
+                    onSelect={handleSelectResult}
+                    onClose={handleClose}
+                    getResultKey={getResultKey}
+                  />
+                );
+              })}
+            </div>
           )}
         </div>
-        {/* Foot */}
-        <div
-          className={clsx(
-            'py-3 px-6',
-            'rounded-b-[inherit]',
-            'bg-[#1E293B]/50',
-          )}
-        >
-          <div className="flex justify-between items-center gap-4">
-            <div className="flex-1">
-              <div
-                className={clsx(
-                  'flex justify-center items-center gap-2',
-                  'w-fit',
-                  'mr-auto',
-                )}
-              >
-                <div
-                  className={clsx(
-                    'font-jetbrains-mono font-bold',
-                    'leading-none',
-                    'flex justify-center items-center',
-                    'w-6 h-6',
-                    'py-1 px-1',
-                    'rounded-md',
-                    'border border-[#334155]',
-                  )}
-                >
-                  <IconArrowUp className="min-w-2 w-2 h-auto" />
-                </div>
-                <div
-                  className={clsx(
-                    'font-jetbrains-mono font-bold',
-                    'leading-none',
-                    'flex justify-center items-center',
-                    'w-6 h-6',
-                    'py-1 px-1',
-                    'rounded-md',
-                    'border border-[#334155]',
-                  )}
-                >
-                  <IconArrowDown className="min-w-2 w-2 h-auto" />
-                </div>
-                <div className={clsx('text-[#64748B] leading-none')}>
-                  Navigate
-                </div>
-              </div>
-            </div>
-            {/* Center */}
-            <div className="min-w-40">
-              <div className="flex justify-center items-center gap-2">
-                <div
-                  className={clsx(
-                    'font-jetbrains-mono font-bold',
-                    'leading-none',
-                    'h-6',
-                    'py-1 px-3',
-                    'rounded-md',
-                    'border border-[#334155]',
-                  )}
-                >
-                  Enter
-                </div>
-                <div className={clsx('text-[#64748B] leading-none')}>
-                  Select
-                </div>
-              </div>
-            </div>
-            <div className="flex-1">
-              <div
-                className={clsx(
-                  'flex justify-center items-center gap-2',
-                  'w-fit h-6',
-                  'ml-auto',
-                )}
-              >
-                <div
-                  className={clsx(
-                    'font-jetbrains-mono font-bold',
-                    'leading-none',
-                    'py-1 px-3',
-                    'rounded-md',
-                    'border border-[#334155]',
-                  )}
-                >
-                  Esc
-                </div>
-                <div className={clsx('text-[#64748B] leading-none')}>
-                  Dismiss
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
+        {/* Footer */}
+        <SearchFooter />
       </div>
     </Modal>
+  );
+}
+
+function SearchFilters({
+  value,
+  onChange,
+}: {
+  value: SearchFilter;
+  onChange: (value: SearchFilter) => void;
+}) {
+  return (
+    <div
+      className={clsx(
+        'flex justify-start items-center gap-2',
+        'py-4 px-6',
+        'border-y border-y-[#1E293B]',
+      )}
+    >
+      {SEARCH_FILTERS.map((filter) => (
+        <button
+          className={clsx(
+            'font-medium',
+            'text-[#94A3B8]',
+            'leading-none',
+            'block',
+            'h-7',
+            'py-1 px-3',
+            'rounded-lg',
+            'transition-all duration-200',
+            'border border-[#334155]',
+            filter.value === value && 'text-[#F8FAFC] bg-[#7C3AED]',
+          )}
+          key={filter.value}
+          type="button"
+          aria-label={`Filter by ${filter.label}`}
+          onClick={() => onChange(filter.value)}
+        >
+          {filter.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function SearchResultGroup({
+  type,
+  results,
+  filteredResults,
+  selectedIndex,
+  search,
+  resultRefs,
+  onSelect,
+  onClose,
+  getResultKey,
+}: {
+  type: SearchResultType;
+  results: SearchResult[];
+  filteredResults: SearchResult[];
+  selectedIndex: number;
+  search: string;
+  resultRefs: React.MutableRefObject<
+    Record<string, HTMLAnchorElement | HTMLButtonElement | null>
+  >;
+  onSelect: (result: SearchResult) => void;
+  onClose: () => void;
+  getResultKey: (result: SearchResult) => string;
+}) {
+  return (
+    <div className="w-full">
+      <LabelField text={RESULT_SECTION_LABELS[type]} />
+
+      <div className="flex flex-col">
+        {results.map((result) => {
+          const index = filteredResults.findIndex(
+            (item) => item.id === result.id && item.type === result.type,
+          );
+
+          const key = getResultKey(result);
+          const selected = index === selectedIndex;
+
+          const content = (
+            <SearchResultItem
+              result={result}
+              search={search}
+              selected={selected}
+            />
+          );
+
+          if (result.type === 'task') {
+            return (
+              <button
+                key={key}
+                ref={(element) => {
+                  resultRefs.current[key] = element;
+                }}
+                type="button"
+                onClick={() => onSelect(result)}
+              >
+                {content}
+              </button>
+            );
+          }
+
+          const href =
+            result.type === 'user'
+              ? `/teams/${result.id}`
+              : `/projects/${result.id}`;
+
+          return (
+            <Link
+              key={key}
+              ref={(element) => {
+                resultRefs.current[key] = element;
+              }}
+              href={href}
+              onClick={onClose}
+            >
+              {content}
+            </Link>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -662,6 +602,8 @@ function UserSearchResult({
   search: string;
   selected: boolean;
 }) {
+  const fullName = getFullName(user.firstName, user.lastName);
+
   return (
     <div
       className={clsx(
@@ -674,14 +616,10 @@ function UserSearchResult({
       <div className="min-w-10 w-10 h-10 rounded-full">
         {user.imageUrl ? (
           <Image
-            className={clsx(
-              'w-full h-full',
-              'object-cover object-center',
-              'rounded-full',
-            )}
+            className="w-full h-full object-cover object-center rounded-full"
             src={user.imageUrl}
-            alt={getFullName(user.firstName, user.lastName)}
-            title={getFullName(user.firstName, user.lastName)}
+            alt={fullName}
+            title={fullName}
             width={40}
             height={40}
           />
@@ -689,7 +627,7 @@ function UserSearchResult({
           <Avatar initial={user.firstName?.charAt(0)} />
         )}
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div
           className={clsx(
             'font-semibold',
@@ -697,12 +635,9 @@ function UserSearchResult({
             'truncate',
           )}
         >
-          <HighlightMatch
-            text={getFullName(user.firstName, user.lastName)}
-            query={search}
-          />
+          <HighlightMatch text={fullName} query={search} />
         </div>
-        <div className={clsx('text-[#94A3B8] text-[12px] text-left')}>
+        <div className="text-[#94A3B8] text-[12px] text-left">
           <HighlightMatch text={user.email} query={search} />
         </div>
       </div>
@@ -750,7 +685,7 @@ function ProjectSearchResult({
           )}
         />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div className="flex justify-start items-center gap-2">
           <div
             className={clsx(
@@ -785,6 +720,10 @@ function TaskSearchResult({
   search: string;
   selected: boolean;
 }) {
+  const assigneeName = task.assignee
+    ? getFullName(task.assignee.firstName, task.assignee.lastName)
+    : '';
+
   return (
     <div
       className={clsx(
@@ -812,7 +751,7 @@ function TaskSearchResult({
           className={clsx('text-(--search-task-color)', 'min-w-4 w-4 h-auto')}
         />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div
           className={clsx(
             'font-semibold',
@@ -835,17 +774,10 @@ function TaskSearchResult({
       <div className="min-w-7.5 w-7.5 h-7.5">
         {task.assignee?.imageUrl ? (
           <Image
-            className={clsx(
-              'w-full h-full',
-              'object-cover object-center',
-              'rounded-full',
-            )}
-            src={task.assignee?.imageUrl}
-            alt={getFullName(task.assignee?.firstName, task.assignee?.lastName)}
-            title={getFullName(
-              task.assignee?.firstName,
-              task.assignee?.lastName,
-            )}
+            className="w-full h-full object-cover object-center rounded-full"
+            src={task.assignee.imageUrl}
+            alt={assigneeName}
+            title={assigneeName}
             width={40}
             height={40}
           />
@@ -853,6 +785,127 @@ function TaskSearchResult({
           <Avatar initial={task.assignee?.firstName?.charAt(0)} />
         )}
       </div>
+    </div>
+  );
+}
+
+function NoResults() {
+  return (
+    <div
+      className={clsx(
+        'text-center',
+        'flex flex-col justify-center items-center',
+        'h-full',
+      )}
+    >
+      <div
+        className={clsx(
+          'flex justify-center items-center',
+          'w-10 h-10 mb-3',
+          'rounded-full',
+          'bg-[#1E293B]',
+          'border border-[#334155]',
+        )}
+      >
+        <IconSearch className={clsx('min-w-4 w-4 h-4', 'text-[#64748B]')} />
+      </div>
+      <div className={clsx('font-semibold', 'text-[#F8FAFC]')}>
+        No matches found
+      </div>
+      <div className={clsx('text-[#64748B] text-[12px]', 'mt-1')}>
+        Try a different search term or filter.
+      </div>
+    </div>
+  );
+}
+
+function SearchFooter() {
+  return (
+    <div
+      className={clsx('py-3 px-6', 'rounded-b-[inherit]', 'bg-[#1E293B]/50')}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <KeyboardHint
+          className="flex-1"
+          keys={
+            <>
+              <KeyboardKey>
+                <IconArrowUp className="min-w-2 w-2 h-auto" />
+              </KeyboardKey>
+
+              <KeyboardKey>
+                <IconArrowDown className="min-w-2 w-2 h-auto" />
+              </KeyboardKey>
+            </>
+          }
+          label="Navigate"
+        />
+        <KeyboardHint
+          keys={<KeyboardKey className="px-3">Enter</KeyboardKey>}
+          label="Select"
+          className="min-w-40"
+          centered
+        />
+        <KeyboardHint
+          keys={<KeyboardKey className="px-3">Esc</KeyboardKey>}
+          label="Dismiss"
+          className="flex-1"
+          alignRight
+        />
+      </div>
+    </div>
+  );
+}
+
+function KeyboardHint({
+  keys,
+  label,
+  className,
+  centered = false,
+  alignRight = false,
+}: {
+  keys: React.ReactNode;
+  label: string;
+  className?: string;
+  centered?: boolean;
+  alignRight?: boolean;
+}) {
+  return (
+    <div
+      className={clsx(
+        'flex items-center gap-2',
+        className,
+        centered && 'justify-center',
+        alignRight && 'justify-end',
+      )}
+    >
+      {keys}
+      <div className="text-[#64748B] leading-none">{label}</div>
+    </div>
+  );
+}
+
+function KeyboardKey({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={clsx(
+        'font-jetbrains-mono font-bold',
+        'leading-none',
+        'flex justify-center items-center',
+        'h-6',
+        'py-1 px-1',
+        'rounded-md',
+        'border border-[#334155]',
+        className,
+      )}
+    >
+      {children}
     </div>
   );
 }
@@ -875,11 +928,10 @@ function HighlightMatch({
   if (!trimmedQuery) {
     return <span className={className}>{text}</span>;
   }
-  const escapeRegExp = (value: string) => {
-    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  };
 
-  const matcher = new RegExp(`(${escapeRegExp(trimmedQuery)})`, 'gi');
+  const escapedQuery = trimmedQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const matcher = new RegExp(`(${escapedQuery})`, 'gi');
 
   return (
     <span className={className}>
@@ -888,13 +940,13 @@ function HighlightMatch({
 
         return isMatch ? (
           <mark
-            key={`${part}-${index}`}
             className={clsx(
               'text-[#F8FAFC]',
-              'bg-[#7C3AED]/40',
-              'rounded-[2px]',
               'px-0.5',
+              'rounded-xs',
+              'bg-[#7C3AED]/40',
             )}
+            key={`${part}-${index}`}
           >
             {part}
           </mark>
