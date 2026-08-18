@@ -7,6 +7,7 @@ import { useMe } from '@/hooks/queries/useMe';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import {
   PROJECT_COLOR_PRESETS,
   PROJECT_PRIORITIES,
@@ -47,64 +48,38 @@ export default function ProjectForm({
   errors,
 }: ProjectFormProps) {
   const { data: me } = useMe();
-
   const { data: users = [] } = useUsers();
-
   const { mutate: updateSavedColors } = useUpdateSavedColors();
 
   const [savedColors, setSavedColors] = useState<string[]>([]);
 
-  /*
-   * Initialize saved colors from the current user.
-   *
-   * This only updates local state. It does not trigger
-   * an API request.
-   */
-  useEffect(() => {
-    if (me?.savedColors) {
-      setSavedColors(me.savedColors);
-    }
-  }, [me?.savedColors]);
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
 
-  /*
-   * Preset colors belong to the application.
-   * Saved colors belong to the current user.
-   *
-   * The ColorSelector receives both.
-   */
   const allColors = useMemo(
     () => [...PROJECT_COLOR_PRESETS, ...savedColors],
     [savedColors],
   );
 
-  /*
-   * Debounce persistence so multiple color additions
-   * close together result in fewer API requests.
-   */
-  const saveSavedColors = useDebouncedCallback((colors: string[]) => {
-    updateSavedColors(colors);
-  }, 500);
-
   const handleAddColor = (color: SelectedColor) => {
-    /*
-     * Prevent duplicate custom colors.
-     */
     if (savedColors.includes(color.hex)) {
       return;
     }
 
     const nextColors = [...savedColors, color.hex];
 
-    /*
-     * Update the UI immediately.
-     */
     setSavedColors(nextColors);
-
-    /*
-     * Persist the updated list after the debounce delay.
-     */
-    saveSavedColors(nextColors);
+    debounceSavedColors(nextColors);
   };
+
+  const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
+    updateSavedColors(colors);
+  }, 500);
+
+  useEffect(() => {
+    if (me?.savedColors) {
+      setSavedColors(me.savedColors);
+    }
+  }, [me?.savedColors]);
 
   return (
     <div className="flex flex-wrap gap-6">
@@ -221,7 +196,9 @@ export default function ProjectForm({
         <DateTimePicker
           type="date-time"
           placeholder="Select Start Date..."
-          timezone={me?.timezone}
+          formatDate="MMM DD, YYYY"
+          formatTime={me?.timeFormat === 'H12' ? 'hh:mm A' : 'hh:mm'}
+          timezone={timezone}
           value={draftProjectForm.startDate}
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
@@ -238,7 +215,9 @@ export default function ProjectForm({
         <DateTimePicker
           type="date-time"
           placeholder="Select End Date..."
-          timezone={me?.timezone}
+          formatDate="MMM DD, YYYY"
+          formatTime={me?.timeFormat === 'H12' ? 'hh:mm A' : 'hh:mm'}
+          timezone={timezone}
           value={draftProjectForm.endDate}
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
@@ -260,14 +239,14 @@ export default function ProjectForm({
             .filter((user) => draftProjectForm.memberIds.includes(user.id))
             .map((user) => ({
               id: user.id,
-              image: user.imageUrl,
+              image: user.imageUrl ?? '',
               label: getFullName(user.firstName, user.lastName),
               value: user.id,
               data: user,
             }))}
           options={users.map((user: User) => ({
             id: user.id,
-            image: user.imageUrl,
+            image: user.imageUrl ?? '',
             label: getFullName(user.firstName, user.lastName),
             value: user.id,
             data: user,
