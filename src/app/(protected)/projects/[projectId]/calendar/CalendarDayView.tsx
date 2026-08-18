@@ -12,6 +12,7 @@ import {
   nowInTimezone,
   pixelsToMinutes,
 } from './calendar.utils';
+import CalendarTimeSlots from './CalendarTimeSlots';
 
 interface CalendarDayViewProps<T> {
   events?: CalendarEvent<T>[];
@@ -63,6 +64,10 @@ export default function CalendarDayView<T>({
   const currentTime = calendarMoment(now, timezone);
   const isToday = calendarMoment(date, timezone).isSame(currentTime, 'day');
   const currentTimeMinutes = currentTime.hours() * 60 + currentTime.minutes();
+  const dayEventLayout = useMemo(
+    () => getOverlappingEventLayout(events, date, timezone),
+    [events, date, timezone],
+  );
 
   const selectionPreview = useMemo(() => {
     if (selectionStart === null || selectionEnd === null) {
@@ -298,17 +303,29 @@ export default function CalendarDayView<T>({
 
         {/* Date */}
         <div
-          className={clsx('flex-1', 'h-full', 'border-r border-[#464554]/70')}
+          className={clsx(
+            'flex-1',
+            'h-full',
+            'border-r border-[#464554]/70',
+            isToday && 'bg-[#8083FF]/10',
+          )}
         >
           <div className="flex flex-col justify-center items-center h-full">
-            <div className={clsx('font-inter', 'text-[#908FA0] text-xs')}>
+            <div
+              className={clsx(
+                'font-inter text-xs',
+                isToday ? 'text-[#C0C1FF]' : 'text-[#908FA0]',
+              )}
+            >
               {day.format('ddd')}
             </div>
 
             <div
               className={clsx(
-                'font-inter font-semibold',
-                'text-[#C7C4D7] text-sm',
+                'font-inter font-semibold text-sm',
+                isToday
+                  ? 'text-[#C0C1FF] bg-[#8083FF]/30 rounded-full w-7 h-7 flex items-center justify-center'
+                  : 'text-[#C7C4D7]',
               )}
             >
               {day.format('D')}
@@ -350,6 +367,7 @@ export default function CalendarDayView<T>({
           className={clsx(
             'relative flex-1',
             'border-r border-[#464554]/70',
+            isToday && 'bg-[#8083FF]/5',
             selectionStart !== null && 'cursor-grabbing',
           )}
           ref={canvasRef}
@@ -362,61 +380,7 @@ export default function CalendarDayView<T>({
           onPointerCancel={handlePointerCancel}
         >
           {/* Grid */}
-          {hours.map((_, hour) => {
-            const isLast = hour === hours.length - 1;
-
-            return (
-              <div
-                className={clsx(
-                  'relative',
-                  !isLast && 'border-b border-[#464554]/70',
-                )}
-                key={hour}
-                style={{
-                  height: `${HOUR_HEIGHT}px`,
-                }}
-              >
-                {[0, 1, 2, 3].map((slotIndex) => {
-                  const slotMinutes = hour * 60 + slotIndex * 15;
-
-                  return (
-                    <div
-                      className={clsx(
-                        'group/slot',
-                        'absolute inset-x-0',
-                        'h-1/4',
-                        'px-1',
-                        'transition-colors duration-200 ease-out',
-                        'border-t border-dashed border-[#464554]/30',
-                      )}
-                      key={`${hour}-${slotIndex}`}
-                      style={{
-                        top: `${(HOUR_HEIGHT / 4) * slotIndex}px`,
-                      }}
-                    >
-                      <button
-                        className={clsx(
-                          'text-[10px]',
-                          'flex justify-center items-center',
-                          'w-full h-full',
-                          'rounded-md',
-                          'hover:bg-[#C7C4D7]/40',
-                          'active:bg-[#C7C4D7]/8',
-                          'focus:outline-none',
-                        )}
-                        type="button"
-                        aria-label={`Select time slot ${slotMinutes} minutes`}
-                      >
-                        <div className="invisible group-hover/slot:visible">
-                          New Event
-                        </div>
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+          <CalendarTimeSlots layout={dayEventLayout} />
 
           {/* Current Time Line Indicator */}
           {isToday && (
@@ -459,7 +423,7 @@ export default function CalendarDayView<T>({
           )}
 
           {/* Events */}
-          {getOverlappingEventLayout(events, date, timezone).map(
+          {dayEventLayout.map(
             ({ event, position, columnIndex, columnCount }) => {
               const widthPercentage = 100 / columnCount;
 
