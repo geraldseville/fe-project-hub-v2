@@ -32,6 +32,21 @@ export default function TaskAssigneeUI({
       ? assigneeFullName
       : `${assignee?.firstName ?? ''} ${assignee?.lastName?.charAt(0) ?? ''}`.trim();
 
+  if (!assignee) {
+    return (
+      <i
+        className={clsx(
+          'text-[#C7C4D7]',
+          'truncate',
+          'min-w-0',
+          classNames?.name,
+        )}
+      >
+        No Assignee
+      </i>
+    );
+  }
+
   return (
     <div
       className={clsx(
@@ -41,7 +56,7 @@ export default function TaskAssigneeUI({
       )}
     >
       <div className={clsx('min-w-7.5 w-7.5 h-7.5', classNames?.avatar)}>
-        {assignee?.imageUrl ? (
+        {assignee.imageUrl ? (
           <Image
             className={clsx(
               'w-full h-full',
@@ -61,7 +76,6 @@ export default function TaskAssigneeUI({
           />
         )}
       </div>
-
       <div
         className={clsx(
           'text-[#C7C4D7]',
