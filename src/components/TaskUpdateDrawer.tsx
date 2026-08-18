@@ -14,6 +14,7 @@ import { useToastStore } from '@/hooks/ui/useToastStore';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { COLOR_PRESETS } from '@/utils/color.utils';
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/task.utils';
 import { getFullName } from '@/utils/user.utils';
 
@@ -40,8 +41,6 @@ import TaskActivityTimeline from '@/components/shared/tasks/TaskActivityTimeline
 import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import { IconClose1, IconExternalLink } from '@/components/svgs/icons';
-
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface TaskUpdateDrawerProps {
   isOpen: boolean;
@@ -296,6 +295,7 @@ export default function TaskUpdateDrawer({
               <DateTimePicker
                 type="date-time"
                 formatDate="MMM DD, YYYY"
+                formatTime={me?.timeFormat === 'H12' ? 'hh:mm A' : 'hh:mm'}
                 timezone={timezone}
                 value={taskStartDate}
                 onChange={(selected) => {
@@ -320,6 +320,7 @@ export default function TaskUpdateDrawer({
               <DateTimePicker
                 type="date-time"
                 formatDate="MMM DD, YYYY"
+                formatTime={me?.timeFormat === 'H12' ? 'hh:mm A' : 'hh:mm'}
                 timezone={timezone}
                 value={taskEndDate}
                 onChange={(selected) => {
@@ -356,7 +357,7 @@ export default function TaskUpdateDrawer({
                     return user
                       ? {
                           id: user.id,
-                          image: user.imageUrl,
+                          image: user.imageUrl ?? '',
                           label: getFullName(user.firstName, user.lastName),
                           value: user.id,
                         }
@@ -364,7 +365,7 @@ export default function TaskUpdateDrawer({
                   })()}
                   options={users.map((item: User) => ({
                     id: item.id,
-                    image: item.imageUrl,
+                    image: item.imageUrl ?? '',
                     label: getFullName(item.firstName, item.lastName),
                     value: item.id,
                     data: { ...item },
