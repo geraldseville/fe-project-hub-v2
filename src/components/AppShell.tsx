@@ -1,10 +1,12 @@
 import clsx from 'clsx';
 
+import { useKeyboardShortcut } from '@/hooks/ui/useKeyboardShortcut';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import ProjectCreateModal from '@/components/ProjectCreateModal';
 import ProjectUpdateModal from '@/components/ProjectUpdateModal';
 import Sidebar from '@/components/Sidebar';
+import SmartSearchModal from '@/components/SmartSearchModal';
 import {
   IconAnalytics2,
   IconCalendar2,
@@ -20,6 +22,18 @@ import TaskUpdateDrawer from '@/components/TaskUpdateDrawer';
 import Toast from '@/components/Toast';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const smartSearchModal = useUiStore((state) => state.smartSearchModal);
+
+  const openSmartSearchModal = useUiStore(
+    (state) => state.openSmartSearchModal,
+  );
+
+  const closeSmartSearchModal = useUiStore(
+    (state) => state.closeSmartSearchModal,
+  );
+
+  useKeyboardShortcut({ key: 'k', ctrl: true, callback: openSmartSearchModal });
+
   const projectCreateModal = useUiStore((state) => state.projectCreateModal);
 
   const openProjectCreateModal = useUiStore(
@@ -104,6 +118,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       />
       {children}
       <Toast />
+      <SmartSearchModal
+        isOpen={smartSearchModal.isOpen}
+        onClose={closeSmartSearchModal}
+      />
       <ProjectCreateModal
         isOpen={projectCreateModal.isOpen}
         onClose={closeProjectCreateModal}
