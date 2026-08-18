@@ -12,7 +12,7 @@ import ProgressBar from '@/components/elements/ProgressBar';
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
 import { IconTimer } from '@/components/svgs/icons';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface ProjectStatusCardProps {
   project?: Project | null;
@@ -25,7 +25,7 @@ export default function ProjectStatusCard({
 }: ProjectStatusCardProps) {
   const { data: me } = useMe();
 
-  const timezone = me?.timezone ?? defaultTimezone;
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
 
   const totalTasks = project?.tasks.length || 0;
 

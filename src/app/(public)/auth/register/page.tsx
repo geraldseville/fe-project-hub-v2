@@ -29,7 +29,7 @@ import {
   IconProfile1,
 } from '@/components/svgs/icons';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 type RegisterForm = {
   name: string;
@@ -83,7 +83,7 @@ export default function Register() {
         password: registerForm.password,
         firstName,
         lastName,
-        timezone: defaultTimezone,
+        timezone: DEFAULT_TIMEZONE,
       });
 
       router.push('/dashboard');

@@ -1,6 +1,7 @@
-export const timezones = Intl.supportedValuesOf('timeZone');
+export const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
-export const defaultTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+export const DEFAULT_TIMEZONE =
+  Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export const isValidTimezone = (timezone: string) => {
   try {

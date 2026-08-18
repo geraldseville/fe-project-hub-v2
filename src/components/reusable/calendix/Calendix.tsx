@@ -5,13 +5,12 @@ import clsx from 'clsx';
 import type { CalendarEvent, CalendarView } from './calendar.types';
 import { addDays, calendarMoment, nowInTimezone } from './calendar.utils';
 import CalendarBoard from './CalendarBoard';
-import CalendarDayView from './CalendarDayView';
 import CalendarEmpty from './CalendarEmpty';
 import CalendarLoading from './CalendarLoading';
 import CalendarToolbar from './CalendarToolbar';
 import CalendarUnscheduled from './CalendarUnscheduled';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface Calendix<T> {
   isLoading?: boolean;
@@ -32,7 +31,7 @@ interface Calendix<T> {
 export default function Calendix<T>({
   isLoading = false,
   events = [],
-  timezone = defaultTimezone,
+  timezone = DEFAULT_TIMEZONE,
   is12hrFormat = true,
   viewOptions = ['day', 'week', 'month'],
   renderEvent,

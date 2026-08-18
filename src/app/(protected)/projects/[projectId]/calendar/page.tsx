@@ -22,7 +22,7 @@ import type { CalendarEvent } from '@/components/reusable/calendix/calendar.type
 import Calendix from '@/components/reusable/calendix/Calendix';
 import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 export default function ProjectCalendarPage() {
   const params = useParams();
@@ -34,7 +34,7 @@ export default function ProjectCalendarPage() {
   const updateTask = useUpdateTask();
 
   const tasks = project?.tasks ?? [];
-  const timezone = me?.timezone ?? defaultTimezone;
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
   const is12hrFormat = false;
 
   const openTaskCreateDrawer = useUiStore(

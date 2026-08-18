@@ -25,7 +25,7 @@ import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import { IconCalendar2, IconPlus1 } from '@/components/svgs/icons';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 export default function ProjectKanbanPage() {
   const params = useParams();
@@ -190,7 +190,7 @@ export default function ProjectKanbanPage() {
 function ProjectTaskCard({ task }: { task: Task }) {
   const { data: user } = useMe();
 
-  const timezone = user?.timezone ?? defaultTimezone;
+  const timezone = user?.timezone ?? DEFAULT_TIMEZONE;
 
   const taskColorPalette = generateColorPalette(
     task.primaryColor ?? DEFAULT_EVENT_BG,

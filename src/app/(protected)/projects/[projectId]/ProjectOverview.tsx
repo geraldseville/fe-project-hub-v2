@@ -9,7 +9,7 @@ import type { Project } from '@/types/project.types';
 
 import SkeletonLoading from '@/components/elements/SkeletonLoading';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface ProjectOverviewProps {
   project?: Project | null;
@@ -22,7 +22,7 @@ export default function ProjectOverview({
 }: ProjectOverviewProps) {
   const { data: me } = useMe();
 
-  const timezone = me?.timezone ?? defaultTimezone;
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
 
   const startDate = project?.startDate
     ? momentTimezone(project.startDate).tz(timezone).format('MMM DD, YYYY')

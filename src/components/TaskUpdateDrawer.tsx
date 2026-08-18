@@ -41,7 +41,7 @@ import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import { IconClose1, IconExternalLink } from '@/components/svgs/icons';
 
-import { defaultTimezone } from '@/lib/date-time';
+import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 interface TaskUpdateDrawerProps {
   isOpen: boolean;
@@ -67,7 +67,7 @@ export default function TaskUpdateDrawer({
   const createTaskComment = useCreateTaskComment();
   const openTaskDeleteModal = useUiStore((state) => state.openTaskDeleteModal);
 
-  const timezone = me?.timezone ?? defaultTimezone;
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
   const task = project?.tasks.find((task) => task.id === taskId) ?? null;
 
   const [taskStatus, setTaskStatus] = useState<TaskStatus>();
