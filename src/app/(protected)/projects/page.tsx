@@ -10,6 +10,7 @@ import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import type { Project } from '@/types/project.types';
 
+import AppShellHead from '@/components/AppShellHead';
 import Button from '@/components/elements/Button';
 import SegmentedTab from '@/components/elements/SegmentedTabs';
 import SingleSelect from '@/components/elements/SingleSelect';
@@ -21,16 +22,13 @@ import ProjectItemView from './ProjectItemView';
 
 export default function ProjectListPage() {
   const router = useRouter();
-
+  const { data: projects, isPending: isProjectsPending } = useProjects();
   const openProjectCreateModal = useUiStore(
     (state) => state.openProjectCreateModal,
   );
-
   const openProjectUpdateModal = useUiStore(
     (state) => state.openProjectUpdateModal,
   );
-
-  const { data: projects, isPending: isProjectsPending } = useProjects();
 
   const [projectSort, setProjectSort] = useState<{
     id: string;
@@ -41,8 +39,21 @@ export default function ProjectListPage() {
     label: 'Title',
     value: 'title',
   });
-
   const [projectSearch, setProjectSearch] = useState<string>('');
+  const [projectView, setProjectView] = useState<{
+    id: string;
+    icon?: React.ReactNode;
+  }>({
+    id: 'tab-grid',
+    icon: <IconListBullet className="w-5 h-5" />,
+  });
+  const [deleteProjectModal, setIsDeleteProjectModal] = useState<{
+    isOpen: boolean;
+    project: Project | null;
+  }>({
+    isOpen: false,
+    project: null,
+  });
 
   const visibleProjects = useMemo(() => {
     const sortOrder = 'asc';
@@ -87,19 +98,6 @@ export default function ProjectListPage() {
     );
   }, [projectSearch, projectSort, projects]);
 
-  const [projectView, setProjectView] = useState<{
-    id: string;
-    icon?: React.ReactNode;
-  }>({
-    id: 'tab-grid',
-    icon: <IconListBullet className="w-5 h-5" />,
-  });
-
-  const [deleteProjectModal, setIsDeleteProjectModal] = useState<{
-    isOpen: boolean;
-    project: Project | null;
-  }>({ isOpen: false, project: null });
-
   const closeDeleteProjectModal = () => {
     setIsDeleteProjectModal((prev) => ({
       ...prev,
@@ -117,25 +115,14 @@ export default function ProjectListPage() {
       className={clsx('overflow-hidden', 'flex flex-col', 'w-full h-screen')}
     >
       {/* Head */}
-      <div
-        className={clsx(
-          'min-h-20 h-20',
-          'py-4 px-6',
-          'border-b border-[#464554]',
-        )}
-      >
-        <div className="flex justify-start items-center gap-4 h-full">
-          <div
-            className={clsx(
-              'font-hanken-grotesk font-medium',
-              'text-[#DAE2FD] text-[20px] leading-tight',
-            )}
-          >
-            Projects
-          </div>
+      <AppShellHead />
+      {/* Body */}
+      <div className={clsx('overflow-y-auto', 'flex-1 min-h-0', 'py-4 px-6')}>
+        {/* Project Item View */}
+        <div className={clsx('flex justify-start items-center gap-4', 'mb-8')}>
           {/* Project Sort */}
           <SingleSelect
-            classNames={{ root: 'max-w-[150px] ml-auto', trigger: 'h-10!' }}
+            classNames={{ root: 'max-w-[150px]', trigger: 'h-10!' }}
             id="projectSort"
             value={projectSort}
             options={[
@@ -161,7 +148,11 @@ export default function ProjectListPage() {
               },
             ]}
             onChange={(selected) => {
-              setProjectSort(selected);
+              setProjectSort({
+                id: selected.id,
+                label: selected.label,
+                value: selected.value as string,
+              });
             }}
           />
           {/* Project View Tab */}
@@ -187,17 +178,13 @@ export default function ProjectListPage() {
           />
           {/* Project Create Button */}
           <Button
-            className=""
+            className="ml-auto"
             type="button"
             icon={<IconPlus1 className="min-w-3.5 w-3.5 h-auto" />}
             text="Create Project"
             onClick={openProjectCreateModal}
           />
         </div>
-      </div>
-      {/* Body */}
-      <div className={clsx('overflow-y-auto', 'flex-1 min-h-0', 'p-6')}>
-        {/* Project Item View */}
         <div
           className={clsx(
             projectView.id === 'tab-grid' &&
