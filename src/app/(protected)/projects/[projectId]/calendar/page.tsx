@@ -18,10 +18,9 @@ import { blankTaskForm } from '@/validators/task.validator';
 
 import type { Task } from '@/types/task.types';
 
+import type { CalendarEvent } from '@/components/reusable/calendix/calendar.types';
+import Calendix from '@/components/reusable/calendix/Calendix';
 import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
-
-import type { CalendarEvent } from './calendar.types';
-import Calendix from './Calendix';
 
 import { defaultTimezone } from '@/lib/date-time';
 
