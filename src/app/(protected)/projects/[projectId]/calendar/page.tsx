@@ -12,6 +12,7 @@ import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { generateColorPalette } from '@/utils/color.utils';
+import { DEFAULT_EVENT_BG } from '@/utils/task.utils';
 
 import { blankTaskForm } from '@/validators/task.validator';
 
@@ -135,12 +136,10 @@ export default function ProjectCalendarPage() {
         events={events}
         timezone={timezone}
         is12hrFormat={is12hrFormat}
-        viewOptions={['day', 'week']}
+        viewOptions={['day', 'week', 'month']}
         renderEvent={(event) => {
-          const defaultEventBg = '#8083FF';
-
           const taskColorPalette = generateColorPalette(
-            event.data.primaryColor ?? defaultEventBg,
+            event.data.primaryColor ?? DEFAULT_EVENT_BG,
           );
 
           return (

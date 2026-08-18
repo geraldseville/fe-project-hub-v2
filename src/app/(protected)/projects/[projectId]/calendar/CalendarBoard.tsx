@@ -1,5 +1,6 @@
 import type { CalendarEvent, CalendarView } from './calendar.types';
 import CalendarDayView from './CalendarDayView';
+import CalendarMonthView from './CalendarMonthView';
 import CalendarWeekView from './CalendarWeekView';
 
 interface CalendarBoardProps<T> {
@@ -53,6 +54,8 @@ export default function CalendarBoard<T>({
           onEventDragEnd={onEventDragEnd}
           onCreateSelect={onCreateSelect}
         />
+      ) : view === 'month' ? (
+        <CalendarMonthView />
       ) : null}
     </>
   );
