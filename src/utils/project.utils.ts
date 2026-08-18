@@ -101,14 +101,14 @@ export const PROJECT_PRIORITY_COLORS: Record<
   },
 };
 
-export function getProjectTimeline(
+export const getProjectTimeline = (
   startDate: string | Date,
   endDate: string | Date,
   timezone: string,
 ): {
   label: string;
   value: string;
-} {
+} => {
   const now = momentTimezone.tz(timezone);
 
   const start = momentTimezone.tz(startDate, timezone);
@@ -142,4 +142,4 @@ export function getProjectTimeline(
     label: 'Project Ended',
     value: `${days} day${days !== 1 ? 's' : ''} ago`,
   };
-}
+};
