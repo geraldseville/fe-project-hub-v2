@@ -42,8 +42,14 @@ export default function CalendarUnscheduled<T>({
       onClose={handleCancel}
     >
       {/* Head */}
-      <div className={clsx('p-6', 'bg-[#334155]', 'border-b border-[#464554]')}>
-        <div className="flex justify-between items-center gap-4">
+      <div
+        className={clsx(
+          'py-4 px-6',
+          'bg-[#334155]',
+          'border-b border-[#464554]',
+        )}
+      >
+        <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
             <h2 className={clsx('font-bold', 'text-[20px]')}>
               Unscheduled Events
@@ -54,7 +60,7 @@ export default function CalendarUnscheduled<T>({
           </div>
           <button
             className={clsx(
-              'flex justify-center items-center self-end',
+              'flex justify-center items-center justify-self-end',
               'w-8 h-8',
             )}
             type="button"
