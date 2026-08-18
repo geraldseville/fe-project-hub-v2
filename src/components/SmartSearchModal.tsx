@@ -1,12 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import clsx from 'clsx';
 
 import { useProjects } from '@/hooks/queries/useProjects';
 import { useTasks } from '@/hooks/queries/useTasks';
 import { useUsers } from '@/hooks/queries/useUsers';
+import { useKeyboardShortcut } from '@/hooks/ui/useKeyboardShortcut';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { getFullName } from '@/utils/user.utils';
@@ -66,6 +68,8 @@ export default function SmartSearchModal({
   isOpen,
   onClose,
 }: SmartSearchModalProps) {
+  const router = useRouter();
+
   const { data: users } = useUsers();
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks();
@@ -98,6 +102,12 @@ export default function SmartSearchModal({
 
   const [search, setSearch] = useState<string>('');
   const [filter, setFilter] = useState<SearchFilter>('all');
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
+
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const resultRefs = useRef<
+    Record<string, HTMLAnchorElement | HTMLButtonElement | null>
+  >({});
 
   const searchResults = useMemo<SearchResult[]>(() => {
     return [
@@ -159,10 +169,121 @@ export default function SmartSearchModal({
     };
   }, [filteredResults]);
 
+  const getResultKey = (result: SearchResult) => `${result.type}-${result.id}`;
+
+  useKeyboardShortcut({
+    key: 'Tab',
+    callback: () => {
+      if (!isOpen) {
+        return;
+      }
+
+      const currentIndex = SEARCH_FILTERS.findIndex(
+        (item) => item.value === filter,
+      );
+
+      const nextIndex =
+        currentIndex >= SEARCH_FILTERS.length - 1 ? 0 : currentIndex + 1;
+
+      setFilter(SEARCH_FILTERS[nextIndex].value);
+    },
+  });
+
+  useKeyboardShortcut({
+    key: 'ArrowDown',
+    callback: () => {
+      if (!isOpen || !filteredResults.length) {
+        return;
+      }
+
+      setSelectedIndex((current) =>
+        current >= filteredResults.length - 1 ? 0 : current + 1,
+      );
+    },
+  });
+
+  useKeyboardShortcut({
+    key: 'ArrowUp',
+    callback: () => {
+      if (!isOpen || !filteredResults.length) {
+        return;
+      }
+
+      setSelectedIndex((current) =>
+        current <= 0 ? filteredResults.length - 1 : current - 1,
+      );
+    },
+  });
+
+  useKeyboardShortcut({
+    key: 'Enter',
+    callback: () => {
+      if (!isOpen) {
+        return;
+      }
+
+      const result = filteredResults[selectedIndex];
+
+      if (result) {
+        handleSelectResult(result);
+      }
+    },
+  });
+
+  const handleSelectResult = (result: SearchResult) => {
+    handleClose();
+
+    switch (result.type) {
+      case 'user':
+        router.push(`/teams/${result.id}`);
+        break;
+
+      case 'project':
+        router.push(`/projects/${result.id}`);
+        break;
+
+      case 'task':
+        openTaskUpdateDrawer(result.data.id, result.data.projectId);
+        break;
+    }
+  };
+
   const handleClose = () => {
     setSearch('');
     onClose();
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus();
+      });
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [search, filter]);
+
+  useEffect(() => {
+    if (!isOpen || !filteredResults.length) {
+      return;
+    }
+
+    const selectedResult = filteredResults[selectedIndex];
+
+    if (!selectedResult) {
+      return;
+    }
+
+    const key = getResultKey(selectedResult);
+    const element = resultRefs.current[key];
+
+    element?.scrollIntoView({
+      block: 'nearest',
+      behavior: 'smooth',
+    });
+  }, [isOpen, selectedIndex, filteredResults]);
 
   return (
     <Modal
@@ -193,6 +314,7 @@ export default function SmartSearchModal({
               input: 'pr-20 rounded-b-none border-none!',
             }}
             type="search"
+            ref={searchInputRef}
             placeholder="Search anything..."
             icon={<IconSearch className="min-w-4 w-4 h-4" />}
             value={search}
@@ -295,64 +417,98 @@ export default function SmartSearchModal({
               {groupedResults.users.length > 0 && (
                 <div className="w-full">
                   <LabelField text="TEAM" />
-
                   <div className="flex flex-col">
-                    {groupedResults.users.map((result) => (
-                      <Link
-                        key={`${result.type}-${result.id}`}
-                        onClick={handleClose}
-                        href={`/teams/${result.id}`}
-                      >
-                        <SearchResultItem result={result} search={search} />
-                      </Link>
-                    ))}
+                    {groupedResults.users.map((result) => {
+                      const index = filteredResults.findIndex(
+                        (item) =>
+                          item.id === result.id && item.type === result.type,
+                      );
+
+                      return (
+                        <Link
+                          key={`${result.type}-${result.id}`}
+                          ref={(element) => {
+                            resultRefs.current[getResultKey(result)] = element;
+                          }}
+                          onClick={handleClose}
+                          href={`/teams/${result.id}`}
+                        >
+                          <SearchResultItem
+                            result={result}
+                            search={search}
+                            selected={index === selectedIndex}
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
-
               {/* Projects Result */}
               {groupedResults.projects.length > 0 && (
                 <div className="w-full">
                   <LabelField text="PROJECTS" />
-
                   <div className="flex flex-col">
-                    {groupedResults.projects.map((result) => (
-                      <Link
-                        key={`${result.type}-${result.id}`}
-                        onClick={handleClose}
-                        href={`/projects/${result.id}`}
-                      >
-                        <SearchResultItem result={result} search={search} />
-                      </Link>
-                    ))}
+                    {groupedResults.projects.map((result) => {
+                      const index = filteredResults.findIndex(
+                        (item) =>
+                          item.id === result.id && item.type === result.type,
+                      );
+                      return (
+                        <Link
+                          key={`${result.type}-${result.id}`}
+                          ref={(element) => {
+                            resultRefs.current[getResultKey(result)] = element;
+                          }}
+                          onClick={handleClose}
+                          href={`/projects/${result.id}`}
+                        >
+                          <SearchResultItem
+                            result={result}
+                            search={search}
+                            selected={index === selectedIndex}
+                          />
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
-
               {/* Tasks Result */}
               {groupedResults.tasks.length > 0 && (
                 <div className="w-full">
                   <LabelField text="TASKS" />
 
                   <div className="flex flex-col">
-                    {groupedResults.tasks.map((result) => (
-                      <button
-                        key={`${result.type}-${result.id}`}
-                        onClick={() => {
-                          openTaskUpdateDrawer(
-                            result.data.id,
-                            result.data.projectId,
-                          );
-                          handleClose();
-                        }}
-                      >
-                        <SearchResultItem
+                    {groupedResults.tasks.map((result) => {
+                      const index = filteredResults.findIndex(
+                        (item) =>
+                          item.id === result.id && item.type === result.type,
+                      );
+
+                      return (
+                        <button
                           key={`${result.type}-${result.id}`}
-                          result={result}
-                          search={search}
-                        />
-                      </button>
-                    ))}
+                          ref={(element) => {
+                            resultRefs.current[getResultKey(result)] = element;
+                          }}
+                          onClick={() => {
+                            openTaskUpdateDrawer(
+                              result.data.id,
+                              result.data.projectId,
+                            );
+                            handleClose();
+                          }}
+                        >
+                          <SearchResultItem
+                            key={`${result.type}-${result.id}`}
+                            result={result}
+                            search={search}
+                            selected={index === selectedIndex}
+                          />
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -444,10 +600,10 @@ export default function SmartSearchModal({
                     'border border-[#334155]',
                   )}
                 >
-                  Enter
+                  Esc
                 </div>
                 <div className={clsx('text-[#64748B] leading-none')}>
-                  Select
+                  Dismiss
                 </div>
               </div>
             </div>
@@ -461,32 +617,59 @@ export default function SmartSearchModal({
 function SearchResultItem({
   result,
   search,
+  selected,
 }: {
   result: SearchResult;
   search: string;
+  selected: boolean;
 }) {
   switch (result.type) {
     case 'user':
-      return <UserSearchResult user={result.data} search={search} />;
+      return (
+        <UserSearchResult
+          user={result.data}
+          search={search}
+          selected={selected}
+        />
+      );
 
     case 'project':
-      return <ProjectSearchResult project={result.data} search={search} />;
+      return (
+        <ProjectSearchResult
+          project={result.data}
+          search={search}
+          selected={selected}
+        />
+      );
 
     case 'task':
-      return <TaskSearchResult task={result.data} search={search} />;
+      return (
+        <TaskSearchResult
+          task={result.data}
+          search={search}
+          selected={selected}
+        />
+      );
   }
 }
 
-function UserSearchResult({ user, search }: { user: User; search: string }) {
+function UserSearchResult({
+  user,
+  search,
+  selected,
+}: {
+  user: User;
+  search: string;
+  selected: boolean;
+}) {
   return (
     <div
       className={clsx(
         'flex justify-start items-center gap-4',
         'p-3',
         'rounded-lg',
-        'hover:bg-[#1E293B]',
+        selected ? 'bg-[#1E293B]' : 'hover:bg-[#1E293B]',
       )}
-      key={user.id}
     >
       <div className="min-w-10 w-10 h-10 rounded-full">
         {user.imageUrl ? (
@@ -531,9 +714,11 @@ function UserSearchResult({ user, search }: { user: User; search: string }) {
 function ProjectSearchResult({
   project,
   search,
+  selected,
 }: {
   project: Project;
   search: string;
+  selected: boolean;
 }) {
   return (
     <div
@@ -541,9 +726,8 @@ function ProjectSearchResult({
         'flex justify-start items-center gap-4',
         'p-3',
         'rounded-lg',
-        'hover:bg-[#1E293B]',
+        selected ? 'bg-[#1E293B]' : 'hover:bg-[#1E293B]',
       )}
-      key={project.id}
     >
       <div
         className={clsx(
@@ -592,16 +776,23 @@ function ProjectSearchResult({
   );
 }
 
-function TaskSearchResult({ task, search }: { task: Task; search: string }) {
+function TaskSearchResult({
+  task,
+  search,
+  selected,
+}: {
+  task: Task;
+  search: string;
+  selected: boolean;
+}) {
   return (
     <div
       className={clsx(
         'flex justify-start items-center gap-4',
         'p-3',
         'rounded-lg',
-        'hover:bg-[#1E293B]',
+        selected ? 'bg-[#1E293B]' : 'hover:bg-[#1E293B]',
       )}
-      key={task.id}
     >
       <div
         className={clsx(
