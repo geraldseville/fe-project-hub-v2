@@ -184,7 +184,7 @@ export default function ProjectCalendarPage() {
               <div className="flex flex-col gap-2 mt-2">
                 <TaskAssigneeUI
                   classNames={{
-                    name: 'text-(--task-primaryForeground-color)',
+                    name: 'text-(--task-primaryForeground-color)! text-[12px]',
                   }}
                   assignee={event.data.assignee}
                   displayName="fullName"
