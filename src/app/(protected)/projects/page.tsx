@@ -20,7 +20,7 @@ import { IconGrid1, IconListBullet, IconPlus1 } from '@/components/svgs/icons';
 import ProjectDeleteModal from './ProjectDeleteModal';
 import ProjectItemView from './ProjectItemView';
 
-export default function ProjectListPage() {
+export default function ProjectsPage() {
   const router = useRouter();
   const { data: projects, isPending: isProjectsPending } = useProjects();
   const openProjectCreateModal = useUiStore(
