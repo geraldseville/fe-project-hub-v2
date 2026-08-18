@@ -19,39 +19,28 @@ import LabelField from '@/components/elements/LabelField';
 import LoaderSpinner from '@/components/elements/LoaderSpinner';
 import MultiLineField from '@/components/elements/MultiLineField';
 import SingleLineField from '@/components/elements/SingleLineField';
-import SingleSelect from '@/components/elements/SingleSelect';
 import { IconProfile1 } from '@/components/svgs/icons';
-
-import { timezones } from '@/lib/date-time';
 
 export default function BasicInformation() {
   const toast = useToastStore();
-
   const { data: me } = useMe();
-
   const updateMe = useUpdateMe();
 
   const [toggleUpdate, setToggleUpdate] = useState<boolean>(false);
-
-  const [basicInformationForm, setBasicInformationForm] =
-    useState<UpdateUserInput>({
-      firstName: me?.firstName ?? '',
-      lastName: me?.lastName ?? '',
-      role: me?.role ?? '',
-      bio: me?.bio ?? '',
-      timezone: me?.timezone ?? '',
-    });
-
+  const [form, setForm] = useState<UpdateUserInput>({
+    firstName: me?.firstName ?? '',
+    lastName: me?.lastName ?? '',
+    role: me?.role ?? null,
+    bio: me?.bio ?? null,
+  });
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
-
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const validationResult = validateUpdateUser(basicInformationForm);
-
+  const validationResult = validateUpdateUser(form);
   const errors = hasSubmitted ? validationResult.errors : {};
 
   const handleToggleUpdate = () => {
-    setBasicInformationForm((prev) => ({
+    setForm((prev) => ({
       ...prev,
       email: me?.email ?? '',
       firstName: me?.firstName ?? '',
@@ -61,7 +50,7 @@ export default function BasicInformation() {
     }));
   };
 
-  const handleSaveMyInformation = async () => {
+  const handleSave = async () => {
     setHasSubmitted(true);
 
     if (!validationResult.success) {
@@ -72,11 +61,10 @@ export default function BasicInformation() {
 
     try {
       await updateMe.mutateAsync({
-        firstName: basicInformationForm.firstName,
-        lastName: basicInformationForm.lastName,
-        bio: basicInformationForm.bio,
-        role: basicInformationForm.role,
-        timezone: basicInformationForm.timezone,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        bio: form.bio,
+        role: form.role,
       });
 
       setToggleUpdate(false);
@@ -124,10 +112,10 @@ export default function BasicInformation() {
             type="text"
             placeholder="Your First Name"
             disabled={!toggleUpdate}
-            value={basicInformationForm.firstName ?? ''}
+            value={form.firstName ?? ''}
             onChange={(e) => {
               const newValue = e.target.value;
-              setBasicInformationForm((prev) => ({
+              setForm((prev) => ({
                 ...prev,
                 firstName: newValue,
               }));
@@ -143,10 +131,10 @@ export default function BasicInformation() {
             type="text"
             placeholder="Your Last Name"
             disabled={!toggleUpdate}
-            value={basicInformationForm.lastName ?? ''}
+            value={form.lastName ?? ''}
             onChange={(e) => {
               const newValue = e.target.value;
-              setBasicInformationForm((prev) => ({
+              setForm((prev) => ({
                 ...prev,
                 lastName: newValue,
               }));
@@ -162,10 +150,10 @@ export default function BasicInformation() {
             type="email"
             placeholder="Your Last Name"
             disabled={!toggleUpdate}
-            value={me.email}
+            value={me?.email ?? ''}
             onChange={(e) => {
               const newValue = e.target.value;
-              setBasicInformationForm((prev) => ({
+              setForm((prev) => ({
                 ...prev,
                 email: newValue,
               }));
@@ -180,10 +168,10 @@ export default function BasicInformation() {
             type="text"
             placeholder="Your Role"
             disabled={!toggleUpdate}
-            value={basicInformationForm.role ?? ''}
+            value={form.role ?? ''}
             onChange={(e) => {
               const newValue = e.target.value;
-              setBasicInformationForm((prev) => ({
+              setForm((prev) => ({
                 ...prev,
                 role: newValue,
               }));
@@ -197,10 +185,10 @@ export default function BasicInformation() {
           <MultiLineField
             id="bio"
             placeholder="About Yourself..."
-            value={basicInformationForm.bio ?? ''}
+            value={form.bio ?? ''}
             onChange={(e) => {
               const newValue = e.target.value;
-              setBasicInformationForm((prev) => ({
+              setForm((prev) => ({
                 ...prev,
                 bio: newValue,
               }));
@@ -208,32 +196,6 @@ export default function BasicInformation() {
             disabled={!toggleUpdate}
           />
           <ErrorTextField text={errors.bio} />
-        </div>
-        {/* Timezones */}
-        <div className="basis-full">
-          <LabelField id="timezones" text="Timezones" />
-          <SingleSelect
-            id="timezones"
-            placeholder="Select Timezones..."
-            searchable={true}
-            value={{
-              id: basicInformationForm.timezone ?? '',
-              label: basicInformationForm.timezone ?? '',
-              value: basicInformationForm.timezone ?? '',
-            }}
-            options={timezones.map((item) => ({
-              id: item,
-              label: item,
-              value: item,
-            }))}
-            disabled={!toggleUpdate}
-            onChange={(selected) => {
-              setBasicInformationForm((prev) => ({
-                ...prev,
-                timezone: selected.value,
-              }));
-            }}
-          />
         </div>
         <div className="basis-full flex flex-row justify-end items-center gap-4">
           {toggleUpdate ? (
@@ -252,7 +214,7 @@ export default function BasicInformation() {
                 type="button"
                 icon={isSubmitting && <LoaderSpinner className="w-4! h-4!" />}
                 text={isSubmitting ? 'Saving...' : 'Save Changes'}
-                onClick={handleSaveMyInformation}
+                onClick={handleSave}
                 disabled={isSubmitting}
               />
             </>
