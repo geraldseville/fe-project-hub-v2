@@ -10,13 +10,13 @@ export type ProjectPriority = (typeof PROJECT_PRIORITIES)[number];
 export type Project = {
   id: string;
   title: string;
-  description?: string;
+  description: string | null;
   status: ProjectStatus;
   priority: ProjectPriority;
-  startDate?: string;
-  endDate?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
+  startDate: string;
+  endDate: string;
+  primaryColor: string | null;
+  secondaryColor: string | null;
   ownerId: string;
   owner: User;
   members: User[];
@@ -27,24 +27,24 @@ export type Project = {
 
 export type CreateProjectDto = {
   title: string;
-  description?: string;
+  description: string | null;
   status: ProjectStatus;
   priority: ProjectPriority;
   startDate: string;
   endDate: string;
-  primaryColor: string;
-  secondaryColor: string;
+  primaryColor: string | null;
+  secondaryColor: string | null;
   memberIds: string[];
 };
 
 export type UpdateProjectDto = {
   title?: string;
-  description?: string;
+  description?: string | null;
   status?: ProjectStatus;
   priority?: ProjectPriority;
   startDate?: string;
   endDate?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
   memberIds?: string[];
 };
