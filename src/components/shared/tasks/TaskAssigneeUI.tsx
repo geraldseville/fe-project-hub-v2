@@ -16,12 +16,14 @@ interface TaskAssigneeUIProps {
     name?: string;
   };
   assignee: User | null;
+  showName?: boolean;
   displayName?: 'fullName' | 'firstNameLastInitial';
 }
 
 export default function TaskAssigneeUI({
   classNames,
   assignee,
+  showName = true,
   displayName = 'firstNameLastInitial',
 }: TaskAssigneeUIProps) {
   const assigneeFullName =
@@ -76,16 +78,18 @@ export default function TaskAssigneeUI({
           />
         )}
       </div>
-      <div
-        className={clsx(
-          'text-[#C7C4D7]',
-          'truncate',
-          'min-w-0',
-          classNames?.name,
-        )}
-      >
-        {assigneeDisplayName}
-      </div>
+      {showName && (
+        <div
+          className={clsx(
+            'text-[#C7C4D7]',
+            'truncate',
+            'min-w-0',
+            classNames?.name,
+          )}
+        >
+          {assigneeDisplayName}
+        </div>
+      )}
     </div>
   );
 }
