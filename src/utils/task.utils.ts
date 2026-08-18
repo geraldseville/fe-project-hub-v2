@@ -75,3 +75,5 @@ export const TASK_PRIORITY_COLORS: Record<
     hex: '#EF4444',
   },
 };
+
+export const DEFAULT_EVENT_BG = '#8083FF';
