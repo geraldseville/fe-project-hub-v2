@@ -1,14 +1,14 @@
 export type CalendarView = 'day' | 'week' | 'month';
 
-export interface CalendarEvent<T> {
+export type CalendarEvent<T> = {
   id: string;
   title: string;
   startDate: string | Date;
   endDate: string | Date;
   data: T;
-}
+};
 
-export interface PositionedCalendarEvent<T> {
+export type PositionedCalendarEvent<T> = {
   event: CalendarEvent<T>;
   position: {
     top: number;
@@ -18,4 +18,9 @@ export interface PositionedCalendarEvent<T> {
   } | null;
   columnIndex: number;
   columnCount: number;
-}
+};
+
+export type HorizontalRegion = {
+  leftPercent: number;
+  widthPercent: number;
+};
