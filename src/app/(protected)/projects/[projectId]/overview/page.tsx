@@ -8,7 +8,6 @@ import { useProject } from '@/hooks/queries/useProject';
 
 import ProjectOverview from '../ProjectOverview';
 import ProjectStatusCard from '../ProjectStatusCard';
-import ProjectTaskTable from '../ProjectTaskTable';
 import ProjectTeamMembers from '../ProjectTeamMembers';
 
 export default function ProjectOverviewPage() {
@@ -24,10 +23,6 @@ export default function ProjectOverviewPage() {
       <div className={clsx('flex justify-between items-start gap-6')}>
         <div className={clsx('flex flex-col gap-6', 'flex-1')}>
           <ProjectOverview
-            project={project}
-            isProjectPending={isProjectPending}
-          />
-          <ProjectTaskTable
             project={project}
             isProjectPending={isProjectPending}
           />
