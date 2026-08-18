@@ -12,6 +12,7 @@ import { useProject } from '@/hooks/queries/useProject';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { generateColorPalette } from '@/utils/color.utils';
+import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import { DEFAULT_EVENT_BG } from '@/utils/task.utils';
 
 import { blankTaskForm } from '@/validators/task.validator';
@@ -21,8 +22,6 @@ import type { Task } from '@/types/task.types';
 import type { CalendarEvent } from '@/components/reusable/calendix/calendar.types';
 import Calendix from '@/components/reusable/calendix/Calendix';
 import TaskAssigneeUI from '@/components/shared/tasks/TaskAssigneeUI';
-
-import { DEFAULT_TIMEZONE } from '@/lib/date-time';
 
 export default function ProjectCalendarPage() {
   const params = useParams();
@@ -35,7 +34,6 @@ export default function ProjectCalendarPage() {
 
   const tasks = project?.tasks ?? [];
   const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
-  const is12hrFormat = false;
 
   const openTaskCreateDrawer = useUiStore(
     (state) => state.openTaskCreateDrawer,
@@ -134,7 +132,7 @@ export default function ProjectCalendarPage() {
         isLoading={isProjectPending}
         events={events}
         timezone={timezone}
-        is12hrFormat={is12hrFormat}
+        is12hrFormat={me?.timeFormat === 'H12'}
         viewOptions={['day', 'week', 'month']}
         renderEvent={(event) => {
           const taskColorPalette = generateColorPalette(
@@ -173,11 +171,11 @@ export default function ProjectCalendarPage() {
               <div className="text-xs mt-2">
                 {momentTimezone(event.startDate)
                   .tz(timezone)
-                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
+                  .format(me?.timeFormat === 'H12' ? 'h:mm A' : 'HH:mm')}
                 {' - '}
                 {momentTimezone(event.endDate)
                   .tz(timezone)
-                  .format(is12hrFormat ? 'h:mm A' : 'HH:mm')}
+                  .format(me?.timeFormat === 'H12' ? 'h:mm A' : 'HH:mm')}
               </div>
               <div className="flex flex-col gap-2 mt-2">
                 <TaskAssigneeUI
