@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import clsx from 'clsx';
@@ -25,26 +25,34 @@ import { IconCalendar2, IconPlus1 } from '@/components/svgs/icons';
 import { defaultTimezone } from '@/lib/date-time';
 
 export default function ProjectKanbanPage() {
-  const toast = useToastStore();
-
   const params = useParams();
 
   const projectId = params.projectId as string;
 
+  const toast = useToastStore();
+
   const { data: project = null, isPending: isProjectPending } =
     useProject(projectId);
-
-  const tasks = project?.tasks ?? [];
-
   const updateTask = useUpdateTask();
-
   const openTaskCreateDrawer = useUiStore(
     (state) => state.openTaskCreateDrawer,
   );
-
   const openTaskUpdateDrawer = useUiStore(
     (state) => state.openTaskUpdateDrawer,
   );
+
+  const [tasks, setTasks] = useState<Task[]>(() => project?.tasks ?? []);
+  const taskSnapshotRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!project) return;
+
+    const taskSnapshot = JSON.stringify(project.tasks);
+    if (taskSnapshotRef.current === taskSnapshot) return;
+
+    setTasks(project.tasks);
+    taskSnapshotRef.current = taskSnapshot;
+  }, [project]);
 
   const columns = [
     {
@@ -134,12 +142,23 @@ export default function ProjectKanbanPage() {
           });
         }}
         onCardMove={(task, fromColumn, toColumn) => {
+          const nextStatus = toColumn.id as TaskStatus;
+          const previousStatus = task.status;
+
+          setTasks((currentTasks) =>
+            currentTasks.map((currentTask) =>
+              currentTask.id === task.id
+                ? { ...currentTask, status: nextStatus }
+                : currentTask,
+            ),
+          );
+
           updateTask.mutate(
             {
               taskId: task.id,
               projectId,
               payload: {
-                status: toColumn.id as TaskStatus,
+                status: nextStatus,
               },
             },
             {
@@ -147,6 +166,14 @@ export default function ProjectKanbanPage() {
                 toast.success(`task moved to ${toColumn.title}`);
               },
               onError: () => {
+                setTasks((currentTasks) =>
+                  currentTasks.map((currentTask) =>
+                    currentTask.id === task.id &&
+                    currentTask.status === nextStatus
+                      ? { ...currentTask, status: previousStatus }
+                      : currentTask,
+                  ),
+                );
                 toast.failed(`failed to move task to ${toColumn.title}`);
               },
             },
@@ -198,16 +225,28 @@ function ProjectTaskCard({ task }: { task: Task }) {
 
       <div className={clsx('flex justify-between items-center gap-4', 'mt-3')}>
         <TaskAssigneeUI assignee={task.assignee} />
-        <div className={clsx('flex justify-center items-center gap-3')}>
-          <IconCalendar2 className="min-w-3.5 w-3.5 h-auto" />
-          <div
+        {task.startDate ? (
+          <div className={clsx('flex justify-center items-center gap-3')}>
+            <IconCalendar2 className="min-w-3.5 w-3.5 h-auto" />
+            <div
+              className={clsx(
+                'text-[#6B7280] text-[11px]',
+                'leading-none whitespace-nowrap',
+              )}
+            >
+              {momentTimezone(task.startDate).tz(timezone).format('MMM DD')}
+            </div>
+          </div>
+        ) : (
+          <i
             className={clsx(
-              'text-[#6B7280] text-[11px] leading-none whitespace-nowrap',
+              'text-[#6B7280] text-[11px]',
+              'leading-none whitespace-nowrap',
             )}
           >
-            {momentTimezone(task.startDate).tz(timezone).format('MMM DD')}
-          </div>
-        </div>
+            No Schedule
+          </i>
+        )}
       </div>
     </div>
   );
