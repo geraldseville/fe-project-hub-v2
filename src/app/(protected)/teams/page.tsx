@@ -11,58 +11,48 @@ import { getFullName } from '@/utils/user.utils';
 
 import type { User } from '@/types/user.types';
 
+import AppShellHead from '@/components/AppShellHead';
 import Button from '@/components/elements/Button';
 import DataTable from '@/components/elements/DataTable';
 import Avatar from '@/components/reusable/Avatar';
 import ProjectDropdown from '@/components/shared/projects/ProjectDropdown';
 
-export default function TeamsListPage() {
+export default function TeamsPage() {
   const router = useRouter();
 
   const { data: users = [], isPending: isUsersPending } = useUsers({
     excludeMe: true,
   });
 
-  // console.log({ users });
-
   return (
-    <main className={clsx('overflow-auto', 'w-full h-screen', 'py-10 px-4')}>
+    <main
+      className={clsx('overflow-hidden', 'flex flex-col', 'w-full h-screen')}
+    >
       {/* Head */}
-      <div className="flex justify-between items-center gap-4 max-[1080px]:flex-wrap">
-        <div className="flex-1 max-[1080px]:basis-full">
-          <div
-            className={clsx(
-              'font-hanken-grotesk font-bold',
-              'text-[#DAE2FD] text-[24px] leading-tight',
-            )}
-          >
-            Teams Page
-          </div>
-          <div
-            className={clsx(
-              'font-inter',
-              'text-[#C7C4D7] text-[16px] leading-tight',
-              'mt-1',
-            )}
-          >
-            Manage and track your ongoing enterprise workstreams.
-          </div>
-        </div>
-        <Button
-          buttonStyle="secondary"
-          type="button"
-          text="Export CSV"
-          onClick={() => {}}
-        />
-        <Button
-          buttonStyle="primary"
-          type="button"
-          text="Invite Members"
-          onClick={() => {}}
-        />
-      </div>
+      <AppShellHead />
       {/* Body */}
-      <div className="mt-10">
+      <div
+        className={clsx(
+          'relative overflow-y-auto',
+          'flex-1 min-h-0',
+          'py-4 px-6',
+        )}
+      >
+        <div className={clsx('flex justify-start items-center gap-4', 'mb-8')}>
+          <Button
+            className="ml-auto"
+            buttonStyle="secondary"
+            type="button"
+            text="Export CSV"
+            onClick={() => {}}
+          />
+          <Button
+            buttonStyle="primary"
+            type="button"
+            text="Invite Members"
+            onClick={() => {}}
+          />
+        </div>
         <div
           className={clsx(
             'overflow-hidden',
