@@ -34,8 +34,8 @@ export const getUsers = ({ excludeMe = false }: GetUsersOptions = {}) => {
   );
 };
 
-export const getUser = (id: string) => {
-  return apiClient<{ user: User }>(`/users/${id}`, {
+export const getUser = (userId: string) => {
+  return apiClient<{ user: User }>(`/users/${userId}`, {
     method: 'GET',
   });
 };
