@@ -6,8 +6,10 @@ import Image from 'next/image';
 import {
   autoUpdate,
   flip,
+  FloatingPortal,
   offset,
   shift,
+  size,
   useClick,
   useDismiss,
   useFloating,
@@ -61,8 +63,6 @@ export default function SingleSelect({
 
   const [searchValue, setSearchValue] = useState<string>('');
 
-  const hasOptions = options.length > 0;
-
   const filteredOptions = useMemo(() => {
     if (!searchable) return options;
 
@@ -75,6 +75,8 @@ export default function SingleSelect({
 
   const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
 
+  const hasOptions = options.length > 0;
+
   const handleSelect = (selectedValue: SelectOption) => {
     onChange(selectedValue);
     setIsOpen(false);
@@ -83,7 +85,6 @@ export default function SingleSelect({
 
   useEffect(() => {
     if (isOpen && searchable) {
-      // Use a small timeout to ensure the element is fully mounted and rendered in the DOM
       const timer = setTimeout(() => {
         searchInputRef.current?.focus();
       }, 50);
@@ -109,7 +110,18 @@ export default function SingleSelect({
     onOpenChange: setIsOpen,
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
-    middleware: [offset(8), flip(), shift({ padding: 8 })],
+    middleware: [
+      offset(8),
+      flip(),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
   });
 
   const click = useClick(context);
@@ -139,13 +151,13 @@ export default function SingleSelect({
   );
 
   return (
-    <div className={clsx('relative w-full', classNames?.root)} id={id}>
+    <div className={clsx('relative', 'w-full', classNames?.root)} id={id}>
       {/* Trigger */}
       <button
         className={clsx(
           'group',
           'flex justify-start items-center gap-4',
-          'w-full h-[47px]',
+          'w-full min-h-[47px] h-[47px]',
           'py-2 px-4',
           'rounded-lg',
           'bg-[#060E20]',
@@ -155,8 +167,8 @@ export default function SingleSelect({
           disabled && 'is-disabled bg-[#222A3D]',
         )}
         ref={setReferenceRef}
-        {...getReferenceProps()}
         type="button"
+        {...getReferenceProps()}
         disabled={disabled}
       >
         <SelectOptionContent option={value} placeholder={placeholder} />
@@ -175,99 +187,102 @@ export default function SingleSelect({
 
       {/* Dropdown */}
       {isOpen && hasOptions && (
-        <div
-          className={clsx(
-            'z-50 overflow-hidden',
-            'w-full',
-            'rounded-lg',
-            'bg-[#060E20]',
-            'border border-[#464554]',
-            'shadow-xl',
-            classNames?.dropdown,
-          )}
-          ref={setFloatingRef}
-          style={floatingStyles}
-          {...getFloatingProps()}
-        >
-          {/* Search Field */}
-          {searchable && (
-            <div className={clsx('w-full', 'border-b border-b-[#464554]')}>
-              <SingleLineField
-                classNames={{
-                  root: 'w-full',
-                  input:
-                    'w-full rounded-none !border-none outline-none bg-[#171F33]',
-                }}
-                id="singleSelectSearch"
-                type="search"
-                ref={searchInputRef}
-                placeholder="Search..."
-                icon={<IconSearch />}
-                value={searchValue}
-                onChange={(e) => {
-                  const newValue = e.target.value;
+        <FloatingPortal>
+          <div
+            className={clsx(
+              'z-50 overflow-hidden',
+              'rounded-lg',
+              'bg-[#060E20]',
+              'border border-[#464554]',
+              'shadow-xl',
+              classNames?.dropdown,
+            )}
+            ref={setFloatingRef}
+            style={floatingStyles}
+            {...getFloatingProps()}
+          >
+            {/* Search Field */}
+            {searchable && (
+              <div className={clsx('w-full', 'border-b border-b-[#464554]')}>
+                <SingleLineField
+                  classNames={{
+                    root: 'w-full',
+                    input:
+                      'w-full rounded-none !border-none outline-none bg-[#171F33]',
+                  }}
+                  id="singleSelectSearch"
+                  type="search"
+                  ref={searchInputRef}
+                  placeholder="Search..."
+                  icon={<IconSearch />}
+                  value={searchValue}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
 
-                  setSearchValue(newValue);
-                }}
-              />
-            </div>
-          )}
-          {/* Dropdown List */}
-          {filteredOptions.length ? (
-            <div
-              className={clsx(
-                'overflow-auto',
-                'w-full max-h-[180px] min-h-auto',
-                classNames?.list,
-              )}
-            >
-              {filteredOptions.map((optionItem) => {
-                const isSelected = value?.id === optionItem.id;
+                    setSearchValue(newValue);
+                  }}
+                />
+              </div>
+            )}
+            {/* Dropdown List */}
+            {filteredOptions.length ? (
+              <div
+                className={clsx(
+                  'overflow-auto',
+                  'w-full max-h-[180px] min-h-auto',
+                  classNames?.list,
+                )}
+              >
+                {filteredOptions.map((optionItem) => {
+                  const isSelected = value?.id === optionItem.id;
 
-                return (
-                  <button
-                    className={clsx(
-                      'text-white text-sm text-left',
-                      'flex justify-start items-center gap-4',
-                      'w-full h-[42px]',
-                      'py-2 px-4',
-                      'cursor-pointer',
-                      isSelected
-                        ? [
-                            'bg-[#8083FF]/20',
-                            'border-l-4 border-l-[#C0C1FF]',
-                            classNames?.optionSelected,
-                          ]
-                        : [
-                            'bg-transparent',
-                            'hover:bg-[#222A3D]',
-                            'border-l-4 border-l-transparent',
-                          ],
-                      classNames?.option,
-                    )}
-                    ref={isSelected ? selectedOptionRef : null}
-                    key={optionItem.id}
-                    type="button"
-                    onClick={() => handleSelect(optionItem)}
-                  >
-                    <SelectOptionContent option={optionItem} />
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div
-              className={clsx(
-                'italic truncate',
-                'flex justify-start items-center',
-                'h-[42px]',
-                'py-2 px-4',
-              )}
-            >
-              NO MATCHES FOUND
-            </div>
-          )}
-        </div>
+                  return (
+                    <button
+                      className={clsx(
+                        'text-white text-sm text-left',
+                        'flex justify-start items-center gap-4',
+                        'w-full h-[42px]',
+                        'py-2 px-4',
+                        'cursor-pointer',
+                        isSelected
+                          ? [
+                              'bg-[#8083FF]/20',
+                              'border-l-4 border-l-[#C0C1FF]',
+                              classNames?.optionSelected,
+                            ]
+                          : [
+                              'bg-transparent',
+                              'hover:bg-[#222A3D]',
+                              'border-l-4 border-l-transparent',
+                            ],
+                        classNames?.option,
+                      )}
+                      ref={isSelected ? selectedOptionRef : null}
+                      key={optionItem.id}
+                      type="button"
+                      onClick={() => handleSelect(optionItem)}
+                    >
+                      <SelectOptionContent option={optionItem} />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className={clsx(
+                  'italic',
+                  'text-placeholder text-sm',
+                  'truncate',
+                  'flex justify-start items-center',
+                  'h-[42px]',
+                  'py-2 px-4',
+                )}
+              >
+                NO MATCHES FOUND
+              </div>
+            )}
+          </div>
+        </FloatingPortal>
       )}
     </div>
   );
