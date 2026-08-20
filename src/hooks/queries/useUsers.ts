@@ -1,10 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getUsers, type GetUsersOptions } from '@/api/user.api';
+import { getUsers } from '@/api/user.api';
 
-export function useUsers(options?: GetUsersOptions) {
+export function useUsers(options?: {
+  excludeMe?: boolean;
+  page?: number;
+  limit?: number;
+}) {
   return useQuery({
     queryKey: ['users', options],
+
     queryFn: async () => {
       const response = await getUsers(options);
 
