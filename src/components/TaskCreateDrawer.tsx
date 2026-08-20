@@ -56,7 +56,7 @@ export default function TaskCreateDrawer({
   const toast = useToastStore();
 
   const { data: me } = useMe();
-  const { data: users = [] } = useUsers();
+  const { data: { users = [], pagination } = {} } = useUsers();
 
   const createTask = useCreateTask();
   const updateSavedColors = useUpdateSavedColors();

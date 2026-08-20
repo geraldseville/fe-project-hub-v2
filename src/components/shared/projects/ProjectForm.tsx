@@ -48,7 +48,7 @@ export default function ProjectForm({
   errors,
 }: ProjectFormProps) {
   const { data: me } = useMe();
-  const { data: users = [] } = useUsers();
+  const { data: { users = [] } = {} } = useUsers();
   const { mutate: updateSavedColors } = useUpdateSavedColors();
 
   const [savedColors, setSavedColors] = useState<string[]>([]);

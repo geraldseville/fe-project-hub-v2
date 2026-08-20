@@ -98,7 +98,7 @@ export default function SmartSearchModal({
 }: SmartSearchModalProps) {
   const router = useRouter();
 
-  const { data: users } = useUsers();
+  const { data: { users = [] } = {} } = useUsers();
   const { data: projects } = useProjects();
   const { data: tasks } = useTasks();
 

@@ -183,7 +183,7 @@ function TaskActivityItem({
 
 function RenderActivityMessage({ activity }: { activity: TaskActivity }) {
   const { data: me } = useMe();
-  const { data: users } = useUsers();
+  const { data: { users = [] } = {} } = useUsers();
 
   const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
 

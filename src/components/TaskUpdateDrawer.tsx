@@ -58,7 +58,7 @@ export default function TaskUpdateDrawer({
   const toast = useToastStore();
 
   const { data: me } = useMe();
-  const { data: users } = useUsers();
+  const { data: { users = [] } = {} } = useUsers();
   const { data: project, isPending: isProjectPending } = useProject(projectId);
 
   const updateSavedColors = useUpdateSavedColors();
