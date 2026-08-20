@@ -19,7 +19,7 @@ import {
   validateUpdateUser,
 } from '@/validators/user.validator';
 
-import { TimeFormat } from '@/types/user.types';
+import type { TimeFormat } from '@/types/user.types';
 
 import Button from '@/components/elements/Button';
 import ErrorTextField from '@/components/elements/ErrorTextField';
