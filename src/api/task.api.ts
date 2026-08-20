@@ -68,6 +68,29 @@ export const getTasks = () => {
   });
 };
 
+export const getTasksByProjectId = (
+  projectId: string,
+  {
+    page = 1,
+    limit = 20,
+  }: {
+    page?: number;
+    limit?: number;
+  } = {},
+) => {
+  const params = new URLSearchParams();
+
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+
+  return apiClient<{
+    tasks: Task[];
+    pagination: Pagination;
+  }>(`/projects/${projectId}/tasks?${params.toString()}`, {
+    method: 'GET',
+  });
+};
+
 export const updateTask = (taskId: string, payload: UpdateTaskDto) => {
   return apiClient<{ task: Task }>(`/tasks/${taskId}`, {
     method: 'PATCH',
