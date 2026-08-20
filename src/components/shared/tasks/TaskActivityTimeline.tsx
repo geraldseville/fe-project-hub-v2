@@ -3,8 +3,8 @@ import Link from 'next/link';
 import clsx from 'clsx';
 import momentTimezone from 'moment-timezone';
 
+import { useInfiniteTaskActivities } from '@/hooks/queries/useInfiniteTaskActivities';
 import { useMe } from '@/hooks/queries/useMe';
-import { useTaskActivities } from '@/hooks/queries/useTaskActivities';
 import { useUsers } from '@/hooks/queries/useUsers';
 
 import { DEFAULT_TIMEZONE, getTimeFormat } from '@/utils/date-time';
@@ -23,6 +23,7 @@ import {
   IconProfile1,
   IconTicket2,
 } from '@/components/svgs/icons';
+
 interface TaskActivityTimelineProps {
   taskId: string;
 }
@@ -30,21 +31,25 @@ interface TaskActivityTimelineProps {
 export default function TaskActivityTimeline({
   taskId,
 }: TaskActivityTimelineProps) {
-  const {
-    data: taskActivities,
-    isPending: isTaskActivitiesPending,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useTaskActivities(taskId);
+  const { data, isPending, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteTaskActivities(taskId, 10);
 
-  const activities =
-    taskActivities?.pages.flatMap((page) => page?.activities) ?? [];
+  const taskActivities =
+    data?.pages.flatMap((page) => page.data?.taskActivities ?? []) ?? [];
 
-  if (isTaskActivitiesPending) {
+  const handleLoadMore = () => {
+    if (!hasNextPage || isFetchingNextPage) {
+      return;
+    }
+
+    fetchNextPage();
+  };
+
+  if (isPending) {
     return (
       <div className="flex justify-center items-center gap-4">
         <LoaderSpinner className="w-6! h-6!" />
+
         <div className="leading-none whitespace-nowrap">
           Loading activities...
         </div>
@@ -52,7 +57,7 @@ export default function TaskActivityTimeline({
     );
   }
 
-  if (!activities.length) {
+  if (!taskActivities.length) {
     return (
       <div className="italic text-placeholder text-sm text-center">
         No activity yet.
@@ -62,24 +67,28 @@ export default function TaskActivityTimeline({
 
   return (
     <div className="flex flex-col">
-      {activities.map((activity, index) => (
-        <TaskActivityItem
-          key={activity?.id}
-          activity={activity}
-          isLast={index === activities.length - 1}
-        />
-      ))}
+      <div className="flex flex-col">
+        {taskActivities.map((activity, index) => (
+          <TaskActivityItem
+            key={activity.id}
+            activity={activity}
+            isLast={index === taskActivities.length - 1}
+          />
+        ))}
+      </div>
 
-      {hasNextPage && (
-        <button
-          className="mt-4 text-sm"
-          type="button"
-          disabled={isFetchingNextPage}
-          onClick={() => fetchNextPage()}
-        >
-          {isFetchingNextPage ? 'Loading...' : 'Load more'}
-        </button>
-      )}
+      <div className="mt-4 flex justify-center">
+        {isFetchingNextPage ? (
+          <div className="flex items-center gap-2 text-sm text-placeholder">
+            <LoaderSpinner className="w-4! h-4!" />
+            <span>Loading...</span>
+          </div>
+        ) : hasNextPage ? (
+          <button className="text-sm" type="button" onClick={handleLoadMore}>
+            Load more
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
