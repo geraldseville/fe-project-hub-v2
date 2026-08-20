@@ -18,7 +18,7 @@ import { Sketch } from '@uiw/react-color';
 import clsx from 'clsx';
 import { type Color, converter, formatHex, formatRgb, parse } from 'culori';
 
-import { IconPlus1 } from '../svgs/icons';
+import { IconPlus1 } from '@/components/svgs/icons';
 
 const toRgb = converter('rgb');
 const toOklch = converter('oklch');
@@ -226,7 +226,7 @@ export default function ColorSelector({
               'focus-visible:ring-offset-2',
               'disabled:pointer-events-none',
               'disabled:opacity-50',
-              isSelected && 'border border-[var(--color)]',
+              isSelected && 'border border-(--color)',
             )}
             key={normalizedColor}
             type="button"
@@ -279,9 +279,6 @@ export default function ColorSelector({
       {isOpen && (
         <FloatingPortal>
           <div
-            ref={setFloatingRef}
-            style={floatingStyles}
-            {...getFloatingProps()}
             className={clsx(
               'z-50',
               'w-fit',
@@ -291,6 +288,9 @@ export default function ColorSelector({
               'p-1',
               'shadow-2xl',
             )}
+            ref={setFloatingRef}
+            style={floatingStyles}
+            {...getFloatingProps()}
           >
             <div className="sketch-color-picker">
               <Sketch
