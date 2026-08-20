@@ -8,7 +8,19 @@ export function useUsers(options?: GetUsersOptions) {
     queryFn: async () => {
       const response = await getUsers(options);
 
-      return response.data?.users ?? [];
+      return (
+        response.data ?? {
+          users: [],
+          pagination: {
+            page: 1,
+            limit: 20,
+            total: 0,
+            totalPages: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          },
+        }
+      );
     },
   });
 }
