@@ -14,7 +14,7 @@ export default function TaskStatusUI({ status }: TaskStatusProps) {
   return (
     <div
       className={clsx(
-        'flex justify-center items-center',
+        'inline-flex justify-center items-center',
         'w-fit h-6',
         'py-1 px-2',
         'rounded-full',
