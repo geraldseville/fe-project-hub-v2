@@ -19,6 +19,10 @@ export const isValidTimezone = (timezone: string) => {
   }
 };
 
+export const getTimeFormat = (timeFormat?: string | null): string => {
+  return timeFormat === 'H12' ? 'hh:mm A' : 'HH:mm';
+};
+
 export const readableTimezone = (timezone: string) => {
   return timezone.replace(/_/g, ' ').replace('/', ' / ');
 };
