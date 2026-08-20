@@ -6,8 +6,10 @@ import Image from 'next/image';
 import {
   autoUpdate,
   flip,
+  FloatingPortal,
   offset,
   shift,
+  size,
   useClick,
   useDismiss,
   useFloating,
@@ -35,10 +37,14 @@ interface MultiSelectProps {
     root?: string;
     trigger?: string;
     dropdown?: string;
+    list?: string;
+    option?: string;
+    optionSelected?: string;
   };
   id?: string;
   placeholder?: string;
   searchable?: boolean;
+  disabled?: boolean;
   value?: SelectOption[] | null;
   options?: SelectOption[];
   onChange: (selected: SelectOption[]) => void;
@@ -49,6 +55,7 @@ export default function MultiSelect({
   id,
   placeholder = 'Select...',
   searchable = false,
+  disabled = false,
   value,
   options = [],
   onChange,
@@ -111,7 +118,18 @@ export default function MultiSelect({
     onOpenChange: setIsOpen,
     placement: 'bottom-start',
     whileElementsMounted: autoUpdate,
-    middleware: [offset(8), flip(), shift({ padding: 8 })],
+    middleware: [
+      offset(8),
+      flip(),
+      shift({ padding: 8 }),
+      size({
+        apply({ rects, elements }) {
+          Object.assign(elements.floating.style, {
+            width: `${rects.reference.width}px`,
+          });
+        },
+      }),
+    ],
   });
 
   const click = useClick(context);
@@ -146,8 +164,7 @@ export default function MultiSelect({
       <button
         className={clsx(
           'group',
-          'overflow-hidden',
-          'flex items-center gap-2',
+          'flex justify-start items-center gap-4',
           'w-full min-h-[47px] h-[47px]',
           'py-2 px-4',
           'rounded-lg',
@@ -155,10 +172,12 @@ export default function MultiSelect({
           'border border-[#464554]',
           'focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-0 focus:ring-offset-[#060E20]',
           classNames?.trigger,
+          disabled && 'is-disabled bg-[#222A3D]',
         )}
         ref={setReferenceRef}
         type="button"
         {...getReferenceProps()}
+        disabled={disabled}
       >
         <div
           className={clsx(
@@ -241,6 +260,7 @@ export default function MultiSelect({
           <IconAngleDown
             className={clsx(
               'text-placeholder group-hover:text-white',
+              'min-w-2.5 w-2.5 h-2.5',
               'ml-auto',
               isOpen ? 'rotate-180' : 'rotate-0',
               'transition-all duration-200',
@@ -251,115 +271,138 @@ export default function MultiSelect({
 
       {/* Dropdown */}
       {isOpen && hasOptions && (
-        <div
-          className={clsx(
-            'z-50 overflow-hidden',
-            'w-full',
-            'rounded-lg',
-            'bg-[#060E20]',
-            'border border-[#464554]',
-            'shadow-xl',
-            classNames?.dropdown,
-          )}
-          ref={setFloatingRef}
-          style={floatingStyles}
-          {...getFloatingProps()}
-        >
-          {/* Search Field */}
-          {searchable && (
-            <div className={clsx('w-full', 'border-b border-b-[#464554]')}>
-              <SingleLineField
-                classNames={{
-                  root: 'w-full',
-                  input:
-                    'w-full rounded-none !border-none outline-none bg-[#171F33]',
-                }}
-                id="MultiSelectSearch"
-                type="search"
-                ref={searchInputRef}
-                placeholder="Search..."
-                icon={<IconSearch />}
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-              />
-            </div>
-          )}
+        <FloatingPortal>
+          <div
+            className={clsx(
+              'z-50 overflow-hidden',
+              'rounded-lg',
+              'bg-[#060E20]',
+              'border border-[#464554]',
+              'shadow-xl',
+              classNames?.dropdown,
+            )}
+            ref={setFloatingRef}
+            style={floatingStyles}
+            {...getFloatingProps()}
+          >
+            {/* Search Field */}
+            {searchable && (
+              <div className={clsx('w-full', 'border-b border-b-[#464554]')}>
+                <SingleLineField
+                  classNames={{
+                    root: 'w-full',
+                    input:
+                      'w-full rounded-none !border-none outline-none bg-[#171F33]',
+                  }}
+                  id="multiSelectSearch"
+                  type="search"
+                  ref={searchInputRef}
+                  placeholder="Search..."
+                  icon={<IconSearch />}
+                  value={searchValue}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
 
-          {/* Dropdown List */}
-          {filteredOptions.length ? (
-            <div
-              className={clsx(
-                'overflow-auto',
-                'w-full max-h-[180px] min-h-auto',
-              )}
-            >
-              {filteredOptions.map((optionItem) => {
-                const isSelected =
-                  value?.some((item) => item.id === optionItem.id) ?? false;
+                    setSearchValue(newValue);
+                  }}
+                />
+              </div>
+            )}
+            {/* Dropdown List */}
+            {filteredOptions.length ? (
+              <div
+                className={clsx(
+                  'overflow-auto',
+                  'w-full max-h-[180px] min-h-auto',
+                  classNames?.list,
+                )}
+              >
+                {filteredOptions.map((optionItem) => {
+                  const isSelected =
+                    value?.some((item) => item.id === optionItem.id) ?? false;
 
-                return (
-                  <button
-                    className={clsx(
-                      'text-white text-sm text-left',
-                      'flex justify-start items-center gap-4',
-                      'w-full h-[42px]',
-                      'py-2 px-4',
-                      'cursor-pointer',
-                      isSelected
-                        ? 'bg-[#8083FF]/20 border-l-4 border-l-[#C0C1FF]'
-                        : 'bg-transparent hover:bg-[#222A3D] border-l-4 border-l-transparent',
-                    )}
-                    key={optionItem.id}
-                    type="button"
-                    onClick={() => handleSelect(optionItem)}
-                  >
-                    {/* Color */}
-                    {optionItem.color && (
-                      <div
-                        className="min-w-2 w-2 h-2 rounded-full bg-white"
-                        style={{ backgroundColor: optionItem.color }}
-                      />
-                    )}
-                    {/* Icon */}
-                    {optionItem.icon && (
-                      <div className="min-w-2 w-2 h-2 rounded-full bg-white">
-                        {optionItem.icon}
+                  return (
+                    <button
+                      className={clsx(
+                        'text-white text-sm text-left',
+                        'flex justify-start items-center gap-4',
+                        'w-full h-[42px]',
+                        'py-2 px-4',
+                        'cursor-pointer',
+                        isSelected
+                          ? [
+                              'bg-[#8083FF]/20',
+                              'border-l-4 border-l-[#C0C1FF]',
+                              classNames?.optionSelected,
+                            ]
+                          : [
+                              'bg-transparent',
+                              'hover:bg-[#222A3D]',
+                              'border-l-4 border-l-transparent',
+                            ],
+                        classNames?.option,
+                      )}
+                      key={optionItem.id}
+                      type="button"
+                      onClick={() => handleSelect(optionItem)}
+                    >
+                      {/* Color */}
+                      {optionItem.color && (
+                        <div
+                          className="min-w-2 w-2 h-2 rounded-full bg-white"
+                          style={{ backgroundColor: optionItem.color }}
+                        />
+                      )}
+                      {/* Icon */}
+                      {optionItem.icon && (
+                        <div className="min-w-2 w-2 h-2 rounded-full bg-white">
+                          {optionItem.icon}
+                        </div>
+                      )}
+                      {/* Image */}
+                      {optionItem.image ? (
+                        <Image
+                          className={clsx(
+                            'min-w-6 w-6 h-6',
+                            'object-cover',
+                            'rounded-full',
+                          )}
+                          src={optionItem.image}
+                          alt={optionItem.value}
+                          title={optionItem.value}
+                          width={36}
+                          height={36}
+                        />
+                      ) : (
+                        <Avatar
+                          className="text-[10px]! min-w-6! w-6! h-6!"
+                          initial={optionItem.label.charAt(0)}
+                        />
+                      )}
+                      {/* Label */}
+                      <div className={clsx('text-white text-sm text-left')}>
+                        {optionItem.label}
                       </div>
-                    )}
-                    {/* Image */}
-                    {optionItem.image ? (
-                      <Image
-                        className={clsx(
-                          'min-w-6 w-6 h-6',
-                          'object-cover',
-                          'rounded-full',
-                        )}
-                        src={optionItem.image}
-                        alt={optionItem.value}
-                        title={optionItem.value}
-                        width={36}
-                        height={36}
-                      />
-                    ) : (
-                      <Avatar
-                        className="text-[10px]! min-w-6! w-6! h-6!"
-                        initial={optionItem.label.charAt(0)}
-                      />
-                    )}
-                    {/* Label */}
-                    <div className={clsx('text-white text-sm text-left')}>
-                      {optionItem.label}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="italic truncate flex justify-start items-center h-[42px] py-2 px-4 text-placeholder text-sm">
-              NO MATCHES FOUND
-            </div>
-          )}
-        </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div
+                className={clsx(
+                  'italic',
+                  'text-placeholder text-sm',
+                  'truncate',
+                  'flex justify-start items-center',
+                  'h-[42px]',
+                  'py-2 px-4',
+                )}
+              >
+                NO MATCHES FOUND
+              </div>
+            )}
+          </div>
+        </FloatingPortal>
       )}
     </div>
   );
