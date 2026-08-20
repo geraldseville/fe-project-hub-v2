@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -12,17 +13,26 @@ import { getFullName } from '@/utils/user.utils';
 import type { User } from '@/types/user.types';
 
 import AppShellHead from '@/components/AppShellHead';
-import Button from '@/components/elements/Button';
+// import Button from '@/components/elements/Button';
 import DataTable from '@/components/elements/DataTable';
 import Avatar from '@/components/reusable/Avatar';
+import Pagination from '@/components/reusable/Pagination';
 import ProjectDropdown from '@/components/shared/projects/ProjectDropdown';
+import TeamRoleUI from '@/components/shared/teams/TeamRoleUI';
 
 export default function TeamsPage() {
   const router = useRouter();
 
-  const { data: users = [], isPending: isUsersPending } = useUsers({
-    excludeMe: true,
+  const [paginationOptions, setPaginationOptions] = useState({
+    page: 1,
+    limit: 10,
   });
+
+  const { data: { users = [], pagination } = {}, isPending: isUsersPending } =
+    useUsers({
+      ...paginationOptions,
+      excludeMe: true,
+    });
 
   return (
     <main
@@ -34,10 +44,12 @@ export default function TeamsPage() {
       <div
         className={clsx(
           'relative overflow-y-auto',
+          'flex flex-col',
           'flex-1 min-h-0',
           'py-4 px-6',
         )}
       >
+        {/*
         <div className={clsx('flex justify-start items-center gap-4', 'mb-8')}>
           <Button
             className="ml-auto"
@@ -53,16 +65,19 @@ export default function TeamsPage() {
             onClick={() => {}}
           />
         </div>
+        */}
         <div
           className={clsx(
             'overflow-hidden',
-            'w-full',
+            'flex flex-col',
+            'flex-1 w-full min-h-0',
             'rounded-lg',
             'bg-[#171F33]',
             'border border-[#464554]',
           )}
         >
           <DataTable
+            classNames={{ root: 'flex-1 min-h-0' }}
             value={users}
             isLoading={isUsersPending}
             columns={[
@@ -122,22 +137,7 @@ export default function TeamsPage() {
                 render: (row: User) => {
                   if (!row.role) return;
 
-                  return (
-                    <div
-                      className={clsx(
-                        'font-jetbrains-mono font-medium',
-                        'text-[#C0C1FF] text-[16px] leading-tight',
-                        'relative',
-                        'w-fit',
-                        'py-1 px-4',
-                        'rounded-full',
-                        'bg-[#171F33]',
-                        'border border-[#C0C1FF]/20',
-                      )}
-                    >
-                      {row.role}
-                    </div>
-                  );
+                  return <TeamRoleUI role={row.role} />;
                 },
               },
               {
@@ -165,6 +165,24 @@ export default function TeamsPage() {
               router.push(`/teams/${row.id}`);
             }}
           />
+          {pagination && (
+            <Pagination
+              pagination={pagination}
+              pageSizeOptions={[5, 10, 20, 30, 50]}
+              onPageChange={(page) => {
+                setPaginationOptions((prev) => ({
+                  ...prev,
+                  page,
+                }));
+              }}
+              onLimitChange={(limit) => {
+                setPaginationOptions({
+                  page: 1,
+                  limit,
+                });
+              }}
+            />
+          )}
         </div>
       </div>
     </main>
