@@ -1,5 +1,6 @@
 import { apiClient } from '@/api/api';
 
+import type { Pagination } from '@/types/generic.types';
 import type { User, UserChangePasswordDto, UserDto } from '@/types/user.types';
 
 export const changeMyPassword = (payload: UserChangePasswordDto) => {
@@ -17,21 +18,31 @@ export const deleteMyAccount = () => {
 
 export interface GetUsersOptions {
   excludeMe?: boolean;
+  page?: number;
+  limit?: number;
 }
 
-export const getUsers = ({ excludeMe = false }: GetUsersOptions = {}) => {
+export const getUsers = ({
+  excludeMe = false,
+  page = 1,
+  limit = 20,
+}: GetUsersOptions = {}) => {
   const params = new URLSearchParams();
 
   if (excludeMe) {
     params.set('excludeMe', 'true');
   }
 
-  return apiClient<{ users: User[] }>(
-    `/users${params.toString() ? `?${params.toString()}` : ''}`,
-    {
-      method: 'GET',
-    },
-  );
+  params.set('page', String(page));
+
+  params.set('limit', String(limit));
+
+  return apiClient<{
+    users: User[];
+    pagination: Pagination;
+  }>(`/users?${params.toString()}`, {
+    method: 'GET',
+  });
 };
 
 export const getUser = (userId: string) => {
