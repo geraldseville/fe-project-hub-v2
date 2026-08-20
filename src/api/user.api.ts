@@ -26,7 +26,11 @@ export const getUsers = ({
   excludeMe = false,
   page = 1,
   limit = 20,
-}: GetUsersOptions = {}) => {
+}: {
+  excludeMe?: boolean;
+  page?: number;
+  limit?: number;
+} = {}) => {
   const params = new URLSearchParams();
 
   if (excludeMe) {
@@ -34,7 +38,6 @@ export const getUsers = ({
   }
 
   params.set('page', String(page));
-
   params.set('limit', String(limit));
 
   return apiClient<{
