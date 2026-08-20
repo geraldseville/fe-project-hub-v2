@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import clsx from 'clsx';
 
 import { useProject } from '@/hooks/queries/useProject';
+import { useProjectTasks } from '@/hooks/queries/useProjectTasks';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { getFullName } from '@/utils/user.utils';
@@ -15,9 +16,9 @@ import type { Task } from '@/types/task.types';
 
 import Button from '@/components/elements/Button';
 import DataTable from '@/components/elements/DataTable';
-import SingleSelect from '@/components/elements/SingleSelect';
 import ThreeDotActions from '@/components/elements/ThreeDotActions';
 import Avatar from '@/components/reusable/Avatar';
+import Pagination from '@/components/reusable/Pagination';
 import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
 import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import { IconBin1, IconPen2, IconPlus1 } from '@/components/svgs/icons';
@@ -30,7 +31,15 @@ export default function ProjectTablePage() {
   const { data: project = null, isPending: isProjectPending } =
     useProject(projectId);
 
-  const tasks = project?.tasks ?? [];
+  const [paginationOptions, setPaginationOptions] = useState({
+    page: 1,
+    limit: 10,
+  });
+
+  const {
+    data: { tasks = [], pagination } = {},
+    isPending: isProjectTasksPending,
+  } = useProjectTasks(projectId, { ...paginationOptions });
 
   const openTaskCreateDrawer = useUiStore(
     (state) => state.openTaskCreateDrawer,
@@ -43,17 +52,6 @@ export default function ProjectTablePage() {
   const openTaskDeleteModal = useUiStore((state) => state.openTaskDeleteModal);
 
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
-
-  const [currentPage, setCurrentPage] = useState<number>(1);
-
-  const [tablePageLimit, setTablePageLimit] = useState<number>(5);
-
-  const totalTasks = tasks.length;
-  const totalPages = Math.max(1, Math.ceil(totalTasks / tablePageLimit));
-  const activePage = Math.min(currentPage, totalPages);
-  const firstTaskIndex = (activePage - 1) * tablePageLimit;
-  const lastTaskIndex = Math.min(firstTaskIndex + tablePageLimit, totalTasks);
-  const paginatedTasks = tasks.slice(firstTaskIndex, lastTaskIndex);
 
   return (
     <div
@@ -68,7 +66,7 @@ export default function ProjectTablePage() {
         className={clsx(
           'flex flex-col',
           'overflow-hidden',
-          'flex-1 min-h-0 w-full',
+          'flex-1 w-full min-h-0',
           'rounded-lg',
           'bg-[#171F33]',
           'border border-[#464554]',
@@ -100,8 +98,8 @@ export default function ProjectTablePage() {
           classNames={{
             root: 'flex-1 min-h-0',
           }}
-          value={paginatedTasks}
-          isLoading={isProjectPending}
+          value={tasks}
+          isLoading={isProjectTasksPending}
           emptyMessage={<div className="text-center">No Tasks Found</div>}
           columns={[
             {
@@ -214,97 +212,24 @@ export default function ProjectTablePage() {
           }}
           getRowId={(project) => project.id}
         />
-        <div
-          className={clsx(
-            'flex shrink-0 justify-between items-center',
-            'p-4',
-            'border-t border-t-[#334155]',
-          )}
-        >
-          <div className="flex items-center gap-4">
-            <SingleSelect
-              classNames={{ root: 'w-40!', trigger: 'h-8!' }}
-              id="taskTable"
-              placeholder="Pagination by"
-              value={{
-                id: `page-by-${tablePageLimit}`,
-                label: `${tablePageLimit} per page`,
-                value: tablePageLimit,
-              }}
-              options={[
-                {
-                  id: 'page-by-5',
-                  label: '5 per page',
-                  value: 5,
-                },
-                {
-                  id: 'page-by-10',
-                  label: '10 per page',
-                  value: 10,
-                },
-                {
-                  id: 'page-by-20',
-                  label: '20 per page',
-                  value: 20,
-                },
-                {
-                  id: 'page-by-30',
-                  label: '30 per page',
-                  value: 30,
-                },
-                {
-                  id: 'page-by-50',
-                  label: '50 per page',
-                  value: 50,
-                },
-              ]}
-              onChange={(e) => {
-                setTablePageLimit(e.value as number);
-                setCurrentPage(1);
-              }}
-            />
-            <div>
-              Showing {totalTasks === 0 ? 0 : firstTaskIndex + 1} -{' '}
-              {lastTaskIndex} of {totalTasks}
-            </div>
-          </div>
-          <div className="flex gap-4">
-            <Button
-              className={clsx(
-                'hover:text-neutral',
-                'min-w-20! h-8!',
-                'py-1 px-3',
-                'hover:bg-[#C0C1FF]',
-                'border-[#C0C1FF]',
-                activePage === 1 && 'opacity-50!',
-              )}
-              buttonStyle="outlined"
-              type="button"
-              text="Prev"
-              disabled={activePage === 1}
-              onClick={() => {
-                setCurrentPage((page) => Math.max(1, page - 1));
-              }}
-            />
-            <Button
-              className={clsx(
-                'hover:text-neutral',
-                'min-w-20! h-8!',
-                'py-1 px-3',
-                'hover:bg-[#C0C1FF]',
-                'border-[#C0C1FF]',
-                activePage === totalPages && 'opacity-50!',
-              )}
-              buttonStyle="outlined"
-              type="button"
-              text="Next"
-              disabled={activePage === totalPages}
-              onClick={() => {
-                setCurrentPage((page) => Math.min(totalPages, page + 1));
-              }}
-            />
-          </div>
-        </div>
+        {pagination && (
+          <Pagination
+            pagination={pagination}
+            pageSizeOptions={[10, 20, 30, 50]}
+            onPageChange={(page) => {
+              setPaginationOptions((prev) => ({
+                ...prev,
+                page,
+              }));
+            }}
+            onLimitChange={(limit) => {
+              setPaginationOptions({
+                page: 1,
+                limit,
+              });
+            }}
+          />
+        )}
       </div>
     </div>
   );
