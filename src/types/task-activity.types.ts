@@ -31,6 +31,7 @@ export interface TaskActivity {
   metadata?: TaskActivityMetadata;
   createdAt: string;
   actor: User;
+  task: Task;
 }
 
 export interface TaskActivitiesPaginated {
