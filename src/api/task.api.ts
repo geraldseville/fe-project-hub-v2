@@ -1,5 +1,6 @@
 import { apiClient } from '@/api/api';
 
+import { Pagination } from '@/types/generic.types';
 import type {
   CreateTaskCommentDto,
   CreateTaskDto,
@@ -38,14 +39,25 @@ export const getTask = (taskId: string) => {
   });
 };
 
-export const getTaskActivities = (taskId: string, page = 1, limit = 20) => {
+export const getTaskActivities = (
+  taskId: string,
+  {
+    page = 1,
+    limit = 20,
+  }: {
+    page?: number;
+    limit?: number;
+  } = {},
+) => {
+  const params = new URLSearchParams();
+
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+
   return apiClient<{
-    activities: TaskActivity[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }>(`/tasks/${taskId}/activities?page=${page}&limit=${limit}`, {
+    taskActivities: TaskActivity[];
+    pagination: Pagination;
+  }>(`/tasks/${taskId}/activities?${params.toString()}`, {
     method: 'GET',
   });
 };
