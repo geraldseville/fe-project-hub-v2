@@ -1,22 +1,28 @@
+import Link from 'next/link';
+
 import clsx from 'clsx';
 import momentTimezone from 'moment-timezone';
 
 import { useMe } from '@/hooks/queries/useMe';
 import { useTaskActivities } from '@/hooks/queries/useTaskActivities';
+import { useUsers } from '@/hooks/queries/useUsers';
 
+import { DEFAULT_TIMEZONE, getTimeFormat } from '@/utils/date-time';
 import { getFullName } from '@/utils/user.utils';
 
+import type { TaskPriority, TaskStatus } from '@/types/task.types';
 import type { TaskActivity } from '@/types/task-activity.types';
 
 import LoaderSpinner from '@/components/elements/LoaderSpinner';
 import MultiLineField from '@/components/elements/MultiLineField';
+import TaskPriorityUI from '@/components/shared/tasks/TaskPriorityUI';
+import TaskStatusUI from '@/components/shared/tasks/TaskStatusUI';
 import {
   IconCalendar4,
   IconNotes1,
   IconProfile1,
   IconTicket2,
 } from '@/components/svgs/icons';
-
 interface TaskActivityTimelineProps {
   taskId: string;
 }
@@ -48,7 +54,7 @@ export default function TaskActivityTimeline({
 
   if (!activities.length) {
     return (
-      <div className="italic text-sm text-placeholder text-center">
+      <div className="italic text-placeholder text-sm text-center">
         No activity yet.
       </div>
     );
@@ -78,12 +84,13 @@ export default function TaskActivityTimeline({
   );
 }
 
-interface TaskActivityItemProps {
+function TaskActivityItem({
+  activity,
+  isLast,
+}: {
   activity: TaskActivity;
   isLast: boolean;
-}
-
-function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
+}) {
   const { data: me } = useMe();
 
   const activityIcons = {
@@ -111,6 +118,7 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
     activity.actor.lastName,
   );
 
+  const actorId = activity.actorId;
   const actor = isCurrentUser ? 'You' : actorFullName;
 
   return (
@@ -144,11 +152,14 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
           />
         )}
       </div>
-
       {/* Content */}
       <div className="flex-1 pb-6">
-        <div className="text-sm">{renderActivityMessage(activity, actor)}</div>
-
+        <div className="text-sm">
+          <Link className="hover:text-primary" href={`/teams/${actorId}`}>
+            <strong>{`@${actor}`}</strong>
+          </Link>{' '}
+          <RenderActivityMessage activity={activity} />
+        </div>
         <div
           className={clsx('text-placeholder text-xs', 'mt-1')}
           title={momentTimezone(activity.createdAt).format(
@@ -170,88 +181,203 @@ function TaskActivityItem({ activity, isLast }: TaskActivityItemProps) {
   );
 }
 
-function renderActivityMessage(activity: TaskActivity, actor: string) {
+function RenderActivityMessage({ activity }: { activity: TaskActivity }) {
+  const { data: me } = useMe();
+  const { data: users } = useUsers();
+
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
+
+  const timeFormat = getTimeFormat(me?.timeFormat);
+
+  const from = activity.metadata?.from;
+  const to = activity.metadata?.to;
+
   switch (activity.type) {
     case 'CREATED':
-      return (
-        <>
-          <strong>{actor}</strong> created this task.
-        </>
-      );
+      return <>created this task</>;
 
     case 'TITLE_CHANGED':
       return (
         <>
-          <strong>{actor}</strong> changed the task title.
+          changed the task title from{' '}
+          <strong className="text-primary">{from}</strong> to{' '}
+          <strong className="text-primary">{to}</strong>
         </>
       );
 
     case 'DESCRIPTION_CHANGED':
       return (
         <>
-          <strong>{actor}</strong> updated the description.
+          updated the description from{' '}
+          <strong className="text-primary">{from}</strong> to{' '}
+          <strong className="text-primary">{to}</strong>
         </>
       );
 
     case 'STATUS_CHANGED':
       return (
         <>
-          <strong>{actor}</strong> changed status from{' '}
-          <strong>{activity.metadata.from?.replace('_', ' ')}</strong> to{' '}
-          <strong>{activity.metadata.to?.replace('_', ' ')}</strong>.
+          changed status from <TaskStatusUI status={from as TaskStatus} /> to{' '}
+          <TaskStatusUI status={to as TaskStatus} />
         </>
       );
 
     case 'PRIORITY_CHANGED':
       return (
         <>
-          <strong>{actor}</strong> changed priority from{' '}
-          <strong>{activity.metadata.from?.replace('_', ' ')}</strong> to{' '}
-          <strong>{activity.metadata.to?.replace('_', ' ')}</strong>.
+          changed priority from{' '}
+          <TaskPriorityUI priority={from as TaskPriority} /> to{' '}
+          <TaskPriorityUI priority={to as TaskPriority} />
         </>
       );
 
     case 'START_DATE_CHANGED':
-      return (
-        <>
-          <strong>{actor}</strong> changed the start date.
-        </>
-      );
+      if (from !== null && to === null) {
+        return <>removed the start date.</>;
+      }
+
+      if (from === null && to !== null) {
+        return (
+          <>
+            added a start date of{' '}
+            {momentTimezone(to)
+              .tz(timezone)
+              .format(`MMM DD, YYYY ${timeFormat}`)}
+            .
+          </>
+        );
+      }
+
+      if (from !== null && to !== null) {
+        return (
+          <>
+            changed the start date from{' '}
+            {momentTimezone(from)
+              .tz(timezone)
+              .format(`MMM DD, YYYY ${timeFormat}`)}{' '}
+            to{' '}
+            {momentTimezone(to)
+              .tz(timezone)
+              .format(`MMM DD, YYYY ${timeFormat}`)}
+            .
+          </>
+        );
+      }
+
+      return <>added a start date.</>;
 
     case 'END_DATE_CHANGED':
-      return (
-        <>
-          <strong>{actor}</strong> changed the end date.
-        </>
-      );
+      if (from !== null && to === null) {
+        return <>removed the end date.</>;
+      }
 
-    case 'ASSIGNEE_CHANGED':
-      return (
-        <>
-          <strong>{actor}</strong> changed the assignee.
-        </>
-      );
+      if (from === null && to !== null) {
+        return (
+          <>
+            added an end date of{' '}
+            {momentTimezone(to)
+              .tz(timezone)
+              .format(`MMM DD, YYYY ${timeFormat}`)}
+            .
+          </>
+        );
+      }
+
+      if (from !== null && to !== null) {
+        return (
+          <>
+            changed the end date from{' '}
+            {momentTimezone(from)
+              .tz(timezone)
+              .format(`MMM DD, YYYY ${timeFormat}`)}{' '}
+            to{' '}
+            {momentTimezone(to)
+              .tz(timezone)
+              .format(`MMM DD, YYYY ${timeFormat}`)}
+            .
+          </>
+        );
+      }
+
+      return <>added an end date.</>;
+
+    case 'ASSIGNEE_CHANGED': {
+      const assignee = users?.find((userItem) => userItem.id === to);
+
+      if (from !== null && to === null) {
+        return <>removed the assignee.</>;
+      }
+
+      if (from === null && to !== null) {
+        return (
+          <>
+            assigned to{' '}
+            <Link
+              className="hover:text-primary"
+              href={`/teams/${assignee?.id}`}
+            >
+              <strong>{`@${assignee?.firstName}`}</strong>
+            </Link>
+            .
+          </>
+        );
+      }
+
+      if (from !== null && to !== null) {
+        return (
+          <>
+            changed the assignee to{' '}
+            <Link
+              className="hover:text-primary"
+              href={`/teams/${assignee?.id}`}
+            >
+              <strong>{`@${assignee?.firstName}`}</strong>
+            </Link>
+            .
+          </>
+        );
+      }
+
+      return <>changed the assignee</>;
+    }
 
     case 'PRIMARY_COLOR_CHANGED':
-      return (
-        <>
-          <strong>{actor}</strong> changed the task color.
-        </>
-      );
+      if (from === null && to !== null) {
+        return (
+          <>
+            added a task color{' '}
+            <span
+              className="inline-block align-middle min-w-4 w-4 h-4 rounded-full"
+              style={{ backgroundColor: to }}
+            />
+          </>
+        );
+      }
+
+      if (from !== null && to !== null) {
+        return (
+          <>
+            changed the task color from{' '}
+            <span
+              className="inline-block align-middle min-w-4 w-4 h-4 rounded-full"
+              style={{ backgroundColor: from }}
+            />{' '}
+            to{' '}
+            <span
+              className="inline-block align-middle min-w-4 w-4 h-4 rounded-full"
+              style={{ backgroundColor: to }}
+            />
+          </>
+        );
+      }
+
+      return <>changed the task color</>;
 
     case 'COMMENT_ADDED':
-      return (
-        <>
-          <strong>{actor}</strong> added a comment.
-        </>
-      );
+      return <>added a comment.</>;
 
     case 'ATTACHMENT_ADDED':
-      return (
-        <>
-          <strong>{actor}</strong> added an attachment.
-        </>
-      );
+      return <>added an attachment.</>;
 
     default:
       return null;
