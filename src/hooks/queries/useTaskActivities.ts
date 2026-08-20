@@ -1,31 +1,23 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { getTaskActivities } from '@/api/task.api';
 
-export function useTaskActivities(taskId: string, limit = 20) {
-  return useInfiniteQuery({
-    queryKey: ['tasks', taskId, 'task-activities', limit],
+interface UseTaskActivitiesOptions {
+  page?: number;
+  limit?: number;
+}
 
-    queryFn: async ({ pageParam }) => {
-      const response = await getTaskActivities(taskId, pageParam, limit);
+export function useTaskActivities(
+  taskId: string,
+  { page = 1, limit = 20 }: UseTaskActivitiesOptions = {},
+) {
+  return useQuery({
+    queryKey: ['tasks', taskId, 'task-activities', page, limit],
 
-      if (!response.data) {
-        throw new Error('failed to fetch task activities.');
-      }
-
-      return response.data;
-    },
-
-    initialPageParam: 1,
-
-    getNextPageParam: (lastPage) => {
-      if (lastPage.page >= lastPage.totalPages) {
-        return undefined;
-      }
-
-      return lastPage.page + 1;
-    },
-
-    enabled: !!taskId,
+    queryFn: () =>
+      getTaskActivities(taskId, {
+        page,
+        limit,
+      }),
   });
 }
