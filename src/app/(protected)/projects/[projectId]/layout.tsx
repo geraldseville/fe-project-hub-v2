@@ -21,7 +21,7 @@ import {
   IconTable1,
 } from '@/components/svgs/icons';
 
-const tabs = ['overview', 'calendar', 'calendar2', 'kanban', 'table'] as const;
+const tabs = ['overview', 'calendar', 'kanban', 'table'] as const;
 
 type Tab = (typeof tabs)[number];
 
