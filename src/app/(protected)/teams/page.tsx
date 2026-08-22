@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -13,12 +13,14 @@ import { getFullName } from '@/utils/user.utils';
 import type { User } from '@/types/user.types';
 
 import AppShellHead from '@/components/AppShellHead';
-// import Button from '@/components/elements/Button';
+import Button from '@/components/elements/Button';
 import DataTable from '@/components/elements/DataTable';
 import Avatar from '@/components/reusable/Avatar';
 import Pagination from '@/components/reusable/Pagination';
 import ProjectDropdown from '@/components/shared/projects/ProjectDropdown';
 import TeamRoleUI from '@/components/shared/teams/TeamRoleUI';
+
+import { exportCsv } from '@/lib/export-csv';
 
 export default function TeamsPage() {
   const router = useRouter();
@@ -33,6 +35,40 @@ export default function TeamsPage() {
       ...paginationOptions,
       excludeMe: true,
     });
+
+  const derivedUsers = useMemo(() => {
+    return users.map((user) => ({
+      ...user,
+      fullName: getFullName(user.firstName, user.lastName) ?? '',
+      firstProject: user.memberProjects[0]?.title ?? '',
+    }));
+  }, [users]);
+
+  const handleExportCsv = () => {
+    exportCsv(derivedUsers, {
+      filename: 'Team Members',
+      columns: [
+        {
+          header: 'Member',
+          value: (user) => getFullName(user.firstName, user.lastName) ?? '',
+        },
+        {
+          header: 'Email',
+          value: (user) => user.email,
+        },
+        {
+          header: 'Role',
+          value: (user) => user.role ?? '',
+        },
+        {
+          header: 'Projects',
+          value: (user) =>
+            user.memberProjects?.map((project) => project.title).join(', ') ??
+            '',
+        },
+      ],
+    });
+  };
 
   return (
     <main
@@ -49,23 +85,23 @@ export default function TeamsPage() {
           'py-4 px-6',
         )}
       >
-        {/*
         <div className={clsx('flex justify-start items-center gap-4', 'mb-8')}>
           <Button
             className="ml-auto"
             buttonStyle="secondary"
             type="button"
             text="Export CSV"
-            onClick={() => {}}
+            onClick={handleExportCsv}
           />
+          {/*
           <Button
             buttonStyle="primary"
             type="button"
             text="Invite Members"
             onClick={() => {}}
           />
+          */}
         </div>
-        */}
         <div
           className={clsx(
             'overflow-hidden',
@@ -78,17 +114,15 @@ export default function TeamsPage() {
         >
           <DataTable
             classNames={{ root: 'flex-1 min-h-0' }}
-            value={users.map((user) => ({
-              ...user,
-              fullName: getFullName(user.firstName, user.lastName) ?? '',
-              firstProject: user.memberProjects[0]?.title ?? '',
-            }))}
+            value={derivedUsers}
             isLoading={isUsersPending}
+            loadingRows={10}
             columns={[
               {
                 field: 'fullName',
                 header: 'Member',
                 sortable: true,
+                thClassName: 'w-[50%]',
                 render: (row: User) => {
                   const fullName =
                     getFullName(row.firstName, row.lastName) ?? '';
@@ -141,6 +175,7 @@ export default function TeamsPage() {
                 field: 'role',
                 header: 'Role',
                 sortable: true,
+                thClassName: 'w-[20%]',
                 render: (row: User) => {
                   if (!row.role) return;
 
@@ -151,6 +186,7 @@ export default function TeamsPage() {
                 field: 'firstProject',
                 header: 'Projects',
                 sortable: true,
+                thClassName: 'w-[20%]',
                 render: (row: User) => {
                   if (!row.memberProjects?.length) {
                     return <i>No Projects</i>;
@@ -162,6 +198,7 @@ export default function TeamsPage() {
               {
                 field: 'status',
                 header: 'Status',
+                thClassName: 'w-[10%]',
                 // render: (row: User) => {
                 //   return <div className="relative"></div>;
                 // },
@@ -169,7 +206,6 @@ export default function TeamsPage() {
             ]}
             getRowId={(user) => user.id}
             onRowClick={(row) => {
-              // console.log(row);
               router.push(`/teams/${row.id}`);
             }}
           />
