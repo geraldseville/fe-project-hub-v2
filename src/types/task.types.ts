@@ -9,6 +9,7 @@ export type TaskPriority = (typeof TASK_PRIORITIES)[number];
 
 export type Task = {
   id: string;
+  taskNumber: number;
   title: string;
   description: string | null;
   status: TaskStatus;
