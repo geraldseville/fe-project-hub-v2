@@ -10,6 +10,7 @@ export default function TeamRoleUI({ role }: TeamRoleUIProps) {
       className={clsx(
         'font-medium',
         'text-[#C0C1FF] text-[11px] leading-none',
+        'whitespace-nowrap',
         'relative',
         'w-fit',
         'py-1 px-2',
