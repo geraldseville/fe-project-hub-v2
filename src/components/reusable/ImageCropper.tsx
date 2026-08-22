@@ -49,6 +49,7 @@ const createImage = (src: string): Promise<HTMLImageElement> => {
 
 const createCroppedFile = async (
   imageSrc: string,
+  originalFile: File,
   crop: Area,
   size: ImageCropperSize,
   rotation: number,
@@ -88,7 +89,11 @@ const createCroppedFile = async (
           return;
         }
 
-        const file = new File([blob], 'cropped-image.jpg', {
+        const originalName = originalFile.name.replace(/\.[^/.]+$/, '');
+
+        const fileName = `${originalName}-cropped-img.jpg`;
+
+        const file = new File([blob], fileName, {
           type: 'image/jpeg',
         });
 
@@ -175,6 +180,7 @@ export default function ImageCropper({
     try {
       const file = await createCroppedFile(
         image,
+        imageFileLocal!,
         croppedAreaPixels,
         size,
         rotation,
@@ -191,14 +197,6 @@ export default function ImageCropper({
     } catch (error) {
       console.error('Failed to create cropped file:', error);
     }
-  };
-
-  const handleSelectAnotherFile = () => {
-    imageCropperInputRef.current?.click();
-  };
-
-  const handleCropAgain = () => {
-    resetCrop();
   };
 
   useEffect(() => {
@@ -298,221 +296,181 @@ export default function ImageCropper({
           </div>
         </>
       )}
-      {/* Options */}
-      <div className={clsx('flex flex-col gap-4', 'p-4')}>
-        {cropResult.file ? (
-          <>
-            <div
-              className={clsx('flex justify-center items-center gap-4', 'h-9')}
-            >
-              {/* Select Another File */}
-              <button
-                className={clsx(
-                  'text-white',
-                  'flex justify-center items-center gap-2',
-                  'py-2 px-4',
-                  'rounded-md',
-                  'border',
-                  'border border-white',
-                  'hover:text-primary hover:border-primary',
-                )}
-                type="button"
-                title="Select Another File"
-                aria-label="Select Another File"
-                onClick={handleSelectAnotherFile}
-              >
-                <div className="font-jetbrains-mono leading-none">
-                  Select Another File
-                </div>
-              </button>
-              {/* Crop Again */}
-              <button
-                className={clsx(
-                  'text-white',
-                  'flex justify-center items-center gap-2',
-                  'py-2 px-4',
-                  'rounded-md',
-                  'border',
-                  'border border-white',
-                  'hover:text-primary hover:border-primary',
-                )}
-                type="button"
-                title="Crop"
-                aria-label="Crop"
-                onClick={handleCropAgain}
-              >
-                <div className="font-jetbrains-mono leading-none">
-                  Crop Again
-                </div>
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div
-              className={clsx('flex justify-between items-center gap-4', 'h-9')}
-            >
-              {/* Rotate Left */}
-              <button
-                className={clsx(
-                  'flex justify-center items-center',
-                  'min-w-6 w-6 h-6',
-                )}
-                type="button"
-                title="Rotate Left"
-                aria-label="Rotate Left"
-                onClick={handleRotateLeft}
-              >
-                <IconRotateLeft className="w-auto h-5" />
-              </button>
-              {/* Zoom */}
+      {!cropResult.file && (
+        <>
+          {/* Options */}
+          <div className={clsx('flex flex-col gap-4', 'p-4')}>
+            <>
               <div
                 className={clsx(
                   'flex justify-between items-center gap-4',
-                  'flex-1',
+                  'h-9',
                 )}
               >
-                {/* Zoom Out */}
+                {/* Rotate Left */}
                 <button
                   className={clsx(
                     'flex justify-center items-center',
                     'min-w-6 w-6 h-6',
-                    zoom <= minZoom && 'is-disabled opacity-50!',
                   )}
                   type="button"
-                  title="Zoom Out"
-                  aria-label="Zoom Out"
-                  onClick={handleZoomOut}
-                  disabled={zoom <= minZoom}
+                  title="Rotate Left"
+                  aria-label="Rotate Left"
+                  onClick={handleRotateLeft}
                 >
-                  <IconZoomOut className="w-auto h-5" />
+                  <IconRotateLeft className="w-auto h-5" />
                 </button>
-                {/* Zoom Slider */}
-                <input
-                  className="w-full"
-                  type="range"
-                  min={minZoom}
-                  max={maxZoom}
-                  step={ZOOM_STEP}
-                  value={zoom}
-                  onChange={(event) => {
-                    setZoom(Number(event.target.value));
-                  }}
-                />
-                <label>{`x${zoom.toFixed(1)}`}</label>
-                {/* Zoom In */}
+                {/* Zoom */}
+                <div
+                  className={clsx(
+                    'flex justify-between items-center gap-4',
+                    'flex-1',
+                  )}
+                >
+                  {/* Zoom Out */}
+                  <button
+                    className={clsx(
+                      'flex justify-center items-center',
+                      'min-w-6 w-6 h-6',
+                      zoom <= minZoom && 'is-disabled opacity-50!',
+                    )}
+                    type="button"
+                    title="Zoom Out"
+                    aria-label="Zoom Out"
+                    onClick={handleZoomOut}
+                    disabled={zoom <= minZoom}
+                  >
+                    <IconZoomOut className="w-auto h-5" />
+                  </button>
+                  {/* Zoom Slider */}
+                  <input
+                    className="w-full"
+                    type="range"
+                    min={minZoom}
+                    max={maxZoom}
+                    step={ZOOM_STEP}
+                    value={zoom}
+                    onChange={(event) => {
+                      setZoom(Number(event.target.value));
+                    }}
+                  />
+                  <label>{`x${zoom.toFixed(1)}`}</label>
+                  {/* Zoom In */}
+                  <button
+                    className={clsx(
+                      'flex justify-center items-center',
+                      'min-w-6 w-6 h-6',
+                      zoom >= maxZoom && 'is-disabled opacity-50!',
+                    )}
+                    type="button"
+                    title="Zoom In"
+                    aria-label="Zoom In"
+                    onClick={handleZoomIn}
+                    disabled={zoom >= maxZoom}
+                  >
+                    <IconZoomIn className="w-auto h-5" />
+                  </button>
+                </div>
+                {/* Rotate Right */}
                 <button
                   className={clsx(
                     'flex justify-center items-center',
                     'min-w-6 w-6 h-6',
-                    zoom >= maxZoom && 'is-disabled opacity-50!',
                   )}
                   type="button"
-                  title="Zoom In"
-                  aria-label="Zoom In"
-                  onClick={handleZoomIn}
-                  disabled={zoom >= maxZoom}
+                  title="Rotate Right"
+                  aria-label="Rotate Right"
+                  onClick={handleRotateRight}
                 >
-                  <IconZoomIn className="w-auto h-5" />
+                  <IconRotateRight className="w-auto h-5" />
                 </button>
               </div>
-              {/* Rotate Right */}
-              <button
-                className={clsx(
-                  'flex justify-center items-center',
-                  'min-w-6 w-6 h-6',
-                )}
-                type="button"
-                title="Rotate Right"
-                aria-label="Rotate Right"
-                onClick={handleRotateRight}
+              <div
+                className={clsx('flex justify-start items-center gap-4', 'h-9')}
               >
-                <IconRotateRight className="w-auto h-5" />
-              </button>
-            </div>
-            <div
-              className={clsx('flex justify-start items-center gap-4', 'h-9')}
-            >
-              <button
-                className={clsx(
-                  'flex justify-center items-center gap-2',
-                  'py-2 px-4',
-                  'rounded-md',
-                  'border',
-                  cropShape === 'rect'
-                    ? 'bg-tertiary border-tertiary'
-                    : 'text-white hover:text-primary border-white hover:border-primary',
-                )}
-                type="button"
-                title="Square Shape"
-                aria-label="Square Shape"
-                onClick={() => {
-                  setCropShape('rect');
-                }}
-              >
-                <IconSquare className={clsx('min-w-4 w-4 h-4')} />
-                <div className="font-jetbrains-mono leading-none">Square</div>
-              </button>
-              <button
-                className={clsx(
-                  'flex justify-center items-center gap-2',
-                  'py-2 px-4',
-                  'rounded-md',
-                  'border',
-                  cropShape === 'round'
-                    ? 'bg-tertiary border-tertiary'
-                    : 'text-white hover:text-primary border-white hover:border-primary',
-                )}
-                type="button"
-                title="Circle Shape"
-                aria-label="Circle Shape"
-                onClick={() => {
-                  setCropShape('round');
-                }}
-              >
-                <IconCircle className={clsx('min-w-4 w-4 h-4')} />
-                <div className="font-jetbrains-mono leading-none">Circle</div>
-              </button>
-              {/* Reset */}
-              <button
-                className={clsx(
-                  'text-white',
-                  'flex justify-center items-center gap-2',
-                  'ml-auto py-2 px-4',
-                  'rounded-md',
-                  'border',
-                  'border border-white',
-                  'hover:text-primary hover:border-primary',
-                )}
-                type="button"
-                title="Reset"
-                aria-label="Reset"
-                onClick={resetCrop}
-              >
-                <div className="font-jetbrains-mono leading-none">Reset</div>
-              </button>
-              {/* Crop */}
-              <button
-                className={clsx(
-                  'text-white',
-                  'flex justify-center items-center gap-2',
-                  'py-2 px-4',
-                  'rounded-md',
-                  'border',
-                  'border border-white',
-                  'hover:text-primary hover:border-primary',
-                )}
-                type="button"
-                title="Crop"
-                aria-label="Crop"
-                onClick={handleCrop}
-              >
-                <div className="font-jetbrains-mono leading-none">Crop</div>
-              </button>
-            </div>
-          </>
-        )}
-      </div>
+                {/* Circle */}
+                <button
+                  className={clsx(
+                    'flex justify-center items-center gap-2',
+                    'py-2 px-4',
+                    'rounded-md',
+                    'border',
+                    cropShape === 'rect'
+                      ? 'bg-tertiary border-tertiary'
+                      : 'text-white hover:text-primary border-white hover:border-primary',
+                  )}
+                  type="button"
+                  title="Square Shape"
+                  aria-label="Square Shape"
+                  onClick={() => {
+                    setCropShape('rect');
+                  }}
+                >
+                  <IconSquare className={clsx('min-w-4 w-4 h-4')} />
+                  <div className="font-jetbrains-mono leading-none">Square</div>
+                </button>
+                {/* Square */}
+                <button
+                  className={clsx(
+                    'flex justify-center items-center gap-2',
+                    'py-2 px-4',
+                    'rounded-md',
+                    'border',
+                    cropShape === 'round'
+                      ? 'bg-tertiary border-tertiary'
+                      : 'text-white hover:text-primary border-white hover:border-primary',
+                  )}
+                  type="button"
+                  title="Circle Shape"
+                  aria-label="Circle Shape"
+                  onClick={() => {
+                    setCropShape('round');
+                  }}
+                >
+                  <IconCircle className={clsx('min-w-4 w-4 h-4')} />
+                  <div className="font-jetbrains-mono leading-none">Circle</div>
+                </button>
+                {/* Reset */}
+                <button
+                  className={clsx(
+                    'text-white',
+                    'flex justify-center items-center gap-2',
+                    'ml-auto py-2 px-4',
+                    'rounded-md',
+                    'border',
+                    'border border-white',
+                    'hover:text-primary hover:border-primary',
+                  )}
+                  type="button"
+                  title="Reset"
+                  aria-label="Reset"
+                  onClick={resetCrop}
+                >
+                  <div className="font-jetbrains-mono leading-none">Reset</div>
+                </button>
+                {/* Crop */}
+                <button
+                  className={clsx(
+                    'text-white',
+                    'flex justify-center items-center gap-2',
+                    'py-2 px-4',
+                    'rounded-md',
+                    'border',
+                    'border border-white',
+                    'hover:text-primary hover:border-primary',
+                  )}
+                  type="button"
+                  title="Crop"
+                  aria-label="Crop"
+                  onClick={handleCrop}
+                >
+                  <div className="font-jetbrains-mono leading-none">Crop</div>
+                </button>
+              </div>
+            </>
+          </div>
+        </>
+      )}
     </div>
   );
 }
