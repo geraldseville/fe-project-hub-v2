@@ -116,19 +116,12 @@ export default function DataTable<T extends Record<string, unknown>>({
   };
 
   return (
-    <div className={clsx('overflow-auto', classNames?.root)}>
+    <div className={clsx('overflow-y-scroll', classNames?.root)}>
       <table className={clsx('text-left', 'w-full', classNames?.table)}>
-        <thead
-          className={clsx(
-            'sticky top-0 z-20',
-            'h-13',
-            'bg-[#131B2E]',
-            'border-y border-[#334155]',
-          )}
-        >
+        <thead className={clsx('sticky top-0 z-20', 'h-13', 'bg-[#131B2E]')}>
           <tr>
             {multiple && (
-              <th className="w-12 p-4">
+              <th className={clsx('w-12', 'p-4')}>
                 <InputCheckbox
                   id="selectAll"
                   type="checkbox"
@@ -164,7 +157,7 @@ export default function DataTable<T extends Record<string, unknown>>({
                       onClick={() => handleSort(column)}
                     >
                       <span>{column.header}</span>
-                      <div className="flex flex-col justify-center items-center -space-y-[1px]">
+                      <div className="flex flex-col justify-center items-center -space-y-px">
                         <IconCaretUp
                           className={clsx(
                             'w-2.5 h-2.5',
