@@ -78,13 +78,21 @@ export default function TeamsPage() {
         >
           <DataTable
             classNames={{ root: 'flex-1 min-h-0' }}
-            value={users}
+            value={users.map((user) => ({
+              ...user,
+              fullName: getFullName(user.firstName, user.lastName) ?? '',
+              firstProject: user.memberProjects[0]?.title ?? '',
+            }))}
             isLoading={isUsersPending}
             columns={[
               {
-                field: 'memeber',
+                field: 'fullName',
                 header: 'Member',
+                sortable: true,
                 render: (row: User) => {
+                  const fullName =
+                    getFullName(row.firstName, row.lastName) ?? '';
+
                   return (
                     <div
                       className={clsx(
@@ -101,10 +109,8 @@ export default function TeamsPage() {
                               'rounded-full',
                             )}
                             src={row.imageUrl}
-                            alt={getFullName(row.firstName, row.lastName) ?? ''}
-                            title={
-                              getFullName(row.firstName, row.lastName) ?? ''
-                            }
+                            alt={fullName}
+                            title={fullName}
                             width={40}
                             height={40}
                           />
@@ -119,7 +125,7 @@ export default function TeamsPage() {
                             'text-[16px] leading-tight',
                           )}
                         >
-                          {getFullName(row.firstName, row.lastName)}
+                          {fullName}
                         </div>
                         <div
                           className={clsx('text-[14px] leading-tight', 'mt-1')}
@@ -134,6 +140,7 @@ export default function TeamsPage() {
               {
                 field: 'role',
                 header: 'Role',
+                sortable: true,
                 render: (row: User) => {
                   if (!row.role) return;
 
@@ -141,11 +148,12 @@ export default function TeamsPage() {
                 },
               },
               {
-                field: 'project',
+                field: 'firstProject',
                 header: 'Projects',
+                sortable: true,
                 render: (row: User) => {
                   if (!row.memberProjects?.length) {
-                    return <div>No Projects</div>;
+                    return <i>No Projects</i>;
                   }
 
                   return <ProjectDropdown projects={row.memberProjects} />;
