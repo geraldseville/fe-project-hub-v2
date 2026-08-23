@@ -378,7 +378,6 @@ export default function SmartSearchModal({
           </div>
         </div>
       </div>
-
       {/* Body */}
       <div
         className={clsx(
@@ -391,7 +390,6 @@ export default function SmartSearchModal({
       >
         {/* Filters */}
         <SearchFilters value={filter} onChange={handleFilterChange} />
-
         {/* Results */}
         <div className={clsx('overflow-y-auto', 'flex-1', 'py-4 px-6')}>
           {filteredResults.length === 0 ? (
@@ -423,7 +421,6 @@ export default function SmartSearchModal({
             </div>
           )}
         </div>
-
         {/* Footer */}
         <SearchFooter />
       </div>
@@ -827,29 +824,28 @@ function SearchFooter() {
       <div className="flex justify-between items-center gap-4">
         <KeyboardHint
           className="flex-1"
+          keys={<KeyboardKey className="px-3">TAB</KeyboardKey>}
+          label="Tabs"
+        />
+        <KeyboardHint
+          className="min-w-40"
+          keys={<KeyboardKey className="px-3">Enter</KeyboardKey>}
+          label="Select"
+          centered
+        />
+        <KeyboardHint
+          className="flex-1"
           keys={
             <>
               <KeyboardKey>
                 <IconArrowUp className="min-w-2 w-2 h-auto" />
               </KeyboardKey>
-
               <KeyboardKey>
                 <IconArrowDown className="min-w-2 w-2 h-auto" />
               </KeyboardKey>
             </>
           }
           label="Navigate"
-        />
-        <KeyboardHint
-          keys={<KeyboardKey className="px-3">Enter</KeyboardKey>}
-          label="Select"
-          className="min-w-40"
-          centered
-        />
-        <KeyboardHint
-          keys={<KeyboardKey className="px-3">Esc</KeyboardKey>}
-          label="Dismiss"
-          className="flex-1"
           alignRight
         />
       </div>
