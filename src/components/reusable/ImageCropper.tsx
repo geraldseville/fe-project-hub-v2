@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Cropper, { Area, Point } from 'react-easy-crop';
 
 import clsx from 'clsx';
@@ -29,12 +29,18 @@ interface ImageCropperProps {
   size: ImageCropperSize;
   minZoom?: number;
   maxZoom?: number;
+  disabled?: boolean;
+  defaultCropShape?: 'rect' | 'round';
   onCropComplete?: (croppedArea: Area, croppedAreaPixels: Area) => void;
   onCropFile?: (result: ImageCropResult) => void;
 }
 
 const ZOOM_STEP = 0.1;
 const ROTATION_STEP = 90;
+const EMPTY_CROP_RESULT: ImageCropResult = {
+  file: null,
+  url: '',
+};
 
 const createImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
@@ -47,14 +53,67 @@ const createImage = (src: string): Promise<HTMLImageElement> => {
   });
 };
 
+const getRadianAngle = (degree: number) => (degree * Math.PI) / 180;
+
+const getRotatedSize = (width: number, height: number, rotation: number) => {
+  const rotRad = getRadianAngle(rotation);
+
+  return {
+    width:
+      Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
+    height:
+      Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
+  };
+};
+
+const clipEllipse = (
+  context: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+) => {
+  context.save();
+  context.globalCompositeOperation = 'destination-in';
+  context.beginPath();
+  context.ellipse(
+    width / 2,
+    height / 2,
+    width / 2,
+    height / 2,
+    0,
+    0,
+    Math.PI * 2,
+  );
+  context.closePath();
+  context.fill();
+  context.restore();
+};
+
 const createCroppedFile = async (
   imageSrc: string,
   originalFile: File,
   crop: Area,
   size: ImageCropperSize,
   rotation: number,
+  cropShape: 'rect' | 'round',
 ): Promise<File> => {
   const image = await createImage(imageSrc);
+  const rotRad = getRadianAngle(rotation);
+  const rotated = getRotatedSize(image.width, image.height, rotation);
+
+  const rotatedCanvas = document.createElement('canvas');
+  const rotatedContext = rotatedCanvas.getContext('2d');
+
+  if (!rotatedContext) {
+    throw new Error('Could not create canvas context.');
+  }
+
+  rotatedCanvas.width = rotated.width;
+  rotatedCanvas.height = rotated.height;
+
+  rotatedContext.translate(rotated.width / 2, rotated.height / 2);
+  rotatedContext.rotate(rotRad);
+  rotatedContext.translate(-image.width / 2, -image.height / 2);
+  rotatedContext.drawImage(image, 0, 0);
 
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
@@ -66,20 +125,24 @@ const createCroppedFile = async (
   canvas.width = size.width;
   canvas.height = size.height;
 
-  context.translate(size.width / 2, size.height / 2);
-  context.rotate((rotation * Math.PI) / 180);
-
   context.drawImage(
-    image,
+    rotatedCanvas,
     crop.x,
     crop.y,
     crop.width,
     crop.height,
-    -size.width / 2,
-    -size.height / 2,
+    0,
+    0,
     size.width,
     size.height,
   );
+
+  if (cropShape === 'round') {
+    clipEllipse(context, size.width, size.height);
+  }
+
+  const mimeType = cropShape === 'round' ? 'image/png' : 'image/jpeg';
+  const extension = cropShape === 'round' ? 'png' : 'jpg';
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
@@ -91,16 +154,18 @@ const createCroppedFile = async (
 
         const originalName = originalFile.name.replace(/\.[^/.]+$/, '');
 
-        const fileName = `${originalName}-cropped-img.jpg`;
-
-        const file = new File([blob], fileName, {
-          type: 'image/jpeg',
-        });
+        const file = new File(
+          [blob],
+          `${originalName}-cropped-img.${extension}`,
+          {
+            type: mimeType,
+          },
+        );
 
         resolve(file);
       },
-      'image/jpeg',
-      0.92,
+      mimeType,
+      mimeType === 'image/jpeg' ? 0.92 : undefined,
     );
   });
 };
@@ -110,62 +175,43 @@ export default function ImageCropper({
   size,
   minZoom = 1,
   maxZoom = 3,
+  disabled = false,
+  defaultCropShape = 'rect',
   onCropComplete,
   onCropFile,
 }: ImageCropperProps) {
-  const [image, setImage] = useState<string>('');
-  const [imageFileLocal, setImageFileLocal] = useState<File | null>(imageFile);
+  const [image, setImage] = useState('');
   const [crop, setCrop] = useState<Point>({
     x: 0,
     y: 0,
   });
-  const [zoom, setZoom] = useState<number>(1);
-  const [rotation, setRotation] = useState<number>(0);
-  const [cropShape, setCropShape] = useState<'rect' | 'round'>('rect');
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [cropShape, setCropShape] = useState<'rect' | 'round'>(
+    defaultCropShape,
+  );
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  const [cropResult, setCropResult] = useState<ImageCropResult>({
-    file: null,
-    url: '',
-  });
-
-  const imageCropperInputRef = useRef<HTMLInputElement>(null);
+  const [cropResult, setCropResult] =
+    useState<ImageCropResult>(EMPTY_CROP_RESULT);
 
   const aspect = size.width / size.height;
 
-  const handleCropChange = (crop: Point) => {
-    setCrop(crop);
+  const emitCropResult = (result: ImageCropResult) => {
+    setCropResult(result);
+    onCropFile?.(result);
   };
 
-  const handleZoomChange = (zoom: number) => {
-    setZoom(zoom);
-  };
-
-  const handleZoomOut = () => {
-    setZoom((currentZoom) => Math.max(minZoom, currentZoom - ZOOM_STEP));
-  };
-
-  const handleZoomIn = () => {
-    setZoom((currentZoom) => Math.min(maxZoom, currentZoom + ZOOM_STEP));
-  };
-
-  const handleRotateLeft = () => {
-    setRotation((currentRotation) => currentRotation - ROTATION_STEP);
-  };
-
-  const handleRotateRight = () => {
-    setRotation((currentRotation) => currentRotation + ROTATION_STEP);
+  const clearPreview = () => {
+    emitCropResult(EMPTY_CROP_RESULT);
   };
 
   const resetCrop = () => {
     setCrop({ x: 0, y: 0 });
     setZoom(1);
     setRotation(0);
-    setCropShape('rect');
+    setCropShape(defaultCropShape);
     setCroppedAreaPixels(null);
-    setCropResult({
-      file: null,
-      url: '',
-    });
+    clearPreview();
   };
 
   const handleCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
@@ -175,302 +221,257 @@ export default function ImageCropper({
   };
 
   const handleCrop = async () => {
-    if (!croppedAreaPixels) return;
+    if (disabled || !croppedAreaPixels || !imageFile) return;
 
     try {
       const file = await createCroppedFile(
         image,
-        imageFileLocal!,
+        imageFile,
         croppedAreaPixels,
         size,
         rotation,
+        cropShape,
       );
 
-      const url = URL.createObjectURL(file);
-
-      setCropResult({
+      emitCropResult({
         file,
-        url,
+        url: URL.createObjectURL(file),
       });
-      // Emit the actual cropped File
-      onCropFile?.({ file, url });
     } catch (error) {
       console.error('Failed to create cropped file:', error);
     }
   };
 
   useEffect(() => {
-    return () => {
-      if (image) {
-        URL.revokeObjectURL(image);
-      }
-    };
-  }, [image]);
-
-  useEffect(() => {
-    setImageFileLocal(imageFile);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setRotation(0);
-    setCropShape('rect');
-    setCroppedAreaPixels(null);
-    setCropResult({
-      file: null,
-      url: '',
-    });
+    resetCrop();
+    // Reset whenever a new source file is provided.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [imageFile]);
 
   useEffect(() => {
-    if (!imageFileLocal) {
+    if (!imageFile) {
       setImage('');
       return;
     }
 
-    const url = URL.createObjectURL(imageFileLocal);
+    const url = URL.createObjectURL(imageFile);
 
     setImage(url);
 
     return () => {
       URL.revokeObjectURL(url);
     };
-  }, [imageFileLocal]);
+  }, [imageFile]);
+
+  useEffect(() => {
+    return () => {
+      if (cropResult.url) {
+        URL.revokeObjectURL(cropResult.url);
+      }
+    };
+  }, [cropResult.url]);
 
   return (
-    <div className="flex flex-col">
-      <input
-        className="hidden"
-        id="imageCropperInput"
-        ref={imageCropperInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(event) => {
-          const file = event.target.files?.[0] ?? null;
-
-          if (!file) {
-            return;
-          }
-
-          setImageFileLocal(file);
-          resetCrop();
-
-          // Allows selecting the same file again later
-          event.target.value = '';
-        }}
-      />
-      {cropResult.file ? (
-        <>
-          {/* Preview */}
-          <div
-            className={clsx('flex justify-center items-center', 'w-full h-100')}
+    <div
+      className={clsx('flex flex-col', disabled && 'is-disabled opacity-100!')}
+    >
+      <div
+        className={clsx('relative overflow-hidden', 'w-full h-100', 'bg-black')}
+      >
+        <Cropper
+          image={image}
+          crop={crop}
+          zoom={zoom}
+          rotation={rotation}
+          aspect={aspect}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onRotationChange={setRotation}
+          onCropComplete={handleCropComplete}
+          cropShape={cropShape}
+        />
+      </div>
+      <div className={clsx('flex flex-col gap-4', 'py-4 px-6')}>
+        <div className={clsx('flex justify-between items-center gap-4', 'h-9')}>
+          <button
+            className={clsx(
+              'flex justify-center items-center',
+              'min-w-6 w-6 h-6',
+            )}
+            type="button"
+            title="Rotate Left"
+            aria-label="Rotate Left"
+            onClick={() => {
+              setRotation((currentRotation) => currentRotation - ROTATION_STEP);
+            }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="w-auto h-80"
-              src={cropResult.url}
-              alt="Image Cropper Preview"
-            />
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Cropper */}
+            <IconRotateLeft className="w-auto h-5" />
+          </button>
           <div
             className={clsx(
-              'relative overflow-hidden',
-              'w-full h-100',
-              'bg-black',
+              'flex justify-between items-center gap-4',
+              'flex-1',
             )}
           >
-            <Cropper
-              image={image}
-              crop={crop}
-              zoom={zoom}
-              rotation={rotation}
-              aspect={aspect}
-              onCropChange={handleCropChange}
-              onZoomChange={handleZoomChange}
-              onRotationChange={setRotation}
-              onCropComplete={handleCropComplete}
-              cropShape={cropShape}
+            <button
+              className={clsx(
+                'flex justify-center items-center',
+                'min-w-6 w-6 h-6',
+                zoom <= minZoom && 'is-disabled opacity-50!',
+              )}
+              type="button"
+              title="Zoom Out"
+              aria-label="Zoom Out"
+              onClick={() => {
+                setZoom((currentZoom) =>
+                  Math.max(minZoom, currentZoom - ZOOM_STEP),
+                );
+              }}
+              disabled={zoom <= minZoom}
+            >
+              <IconZoomOut className="w-auto h-5" />
+            </button>
+            <input
+              className="w-full"
+              type="range"
+              min={minZoom}
+              max={maxZoom}
+              step={ZOOM_STEP}
+              value={zoom}
+              onChange={(event) => {
+                setZoom(Number(event.target.value));
+              }}
             />
+            <label>{`x${zoom.toFixed(1)}`}</label>
+            <button
+              className={clsx(
+                'flex justify-center items-center',
+                'min-w-6 w-6 h-6',
+                zoom >= maxZoom && 'is-disabled opacity-50!',
+              )}
+              type="button"
+              title="Zoom In"
+              aria-label="Zoom In"
+              onClick={() => {
+                setZoom((currentZoom) =>
+                  Math.min(maxZoom, currentZoom + ZOOM_STEP),
+                );
+              }}
+              disabled={zoom >= maxZoom}
+            >
+              <IconZoomIn className="w-auto h-5" />
+            </button>
           </div>
-        </>
-      )}
-      {!cropResult.file && (
-        <>
-          {/* Options */}
-          <div className={clsx('flex flex-col gap-4', 'p-4')}>
-            <>
-              <div
-                className={clsx(
-                  'flex justify-between items-center gap-4',
-                  'h-9',
-                )}
-              >
-                {/* Rotate Left */}
-                <button
-                  className={clsx(
-                    'flex justify-center items-center',
-                    'min-w-6 w-6 h-6',
-                  )}
-                  type="button"
-                  title="Rotate Left"
-                  aria-label="Rotate Left"
-                  onClick={handleRotateLeft}
-                >
-                  <IconRotateLeft className="w-auto h-5" />
-                </button>
-                {/* Zoom */}
-                <div
-                  className={clsx(
-                    'flex justify-between items-center gap-4',
-                    'flex-1',
-                  )}
-                >
-                  {/* Zoom Out */}
-                  <button
-                    className={clsx(
-                      'flex justify-center items-center',
-                      'min-w-6 w-6 h-6',
-                      zoom <= minZoom && 'is-disabled opacity-50!',
-                    )}
-                    type="button"
-                    title="Zoom Out"
-                    aria-label="Zoom Out"
-                    onClick={handleZoomOut}
-                    disabled={zoom <= minZoom}
-                  >
-                    <IconZoomOut className="w-auto h-5" />
-                  </button>
-                  {/* Zoom Slider */}
-                  <input
-                    className="w-full"
-                    type="range"
-                    min={minZoom}
-                    max={maxZoom}
-                    step={ZOOM_STEP}
-                    value={zoom}
-                    onChange={(event) => {
-                      setZoom(Number(event.target.value));
-                    }}
-                  />
-                  <label>{`x${zoom.toFixed(1)}`}</label>
-                  {/* Zoom In */}
-                  <button
-                    className={clsx(
-                      'flex justify-center items-center',
-                      'min-w-6 w-6 h-6',
-                      zoom >= maxZoom && 'is-disabled opacity-50!',
-                    )}
-                    type="button"
-                    title="Zoom In"
-                    aria-label="Zoom In"
-                    onClick={handleZoomIn}
-                    disabled={zoom >= maxZoom}
-                  >
-                    <IconZoomIn className="w-auto h-5" />
-                  </button>
-                </div>
-                {/* Rotate Right */}
-                <button
-                  className={clsx(
-                    'flex justify-center items-center',
-                    'min-w-6 w-6 h-6',
-                  )}
-                  type="button"
-                  title="Rotate Right"
-                  aria-label="Rotate Right"
-                  onClick={handleRotateRight}
-                >
-                  <IconRotateRight className="w-auto h-5" />
-                </button>
-              </div>
-              <div
-                className={clsx('flex justify-start items-center gap-4', 'h-9')}
-              >
-                {/* Circle */}
-                <button
-                  className={clsx(
-                    'flex justify-center items-center gap-2',
-                    'py-2 px-4',
-                    'rounded-md',
-                    'border',
-                    cropShape === 'rect'
-                      ? 'bg-tertiary border-tertiary'
-                      : 'text-white hover:text-primary border-white hover:border-primary',
-                  )}
-                  type="button"
-                  title="Square Shape"
-                  aria-label="Square Shape"
-                  onClick={() => {
-                    setCropShape('rect');
-                  }}
-                >
-                  <IconSquare className={clsx('min-w-4 w-4 h-4')} />
-                  <div className="font-jetbrains-mono leading-none">Square</div>
-                </button>
-                {/* Square */}
-                <button
-                  className={clsx(
-                    'flex justify-center items-center gap-2',
-                    'py-2 px-4',
-                    'rounded-md',
-                    'border',
-                    cropShape === 'round'
-                      ? 'bg-tertiary border-tertiary'
-                      : 'text-white hover:text-primary border-white hover:border-primary',
-                  )}
-                  type="button"
-                  title="Circle Shape"
-                  aria-label="Circle Shape"
-                  onClick={() => {
-                    setCropShape('round');
-                  }}
-                >
-                  <IconCircle className={clsx('min-w-4 w-4 h-4')} />
-                  <div className="font-jetbrains-mono leading-none">Circle</div>
-                </button>
-                {/* Reset */}
-                <button
-                  className={clsx(
-                    'text-white',
-                    'flex justify-center items-center gap-2',
-                    'ml-auto py-2 px-4',
-                    'rounded-md',
-                    'border',
-                    'border border-white',
-                    'hover:text-primary hover:border-primary',
-                  )}
-                  type="button"
-                  title="Reset"
-                  aria-label="Reset"
-                  onClick={resetCrop}
-                >
-                  <div className="font-jetbrains-mono leading-none">Reset</div>
-                </button>
-                {/* Crop */}
-                <button
-                  className={clsx(
-                    'text-white',
-                    'flex justify-center items-center gap-2',
-                    'py-2 px-4',
-                    'rounded-md',
-                    'border',
-                    'border border-white',
-                    'hover:text-primary hover:border-primary',
-                  )}
-                  type="button"
-                  title="Crop"
-                  aria-label="Crop"
-                  onClick={handleCrop}
-                >
-                  <div className="font-jetbrains-mono leading-none">Crop</div>
-                </button>
-              </div>
-            </>
-          </div>
-        </>
-      )}
+          <button
+            className={clsx(
+              'flex justify-center items-center',
+              'min-w-6 w-6 h-6',
+            )}
+            type="button"
+            title="Rotate Right"
+            aria-label="Rotate Right"
+            onClick={() => {
+              setRotation((currentRotation) => currentRotation + ROTATION_STEP);
+            }}
+          >
+            <IconRotateRight className="w-auto h-5" />
+          </button>
+        </div>
+        <div className={clsx('flex justify-start items-center gap-4', 'h-9')}>
+          <button
+            className={clsx(
+              'flex justify-center items-center gap-2',
+              'py-2 px-4',
+              'rounded-md',
+              'border',
+              cropShape === 'rect'
+                ? 'bg-tertiary border-tertiary'
+                : 'text-white hover:text-primary border-white hover:border-primary',
+            )}
+            type="button"
+            title="Square Shape"
+            aria-label="Square Shape"
+            onClick={() => {
+              setCropShape('rect');
+            }}
+          >
+            <IconSquare className={clsx('min-w-4 w-4 h-4')} />
+            <div className="font-jetbrains-mono leading-none">Square</div>
+          </button>
+          <button
+            className={clsx(
+              'flex justify-center items-center gap-2',
+              'py-2 px-4',
+              'rounded-md',
+              'border',
+              cropShape === 'round'
+                ? 'bg-tertiary border-tertiary'
+                : 'text-white hover:text-primary border-white hover:border-primary',
+            )}
+            type="button"
+            title="Circle Shape"
+            aria-label="Circle Shape"
+            onClick={() => {
+              setCropShape('round');
+            }}
+          >
+            <IconCircle className={clsx('min-w-4 w-4 h-4')} />
+            <div className="font-jetbrains-mono leading-none">Circle</div>
+          </button>
+          {/*
+          <button
+            className={clsx(
+              'text-white',
+              'flex justify-center items-center gap-2',
+              'ml-auto py-2 px-4',
+              'rounded-md',
+              'border border-white',
+              'hover:text-primary hover:border-primary',
+            )}
+            type="button"
+            title={hasPreview ? 'Recrop' : 'Reset'}
+            aria-label={hasPreview ? 'Recrop' : 'Reset'}
+            onClick={hasPreview ? clearPreview : resetCrop}
+          >
+            <div className="font-jetbrains-mono leading-none">
+              {hasPreview ? 'Recrop' : 'Reset'}
+            </div>
+          </button>
+          */}
+          <button
+            className={clsx(
+              'text-white',
+              'flex justify-center items-center gap-2',
+              'ml-auto py-2 px-4',
+              'rounded-md',
+              'border border-white',
+              'hover:text-primary hover:border-primary',
+            )}
+            type="button"
+            title="Reset"
+            aria-label="Reset"
+            onClick={resetCrop}
+          >
+            <div className="font-jetbrains-mono leading-none">Reset</div>
+          </button>
+          <button
+            className={clsx(
+              'text-white',
+              'flex justify-center items-center gap-2',
+              'py-2 px-4',
+              'rounded-md',
+              'border border-white',
+              'hover:text-primary hover:border-primary',
+            )}
+            type="button"
+            title="Crop"
+            aria-label="Crop"
+            onClick={handleCrop}
+          >
+            <div className="font-jetbrains-mono leading-none">Crop</div>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
