@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 
 import clsx from 'clsx';
@@ -7,6 +9,7 @@ import { useUploadUserProfileImage } from '@/hooks/mutations/useUploadProfileIma
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
 import Button from '@/components/elements/Button';
+import LoaderSpinner from '@/components/elements/LoaderSpinner';
 import Modal from '@/components/elements/Modal';
 import ImageCropper from '@/components/reusable/ImageCropper';
 import ImageDropZone from '@/components/reusable/ImageDropZone';
@@ -21,20 +24,33 @@ interface UserImageCropModalProps {
 export default function UserImageCropModal({
   isOpen,
   onClose,
-  imageFile: file,
+  imageFile: initialFile,
 }: UserImageCropModalProps) {
   const toast = useToastStore();
 
   const updateMe = useUpdateMe();
   const uploadUserProfileImage = useUploadUserProfileImage();
 
-  const [imageFile, setImageFile] = useState<File | null>(file);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageCroppedFile, setImageCroppedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
 
   const isUploading = updateMe.isPending || uploadUserProfileImage.isPending;
 
+  const resetFiles = () => {
+    setImageFile(null);
+    setImageCroppedFile(null);
+  };
+
+  const handleClose = () => {
+    if (isUploading) return;
+
+    resetFiles();
+    onClose();
+  };
+
   const handleSaveProfileImage = async () => {
-    if (!imageCroppedFile) return;
+    if (!imageCroppedFile || isUploading) return;
 
     try {
       const formData = new FormData();
@@ -53,31 +69,30 @@ export default function UserImageCropModal({
       });
 
       toast.success('user updated profile image.');
+      resetFiles();
+      onClose();
     } catch (err) {
       toast.failed(
         err instanceof Error ? err.message : 'failed to upload profile image.',
       );
-    } finally {
-      handleCancel();
     }
   };
 
-  const handleCancel = () => {
-    setImageFile(null);
-    setImageCroppedFile(null);
-    onClose();
-  };
-
   const handleSelectAnotherFile = () => {
-    setImageFile(null);
-    setImageCroppedFile(null);
+    if (isUploading) return;
+
+    resetFiles();
   };
 
   useEffect(() => {
-    if (!file) return;
+    if (!isOpen) {
+      resetFiles();
+      return;
+    }
 
-    setImageFile(file);
-  }, [file]);
+    setImageFile(initialFile);
+    setImageCroppedFile(null);
+  }, [isOpen, initialFile]);
 
   return (
     <Modal
@@ -91,9 +106,8 @@ export default function UserImageCropModal({
         ),
       }}
       isOpen={isOpen}
-      onClose={handleCancel}
+      onClose={handleClose}
     >
-      {/* Head */}
       <div
         className={clsx(
           'flex justify-between items-center gap-4',
@@ -116,38 +130,80 @@ export default function UserImageCropModal({
         <button
           className={clsx('flex justify-center items-center', 'w-8 h-8')}
           type="button"
-          onClick={handleCancel}
+          disabled={isUploading}
+          onClick={handleClose}
         >
           <IconClose1 className="min-w-3.5 w-3.5 h-3.5" />
         </button>
       </div>
-      {/* Body */}
-      <div className={clsx('overflow-y-auto', 'flex-1')}>
-        {imageFile ? (
+      <div className={clsx('relative overflow-y-auto', 'flex-1')}>
+        {imageCroppedFile ? (
           <>
             <div
-              className={clsx('flex justify-between items-center', 'py-4 px-6')}
+              className={clsx(
+                'flex justify-between items-center gap-4',
+                'py-4 px-6',
+              )}
             >
               <div className="font-jetbrains-mono leading-none truncate">
-                {imageCroppedFile ? imageCroppedFile.name : imageFile.name}
+                {imageCroppedFile.name}
               </div>
-              <button type="button" onClick={handleSelectAnotherFile}>
+              <button
+                type="button"
+                disabled={isUploading}
+                onClick={handleSelectAnotherFile}
+              >
+                <IconClose1 className="min-w-3.5 w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div
+              className={clsx(
+                'flex justify-center items-center',
+                'w-full h-100',
+              )}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                className="w-auto h-80"
+                src={imagePreview}
+                alt="Image Cropper Preview"
+              />
+            </div>
+          </>
+        ) : imageFile ? (
+          <>
+            <div
+              className={clsx(
+                'flex justify-between items-center gap-4',
+                'py-4 px-6',
+              )}
+            >
+              <div className="font-jetbrains-mono leading-none truncate">
+                {imageFile.name}
+              </div>
+              <button
+                type="button"
+                disabled={isUploading}
+                onClick={handleSelectAnotherFile}
+              >
                 <IconClose1 className="min-w-3.5 w-3.5 h-3.5" />
               </button>
             </div>
             <ImageCropper
               imageFile={imageFile}
               size={{ width: 300, height: 300 }}
+              disabled={isUploading}
+              defaultCropShape="round"
               onCropFile={(result) => {
                 setImageCroppedFile(result.file);
+                setImagePreview(result.url);
               }}
             />
           </>
         ) : (
-          <div className="w-full h-100 p-6">
-            <ImageDropZone
-              onFileSelect={setImageFile}
-              renderChild={(isDragging) => (
+          <div className={clsx('w-full h-100', 'p-6')}>
+            <ImageDropZone disabled={isUploading} onFileSelect={setImageFile}>
+              {({ isDragging }) => (
                 <div
                   className={clsx(
                     'flex flex-col justify-center items-center gap-2',
@@ -166,11 +222,21 @@ export default function UserImageCropModal({
                   </div>
                 </div>
               )}
-            />
+            </ImageDropZone>
+          </div>
+        )}
+        {isUploading && (
+          <div
+            className={clsx(
+              'absolute z-10 inset-0',
+              'flex justify-center items-center',
+              'bg-black/40',
+            )}
+          >
+            <LoaderSpinner />
           </div>
         )}
       </div>
-      {/* Foot */}
       <div
         className={clsx(
           'flex justify-end items-center gap-4',
@@ -181,17 +247,17 @@ export default function UserImageCropModal({
         )}
       >
         <Button
-          className=""
           buttonStyle="secondary"
           type="button"
           text="Cancel"
-          onClick={handleCancel}
+          disabled={isUploading}
+          onClick={handleClose}
         />
         <Button
-          className=""
           buttonStyle="primary"
           type="button"
           text={isUploading ? 'Saving...' : 'Save Profile Image'}
+          icon={isUploading && <LoaderSpinner className="min-w-4 w-4! h-4!" />}
           disabled={!imageCroppedFile || isUploading}
           onClick={handleSaveProfileImage}
         />
