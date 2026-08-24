@@ -1,6 +1,7 @@
 import { apiClient } from '@/api/api';
 
 import type { Pagination } from '@/types/generic.types';
+import type { Notification } from '@/types/notifications.types';
 import type { User, UserChangePasswordDto, UserDto } from '@/types/user.types';
 
 export const changeMyPassword = (payload: UserChangePasswordDto) => {
@@ -50,6 +51,26 @@ export const getUsers = ({
 
 export const getUser = (userId: string) => {
   return apiClient<{ user: User }>(`/users/${userId}`, {
+    method: 'GET',
+  });
+};
+
+export const getUserNotifications = ({
+  page = 1,
+  limit = 20,
+}: {
+  page?: number;
+  limit?: number;
+}) => {
+  const params = new URLSearchParams();
+
+  params.set('page', String(page));
+  params.set('limit', String(limit));
+
+  return apiClient<{
+    notifications: Notification[];
+    pagination: Pagination;
+  }>(`/notifications?${params.toString()}`, {
     method: 'GET',
   });
 };
