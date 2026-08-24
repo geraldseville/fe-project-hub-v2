@@ -10,15 +10,23 @@ import type { TaskPriority } from '@/types/task.types';
 import { IconFlag1 } from '@/components/svgs/icons';
 
 interface TaskPriorityUIProps {
+  className?: string;
   priority: TaskPriority;
 }
 
-export default function TaskPriorityUI({ priority }: TaskPriorityUIProps) {
+export default function TaskPriorityUI({
+  className,
+  priority,
+}: TaskPriorityUIProps) {
   const styles = TASK_PRIORITY_COLORS[priority];
 
   return (
     <div
-      className={clsx('flex justify-center items-center gap-2', 'w-fit')}
+      className={clsx(
+        'inline-flex justify-center items-center gap-2',
+        'w-fit',
+        className,
+      )}
       style={
         {
           '--task-priority-text-color': styles.hex,
