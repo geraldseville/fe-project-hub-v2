@@ -32,6 +32,10 @@ export default function Breadcrumb({ secondLevel }: BreadcrumbProps) {
       label: 'Team',
       href: '/teams',
     },
+    notifications: {
+      label: 'Notifications',
+      href: '/notifications',
+    },
     settings: {
       label: 'Settings',
       href: '/settings',
