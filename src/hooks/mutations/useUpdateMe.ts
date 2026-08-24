@@ -8,7 +8,11 @@ export function useUpdateMe() {
   return useMutation({
     mutationFn: updateMe,
 
-    async onSuccess() {
+    async onSuccess(response) {
+      if (response.data?.user) {
+        queryClient.setQueryData(['me'], response.data.user);
+      }
+
       await Promise.all([
         queryClient.invalidateQueries({
           queryKey: ['me'],
