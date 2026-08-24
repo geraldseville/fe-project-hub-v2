@@ -2,7 +2,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { getTaskActivities } from '@/api/task.api';
 
-export function useInfiniteTaskActivities(taskId: string, limit = 20) {
+export function useInfiniteTaskActivities(taskId: string, limit: number = 20) {
   return useInfiniteQuery({
     queryKey: ['tasks', taskId, 'task-activities', 'infinite', limit],
 
