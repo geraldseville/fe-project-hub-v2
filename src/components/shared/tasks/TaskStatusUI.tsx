@@ -5,10 +5,11 @@ import { TASK_STATUS_COLORS } from '@/utils/task.utils';
 import type { TaskStatus } from '@/types/task.types';
 
 interface TaskStatusProps {
+  className?: string;
   status: TaskStatus;
 }
 
-export default function TaskStatusUI({ status }: TaskStatusProps) {
+export default function TaskStatusUI({ className, status }: TaskStatusProps) {
   const styles = TASK_STATUS_COLORS[status];
 
   return (
@@ -20,6 +21,7 @@ export default function TaskStatusUI({ status }: TaskStatusProps) {
         'rounded-full',
         styles.bg,
         styles.border,
+        className,
       )}
     >
       <div
