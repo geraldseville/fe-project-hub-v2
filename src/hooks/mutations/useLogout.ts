@@ -9,9 +9,7 @@ export function useLogout() {
     mutationFn: authLogout,
 
     async onSuccess() {
-      queryClient.removeQueries({
-        queryKey: ['me'],
-      });
+      queryClient.clear();
     },
   });
 }
