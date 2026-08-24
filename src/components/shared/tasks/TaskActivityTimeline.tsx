@@ -226,8 +226,9 @@ function RenderActivityMessage({ activity }: { activity: TaskActivity }) {
     case 'STATUS_CHANGED':
       return (
         <>
-          changed status from <TaskStatusUI status={from as TaskStatus} /> to{' '}
-          <TaskStatusUI status={to as TaskStatus} />
+          changed status from{' '}
+          <TaskStatusUI className="mx-1" status={from as TaskStatus} /> to{' '}
+          <TaskStatusUI className="mx-1" status={to as TaskStatus} />
         </>
       );
 
@@ -235,8 +236,8 @@ function RenderActivityMessage({ activity }: { activity: TaskActivity }) {
       return (
         <>
           changed priority from{' '}
-          <TaskPriorityUI priority={from as TaskPriority} /> to{' '}
-          <TaskPriorityUI priority={to as TaskPriority} />
+          <TaskPriorityUI className="mx-1" priority={from as TaskPriority} /> to{' '}
+          <TaskPriorityUI className="mx-1" priority={to as TaskPriority} />
         </>
       );
 
