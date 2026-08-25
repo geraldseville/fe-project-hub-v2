@@ -8,7 +8,6 @@ import ProjectUpdateModal from '@/components/ProjectUpdateModal';
 import Sidebar from '@/components/Sidebar';
 import SmartSearchModal from '@/components/SmartSearchModal';
 import {
-  IconAnalytics2,
   IconCalendar2,
   IconCustomer1,
   IconFolder1,
@@ -89,11 +88,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             href: '/projects',
           },
           // {
-          //   icon: IconAnalytics2,
-          //   label: 'Kanban',
-          //   href: '/kanban',
-          // },
-          // {
           //   icon: IconCalendar2,
           //   label: 'Calendar',
           //   href: '/calendar',
@@ -103,11 +97,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             label: 'Teams',
             href: '/teams',
           },
-          // {
-          //   icon: IconNotifications,
-          //   label: 'Notifications',
-          //   href: '/notifications',
-          // },
+          {
+            icon: IconNotifications,
+            label: 'Notifications',
+            href: '/notifications',
+          },
           {
             icon: IconSettings3,
             label: 'Settings',
