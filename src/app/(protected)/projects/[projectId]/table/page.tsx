@@ -187,7 +187,7 @@ export default function ProjectTablePage() {
                         label: 'Edit',
                         icon: <IconPen2 />,
                         onClick: () => {
-                          openTaskUpdateDrawer(row.id, projectId);
+                          openTaskUpdateDrawer(row.id);
                         },
                       },
                       {

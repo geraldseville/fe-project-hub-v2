@@ -273,7 +273,7 @@ export default function SmartSearchModal({
         break;
 
       case 'task':
-        openTaskUpdateDrawer(result.data.id, result.data.projectId);
+        openTaskUpdateDrawer(result.data.id);
         break;
     }
   };

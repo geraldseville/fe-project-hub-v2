@@ -131,7 +131,7 @@ export default function ProjectKanbanPage() {
         onCardClick={(task) => {
           if (!project) return;
 
-          openTaskUpdateDrawer(task.id, project.id);
+          openTaskUpdateDrawer(task.id);
         }}
         onAddCardClick={(column) => {
           if (!project) return;

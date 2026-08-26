@@ -8,6 +8,7 @@ import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useUpdateTask } from '@/hooks/mutations/useUpdateTask';
 import { useMe } from '@/hooks/queries/useMe';
 import { useProject } from '@/hooks/queries/useProject';
+import { useTask } from '@/hooks/queries/useTask';
 import { useUsers } from '@/hooks/queries/useUsers';
 import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 import { useToastStore } from '@/hooks/ui/useToastStore';
@@ -15,6 +16,7 @@ import { useUiStore } from '@/hooks/ui/useUiStore';
 
 import { COLOR_PRESETS } from '@/utils/color.utils';
 import { DEFAULT_TIMEZONE } from '@/utils/date-time';
+import { PROJECT_DEFAULT_COLOR } from '@/utils/project.utils';
 import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/task.utils';
 import { getFullName } from '@/utils/user.utils';
 
@@ -46,20 +48,21 @@ interface TaskUpdateDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   taskId: string;
-  projectId: string;
 }
 
 export default function TaskUpdateDrawer({
   isOpen,
   onClose,
   taskId,
-  projectId,
 }: TaskUpdateDrawerProps) {
   const toast = useToastStore();
 
   const { data: me } = useMe();
   const { data: { users = [] } = {} } = useUsers();
-  const { data: project, isPending: isProjectPending } = useProject(projectId);
+  const { data: task, isPending: isTaskPending } = useTask(taskId);
+  const { data: project, isPending: isProjectPending } = useProject(
+    task?.projectId ?? '',
+  );
 
   const updateSavedColors = useUpdateSavedColors();
   const updateTask = useUpdateTask();
@@ -67,7 +70,6 @@ export default function TaskUpdateDrawer({
   const openTaskDeleteModal = useUiStore((state) => state.openTaskDeleteModal);
 
   const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
-  const task = project?.tasks.find((task) => task.id === taskId) ?? null;
 
   const [taskStatus, setTaskStatus] = useState<TaskStatus>();
   const [taskPriority, setTaskPriority] = useState<TaskPriority>();
@@ -91,12 +93,12 @@ export default function TaskUpdateDrawer({
   );
 
   const debouncedUpdateTask = useDebouncedCallback((payload: UpdateTaskDto) => {
-    if (!task || !project) return;
+    if (!task) return;
 
     updateTask.mutate(
       {
         taskId: task.id,
-        projectId: project.id,
+        projectId: task.projectId,
         payload,
       },
       {
@@ -162,7 +164,7 @@ export default function TaskUpdateDrawer({
         )}
       >
         <div className="flex justify-between items-center gap-4">
-          {isProjectPending ? (
+          {isTaskPending ? (
             <SkeletonLoading className="w-full h-6" />
           ) : task ? (
             <h2 className={clsx('font-bold', 'text-[20px]')}>
@@ -204,13 +206,16 @@ export default function TaskUpdateDrawer({
             {/* Project */}
             <div className={clsx('flex justify-start items-center', 'py-1')}>
               <LabelField className="min-w-28 w-28" text="Project" />
-              {isProjectPending ? (
+              {isTaskPending ? (
                 <SkeletonLoading className="w-full h-4" />
               ) : project ? (
                 <div className="flex justify-start items-center gap-2">
                   <div
                     className="min-w-4 w-4 h-4 rounded-md"
-                    style={{ backgroundColor: project.primaryColor }}
+                    style={{
+                      backgroundColor:
+                        project.primaryColor ?? PROJECT_DEFAULT_COLOR,
+                    }}
                   />
                   <ProjectTitleUI title={project.title} />
                   <Link

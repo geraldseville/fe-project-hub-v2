@@ -190,7 +190,7 @@ export default function ProjectCalendarPage() {
           );
         }}
         onEventClick={(event) => {
-          openTaskUpdateDrawer(event.id, projectId);
+          openTaskUpdateDrawer(event.id);
         }}
         onEventDragEnd={handleEventDragEnd}
         onCreate={() => {

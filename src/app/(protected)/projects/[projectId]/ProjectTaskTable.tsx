@@ -155,7 +155,7 @@ export default function ProjectTaskTable({
                       label: 'Edit',
                       icon: <IconPen2 />,
                       onClick: () => {
-                        openTaskUpdateDrawer(row.id, projectId);
+                        openTaskUpdateDrawer(row.id);
                       },
                     },
                     {

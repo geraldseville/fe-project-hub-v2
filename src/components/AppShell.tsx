@@ -134,7 +134,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <TaskUpdateDrawer
         isOpen={taskUpdateDrawer.isOpen}
         onClose={closeTaskUpdateDrawer}
-        projectId={taskUpdateDrawer.projectId}
         taskId={taskUpdateDrawer.taskId}
       />
       <TaskDeleteModal

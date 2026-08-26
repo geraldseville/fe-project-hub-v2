@@ -39,9 +39,8 @@ interface UiState {
   taskUpdateDrawer: {
     isOpen: boolean;
     taskId: string;
-    projectId: string;
   };
-  openTaskUpdateDrawer: (taskId: string, projectId: string) => void;
+  openTaskUpdateDrawer: (taskId: string) => void;
   closeTaskUpdateDrawer: () => void;
 
   taskDeleteModal: {
@@ -137,14 +136,12 @@ export const useUiStore = create<UiState>((set) => ({
   taskUpdateDrawer: {
     isOpen: false,
     taskId: '',
-    projectId: '',
   },
-  openTaskUpdateDrawer: (taskId, projectId) =>
+  openTaskUpdateDrawer: (taskId) =>
     set({
       taskUpdateDrawer: {
         isOpen: true,
         taskId,
-        projectId,
       },
     }),
   closeTaskUpdateDrawer: () =>
@@ -152,7 +149,6 @@ export const useUiStore = create<UiState>((set) => ({
       taskUpdateDrawer: {
         isOpen: false,
         taskId: '',
-        projectId: '',
       },
     }),
 
