@@ -27,7 +27,7 @@ import ProjectTaskCounterUI from '@/components/shared/projects/ProjectTaskCounte
 import ProjectTitleUI from '@/components/shared/projects/ProjectTitleUI';
 import {
   IconCalendar2,
-  IconDot,
+  IconCircleFilled,
   IconFolder1,
   IconProfileDetails,
 } from '@/components/svgs/icons';
@@ -40,9 +40,7 @@ export default function TeamPage() {
   const { data: user = null, isPending: isUserPending } = useUser(userId);
 
   const userFullName = getFullName(user?.firstName, user?.lastName) || '';
-
   const timezone = user?.timezone ?? DEFAULT_TIMEZONE;
-
   const joinedDate = momentTimezone(user?.createdAt)
     .tz(timezone)
     .format('MMM DD, YYYY');
@@ -132,7 +130,7 @@ export default function TeamPage() {
                 'border border-red-50',
               )}
             >
-              <IconDot className="min-w-2 w-2 h-2" />
+              <IconCircleFilled className="min-w-2 w-2 h-2" />
               <div>ACTIVE</div>
             </div>
           </div>
@@ -159,7 +157,7 @@ export default function TeamPage() {
                   'border-b border-[#464554]',
                 )}
               >
-                <IconFolder1 className="min-w-5 w-5 h-auto" />
+                <IconFolder1 className="w-auto h-3.5" />
                 <div className="font-hanken-grotesk text-forground">
                   Projects
                 </div>
@@ -194,7 +192,7 @@ export default function TeamPage() {
                 <SkeletonLoading className="w-full h-20" />
               ) : visibleProjects.length > 0 ? (
                 <div className="flex flex-col gap-6">
-                  {visibleProjects.map((projectItem, projectIndex) => {
+                  {visibleProjects.map((projectItem) => {
                     const startEndDate =
                       momentTimezone(projectItem.startDate)
                         .tz(timezone)
@@ -263,7 +261,7 @@ export default function TeamPage() {
                   })}
                 </div>
               ) : (
-                <div className="text-center">No Projects Found</div>
+                <i>No Projects Found</i>
               )}
             </div>
           </div>
@@ -291,7 +289,7 @@ export default function TeamPage() {
                   'border-b border-[#464554]',
                 )}
               >
-                <IconProfileDetails className="min-w-5 w-5 h-auto" />
+                <IconProfileDetails className="w-auto h-3.5" />
                 <div className="font-hanken-grotesk text-forground">
                   Details
                 </div>
