@@ -122,7 +122,7 @@ export default function ProjectsPage() {
         <div className={clsx('flex justify-start items-center gap-4', 'mb-8')}>
           {/* Project Sort */}
           <SingleSelect
-            classNames={{ root: 'max-w-[150px]', trigger: 'h-10!' }}
+            classNames={{ root: 'max-w-[150px]', trigger: 'min-h-10! h-10!' }}
             id="projectSort"
             value={projectSort}
             options={[
