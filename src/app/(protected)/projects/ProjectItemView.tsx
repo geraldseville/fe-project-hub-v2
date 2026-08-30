@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 import clsx from 'clsx';
 
+import { PROJECT_DEFAULT_COLOR } from '@/utils/project.utils';
+
 import type { Project } from '@/types/project.types';
 
 import ThreeDotActions from '@/components/elements/ThreeDotActions';
@@ -34,6 +36,8 @@ export default function ProjectItemView({
   const totalCompletedTasks =
     project.tasks?.filter((item) => item.status === 'DONE').length || 0;
 
+  const projectPrimaryColor = project.primaryColor ?? PROJECT_DEFAULT_COLOR;
+
   return (
     <>
       <Link
@@ -46,7 +50,7 @@ export default function ProjectItemView({
           'border border-l-[6px] border-transparent hover:border-[#464554]',
         )}
         style={{
-          borderLeftColor: project.primaryColor,
+          borderLeftColor: projectPrimaryColor,
         }}
         href={`/projects/${project.id}`}
       >
