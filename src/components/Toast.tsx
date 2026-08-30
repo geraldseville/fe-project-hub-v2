@@ -41,9 +41,9 @@ export default function Toast() {
   return (
     <div
       className={clsx(
-        'fixed z-[9999] bottom-6 right-6',
+        'fixed z-9999 bottom-6 right-6',
         'flex flex-col gap-3',
-        'w-[360px]',
+        'w-90',
       )}
     >
       <AnimatePresence>
@@ -52,15 +52,17 @@ export default function Toast() {
 
           return (
             <motion.div
-              key={toast.id}
               className={clsx(
                 'flex items-center gap-3',
+                'w-90',
+                'py-3 px-4',
                 'rounded-lg',
-                'border border-[#464554]',
                 'bg-[#171F33]',
-                'px-4 py-3',
+                'border border-[#464554]',
+                'shadow-lg',
                 style.container,
               )}
+              key={toast.id}
               initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 100 }}
@@ -76,7 +78,6 @@ export default function Toast() {
               >
                 {toast.icon ?? statusIcon[toast.status]}
               </div>
-
               <p
                 className={clsx(
                   'font-inter font-medium',
@@ -86,7 +87,6 @@ export default function Toast() {
               >
                 {toast.message}
               </p>
-
               <button
                 className={clsx(
                   'flex justify-center items-center',
