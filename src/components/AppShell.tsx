@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { useKeyboardShortcut } from '@/hooks/ui/useKeyboardShortcut';
 import { useUiStore } from '@/hooks/ui/useUiStore';
 
+import Notification from '@/components/Notification';
 import ProjectCreateModal from '@/components/ProjectCreateModal';
 import ProjectUpdateModal from '@/components/ProjectUpdateModal';
 import Sidebar from '@/components/Sidebar';
@@ -112,6 +113,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       />
       {children}
       <Toast />
+      <Notification />
       <SmartSearchModal
         isOpen={smartSearchModal.isOpen}
         onClose={closeSmartSearchModal}
