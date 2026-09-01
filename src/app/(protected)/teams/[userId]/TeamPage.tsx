@@ -33,9 +33,7 @@ import {
 } from '@/components/svgs/icons';
 
 export default function TeamPage() {
-  const params = useParams();
-
-  const userId = params.id as string;
+  const { userId } = useParams<{ userId: string }>();
 
   const { data: user = null, isPending: isUserPending } = useUser(userId);
 
