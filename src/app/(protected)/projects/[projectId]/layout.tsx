@@ -78,7 +78,7 @@ export default function ProjectLayout({
       <div className={clsx('flex justify-between items-center', 'py-4 px-6')}>
         <SegmentedTab
           classNames={{
-            root: 'w-fit! p-0! border-none!',
+            root: 'w-fit! h-10! p-0! border-none!',
             tabItem: 'min-w-[140px]! w-fit!',
             tabItemSelected: 'text-[#060e20]!',
             tabIndicator: 'bg-[#c0c1ff]!',
