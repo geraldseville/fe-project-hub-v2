@@ -118,6 +118,7 @@ export default function CalendarToolbar<T>({
                 root: 'h-10!',
                 tabItem: 'text-[12px] min-w-16! w-16!',
               }}
+              id="calendar-toolbar-view"
               selected={{
                 id: view,
                 label: toCapitalize(view),
