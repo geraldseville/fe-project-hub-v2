@@ -51,7 +51,7 @@ interface SingleSelectProps {
 
 export default function SingleSelect({
   classNames,
-  id,
+  id = 'single-select',
   placeholder = 'Select...',
   searchable = false,
   disabled = false,
@@ -60,8 +60,12 @@ export default function SingleSelect({
   onChange,
 }: SingleSelectProps) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
   const [searchValue, setSearchValue] = useState<string>('');
+
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
+
+  const hasOptions = options.length > 0;
 
   const filteredOptions = useMemo(() => {
     if (!searchable) return options;
@@ -70,12 +74,6 @@ export default function SingleSelect({
       return item.label.toLowerCase().includes(searchValue.toLowerCase());
     });
   }, [searchValue, options, searchable]);
-
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
-
-  const selectedOptionRef = useRef<HTMLButtonElement | null>(null);
-
-  const hasOptions = options.length > 0;
 
   const handleSelect = (selectedValue: SelectOption) => {
     onChange(selectedValue);
@@ -125,9 +123,7 @@ export default function SingleSelect({
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, { role: 'listbox' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
@@ -163,8 +159,8 @@ export default function SingleSelect({
           'bg-[#060E20]',
           'border border-[#464554]',
           'focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-0 focus:ring-offset-[#060E20]',
-          classNames?.trigger,
           disabled && 'is-disabled bg-[#222A3D]',
+          classNames?.trigger,
         )}
         ref={setReferenceRef}
         type="button"
@@ -210,7 +206,7 @@ export default function SingleSelect({
                     input:
                       'w-full rounded-none !border-none outline-none bg-[#171F33]',
                   }}
-                  id="singleSelectSearch"
+                  id={`single-select-search-${id}`}
                   type="search"
                   ref={searchInputRef}
                   placeholder="Search..."
@@ -259,7 +255,9 @@ export default function SingleSelect({
                       )}
                       ref={isSelected ? selectedOptionRef : null}
                       key={optionItem.id}
+                      id={`single-select-${id}-${optionItem.id}`}
                       type="button"
+                      aria-label={`Select ${optionItem.label}`}
                       onClick={() => handleSelect(optionItem)}
                     >
                       <SelectOptionContent option={optionItem} />
@@ -320,7 +318,12 @@ function SelectOptionContent({
         />
       )}
 
-      <div className="text-white text-sm truncate">
+      <div
+        className={clsx(
+          'text-sm leading-tight truncate',
+          option ? 'text-white' : 'italic text-placeholder',
+        )}
+      >
         {option ? option.label : placeholder}
       </div>
     </>
