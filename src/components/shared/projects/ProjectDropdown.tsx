@@ -35,9 +35,7 @@ export default function ProjectDropdown({ projects }: ProjectDropdownProps) {
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, {
     role: 'dialog',
   });
