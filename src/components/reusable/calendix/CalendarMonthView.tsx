@@ -56,6 +56,7 @@ export default function CalendarMonthView<T>({
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
   const [dropDayIndex, setDropDayIndex] = useState<number | null>(null);
   const [overflowDayIndex, setOverflowDayIndex] = useState<number | null>(null);
+
   const gridRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<MonthDrag<T> | null>(null);
 
@@ -105,17 +106,6 @@ export default function CalendarMonthView<T>({
     setDraggedEventId(null);
     setDropDayIndex(null);
   };
-
-  useEffect(() => {
-    if (overflowDayIndex === null) return;
-
-    const handleDocumentPointerDown = () => setOverflowDayIndex(null);
-    document.addEventListener('pointerdown', handleDocumentPointerDown);
-
-    return () => {
-      document.removeEventListener('pointerdown', handleDocumentPointerDown);
-    };
-  }, [overflowDayIndex]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
@@ -230,24 +220,55 @@ export default function CalendarMonthView<T>({
     return { segments: visibleSegments, overflow };
   };
 
+  useEffect(() => {
+    if (overflowDayIndex === null) return;
+
+    const handleDocumentPointerDown = () => setOverflowDayIndex(null);
+    document.addEventListener('pointerdown', handleDocumentPointerDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handleDocumentPointerDown);
+    };
+  }, [overflowDayIndex]);
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#171F33] text-[#C7C4D7]">
-      <div className="grid grid-cols-7 border-b border-[#464554]/70 bg-[#171F33]">
+    <div
+      className={clsx(
+        'text-[#C7C4D7]',
+        'overflow-hidden',
+        'flex flex-col',
+        'flex-1 min-h-0',
+        'bg-[#171F33]',
+      )}
+    >
+      <div
+        className={clsx(
+          'grid grid-cols-7',
+          'bg-[#171F33]',
+          'border-b border-[#464554]/70',
+        )}
+      >
         {calendarDays.slice(0, WEEK_DAYS).map((day) => (
           <div
+            className={clsx(
+              'text-[#908FA0] text-xs',
+              'flex justify-center items-center h-10',
+              'border-r border-[#464554]/70',
+            )}
             key={day.format('dd')}
-            className="flex h-10 items-center justify-center border-r border-[#464554]/70 font-inter text-xs text-[#908FA0]"
           >
             {day.format('ddd')}
           </div>
         ))}
       </div>
       <div
-        ref={gridRef}
         className={clsx(
-          'relative grid min-h-0 flex-1 grid-cols-7',
+          'relative',
+          'grid grid-cols-7',
+          'flex-1 min-h-0',
           draggedEventId || selection ? 'cursor-grabbing' : 'cursor-crosshair',
         )}
+        ref={gridRef}
         style={{ gridTemplateRows: `repeat(${weekCount}, minmax(0, 1fr))` }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -262,20 +283,25 @@ export default function CalendarMonthView<T>({
             index >= Math.min(selection.anchor, selection.current) &&
             index <= Math.max(selection.anchor, selection.current);
           const dropTarget = dropDayIndex === index;
+
           return (
             <div
-              key={day.format('YYYY-MM-DD')}
               className={clsx(
-                'relative min-h-0 overflow-visible border-b border-r border-[#464554]/70 p-1',
+                'relative overflow-visible',
+                'min-h-0',
+                'p-1',
+                'border-b border-r border-[#464554]/70',
                 isToday && 'bg-[#8083FF]/10',
                 selected && 'bg-[#7AA7FF]/20',
                 dropTarget && 'bg-[#8083FF]/20',
               )}
+              key={day.format('YYYY-MM-DD')}
             >
               <div
                 className={clsx(
-                  'flex justify-center gap-1 font-inter text-xs',
                   isCurrentMonth ? 'text-[#C7C4D7]' : 'text-[#626274]',
+                  'text-xs',
+                  'flex justify-center items-center gap-1',
                 )}
               >
                 {day.date() === 1 && (
@@ -285,8 +311,9 @@ export default function CalendarMonthView<T>({
                 )}
                 <span
                   className={clsx(
+                    'text-[#C0C1FF]',
                     isToday &&
-                      'flex h-6 w-6 items-center justify-center rounded-full bg-[#8083FF]/40 text-[#C0C1FF]',
+                      'flex justify-center items-center w-6 h-6 rounded-full bg-[#8083FF]/40',
                   )}
                 >
                   {day.format('D')}
@@ -296,7 +323,12 @@ export default function CalendarMonthView<T>({
                 index % WEEK_DAYS,
               )?.length ? (
                 <button
-                  className="absolute left-1 right-1 z-30 mt-1 truncate text-left font-inter text-[11px] text-[#AEB7FF] hover:text-white"
+                  className={clsx(
+                    'text-[#AEB7FF] hover:text-white',
+                    'text-[11px] text-left truncate',
+                    'absolute z-30 left-1 right-1',
+                    'mt-1',
+                  )}
                   type="button"
                   onPointerDown={(pointerEvent) =>
                     pointerEvent.stopPropagation()
@@ -325,13 +357,16 @@ export default function CalendarMonthView<T>({
           getRowSegments(rowIndex).segments.map(
             ({ event, start, end, lane }) => (
               <div
-                key={`${event.id}-${rowIndex}`}
                 className={clsx(
-                  'absolute z-20 min-w-0 overflow-hidden rounded-md px-1',
+                  'absolute z-20 overflow-hidden',
+                  'min-w-0',
+                  'px-1',
+                  'rounded-md',
                   draggedEventId === event.id
                     ? 'border border-dashed border-[#8083FF] bg-[#8083FF]/50 opacity-60'
                     : 'border border-[#8083FF] bg-[#8083FF]/30 hover:bg-[#8083FF]/60',
                 )}
+                key={`${event.id}-${rowIndex}`}
                 style={{
                   top: `calc(${(rowIndex * 100) / weekCount}% + ${HEADER_HEIGHT + lane * (EVENT_HEIGHT + EVENT_GAP)}px)`,
                   left: `calc(${(start * 100) / WEEK_DAYS}% + 2px)`,
@@ -340,25 +375,36 @@ export default function CalendarMonthView<T>({
                 }}
                 onPointerDown={(pointerEvent) => {
                   pointerEvent.stopPropagation();
+
                   if (pointerEvent.button !== 0) return;
+
                   pointerEvent.preventDefault();
+
                   const segmentStart = rowIndex * WEEK_DAYS + start;
+
                   dragRef.current = {
                     event,
                     startClientX: pointerEvent.clientX,
                     startClientY: pointerEvent.clientY,
                     startDayIndex: segmentStart,
                   };
+
                   setSelection(null);
                   setDraggedEventId(event.id);
                   setDropDayIndex(segmentStart);
+
                   gridRef.current?.setPointerCapture(pointerEvent.pointerId);
                 }}
               >
                 {renderEvent ? (
                   renderEvent(event)
                 ) : (
-                  <div className="truncate font-inter text-[11px] font-semibold leading-5">
+                  <div
+                    className={clsx(
+                      'font-semibold',
+                      'text-[11px] leading-5 truncate',
+                    )}
+                  >
                     {event.title}
                   </div>
                 )}
@@ -368,7 +414,15 @@ export default function CalendarMonthView<T>({
         )}
         {overflowDayIndex !== null && (
           <div
-            className="absolute z-50 max-h-100 w-64 max-w-[calc(100%-16px)] overflow-y-auto rounded-md border border-[#464554] bg-[#131B2E] p-2 shadow-xl"
+            className={clsx(
+              'absolute z-100 overflow-y-auto',
+              'max-w-[calc(100%-16px)] w-64 max-h-100',
+              'p-2',
+              'rounded-md',
+              'bg-[#131B2E]',
+              'border border-[#464554]',
+              'shadow-xl',
+            )}
             style={{
               left: `calc(${((overflowDayIndex % WEEK_DAYS) * 100) / WEEK_DAYS}% + 4px)`,
               top:
@@ -382,39 +436,56 @@ export default function CalendarMonthView<T>({
             }}
             onPointerDown={(pointerEvent) => pointerEvent.stopPropagation()}
           >
-            <div className="mb-1 border-b border-[#464554] pb-1 font-inter text-xs text-[#908FA0]">
+            <div
+              className={clsx(
+                'text-xs text-[#908FA0]',
+                'mb-1 pb-1',
+                'border-b border-[#464554]',
+              )}
+            >
               {calendarDays[overflowDayIndex].format('dddd, MMM D')}
             </div>
-            {events
-              .filter((event) => {
-                const day = calendarDays[overflowDayIndex];
-                const start = calendarMoment(event.startDate, timezone);
-                const end = calendarMoment(event.endDate, timezone);
-                return (
-                  start.isBefore(day.clone().add(1, 'day')) && end.isAfter(day)
-                );
-              })
-              .map((event) => (
-                <div
-                  className="block w-full min-w-0 truncate rounded px-1 py-0.5 text-left font-inter text-[11px] text-[#C7C4D7] hover:bg-[#8083FF]/30"
-                  key={event.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    setOverflowDayIndex(null);
-                    onEventClick?.(event);
-                  }}
-                  onKeyDown={(keyEvent) => {
-                    if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
-                      keyEvent.preventDefault();
+            <div className="flex flex-col gap-2">
+              {events
+                .filter((event) => {
+                  const day = calendarDays[overflowDayIndex];
+                  const start = calendarMoment(event.startDate, timezone);
+                  const end = calendarMoment(event.endDate, timezone);
+
+                  return (
+                    start.isBefore(day.clone().add(1, 'day')) &&
+                    end.isAfter(day)
+                  );
+                })
+                .map((event) => (
+                  <div
+                    className={clsx(
+                      'text-[#C7C4D7] text-[11px] text-left',
+                      'truncate',
+                      'block',
+                      'min-w-0 w-full',
+                      'rounded',
+                      'hover:bg-[#8083FF]/30',
+                    )}
+                    key={event.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
                       setOverflowDayIndex(null);
                       onEventClick?.(event);
-                    }
-                  }}
-                >
-                  {renderEvent ? renderEvent(event) : event.title}
-                </div>
-              ))}
+                    }}
+                    onKeyDown={(keyEvent) => {
+                      if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+                        keyEvent.preventDefault();
+                        setOverflowDayIndex(null);
+                        onEventClick?.(event);
+                      }
+                    }}
+                  >
+                    {renderEvent ? renderEvent(event) : event.title}
+                  </div>
+                ))}
+            </div>
           </div>
         )}
       </div>
