@@ -3,12 +3,11 @@ name: Playwright E2E Tests
 on:
   push:
     branches:
-      - main
-      - production
+      - master
+
   pull_request:
     branches:
-      - main
-      - production
+      - master
 
 jobs:
   test:
@@ -17,7 +16,6 @@ jobs:
 
     env:
       BASE_URL: https://fe-project-hub-v2.vercel.app
-
       PLAYWRIGHT_USER_EMAIL: ${{ secrets.PLAYWRIGHT_USER_EMAIL }}
       PLAYWRIGHT_USER_PASSWORD: ${{ secrets.PLAYWRIGHT_USER_PASSWORD }}
 
