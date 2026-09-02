@@ -29,7 +29,7 @@ export default function ProjectPriorityUI({
     >
       <IconFlag1
         className={clsx(
-          'text-[var(--task-priority-text-color)]!',
+          'text-(--task-priority-text-color)!',
           'min-w-2.5 w-2.5 h-auto',
         )}
       />
