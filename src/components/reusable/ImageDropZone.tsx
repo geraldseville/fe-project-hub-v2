@@ -36,6 +36,26 @@ export default function ImageDropZone({
 
   const dropState: ImageDropZoneState = { isDragging };
 
+  const content =
+    typeof children === 'function' ? children(dropState) : children;
+
+  const overlay = renderOverlay ? (
+    renderOverlay(dropState)
+  ) : showDragOverlay && isDragging ? (
+    <div
+      className={clsx(
+        'absolute inset-0 z-30',
+        'flex flex-col justify-center items-center',
+        'rounded-[inherit]',
+        'bg-black/70',
+        'border-2 border-dashed border-primary',
+        'pointer-events-none',
+      )}
+    >
+      <IconImage1 className="min-w-5 w-5 h-auto" />
+    </div>
+  ) : null;
+
   const handleFile = (file: File | null) => {
     if (disabled || !file || !file.type.startsWith('image/')) {
       return;
@@ -73,26 +93,6 @@ export default function ImageDropZone({
 
     handleFile(event.dataTransfer.files[0] ?? null);
   };
-
-  const content =
-    typeof children === 'function' ? children(dropState) : children;
-
-  const overlay = renderOverlay ? (
-    renderOverlay(dropState)
-  ) : showDragOverlay && isDragging ? (
-    <div
-      className={clsx(
-        'absolute inset-0 z-30',
-        'flex flex-col justify-center items-center',
-        'rounded-[inherit]',
-        'bg-black/70',
-        'border-2 border-dashed border-primary',
-        'pointer-events-none',
-      )}
-    >
-      <IconImage1 className="min-w-5 w-5 h-auto" />
-    </div>
-  ) : null;
 
   return (
     <div

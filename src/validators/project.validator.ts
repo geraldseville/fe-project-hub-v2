@@ -67,7 +67,7 @@ export const blankProjectForm: ProjectFormInput = {
   title: '',
   description: '',
   status: 'PLANNING',
-  priority: 'MEDIUM',
+  priority: 'LOW',
   startDate: '',
   endDate: '',
   primaryColor: PROJECT_DEFAULT_COLOR,

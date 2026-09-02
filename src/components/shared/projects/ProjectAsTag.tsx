@@ -32,8 +32,8 @@ export default function ProjectAsTag({ title, color }: ProjectAsTagProps) {
         'w-fit',
         'ml-auto py-2 px-2',
         'rounded-lg',
-        'bg-[var(--project-primary)] hover:bg-[var(--project-primary-hover)]',
-        'border border-[var(--project-primary-active)]',
+        'bg-(--project-primary) hover:bg-(--project-primary-hover)',
+        'border border-(--project-primary-active)',
       )}
       style={
         {
@@ -54,13 +54,13 @@ export default function ProjectAsTag({ title, color }: ProjectAsTagProps) {
         className={clsx(
           'min-w-2 5 w-2 5 h-2 5',
           'rounded-full',
-          'bg-[var(--project-secondary-foreground)]',
+          'bg-(--project-secondary-foreground)',
         )}
       />
       <div
         className={clsx(
           'font-jetbrains-mono font-medium',
-          'text-[var(--project-secondary-foreground)] text-[12px] leading-none',
+          'text-(--project-secondary-foreground) text-[12px] leading-none',
         )}
       >
         {title}

@@ -168,9 +168,7 @@ export default function ColorSelector({
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, { role: 'dialog' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([

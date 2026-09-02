@@ -26,10 +26,16 @@ export default function EditableField({
   onSave,
 }: EditableFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-
   const [editing, setEditing] = useState<boolean>(false);
-
   const [draft, setDraft] = useState(value);
+
+  const handleSave = () => {
+    setEditing(false);
+
+    if (draft !== value) {
+      onSave(draft);
+    }
+  };
 
   useEffect(() => {
     setDraft(value);
@@ -41,14 +47,6 @@ export default function EditableField({
       inputRef.current?.select();
     }
   }, [editing]);
-
-  const handleSave = () => {
-    setEditing(false);
-
-    if (draft !== value) {
-      onSave(draft);
-    }
-  };
 
   return (
     <div

@@ -1,11 +1,10 @@
 'use client';
 
-import React, { SetStateAction, useEffect, useMemo, useState } from 'react';
+import React, { SetStateAction, useMemo } from 'react';
 
 import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useMe } from '@/hooks/queries/useMe';
 import { useUsers } from '@/hooks/queries/useUsers';
-import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 
 import { DEFAULT_TIMEZONE } from '@/utils/date-time';
 import {
@@ -30,7 +29,9 @@ import DateTimePicker from '@/components/elements/DateTimePicker';
 import ErrorTextField from '@/components/elements/ErrorTextField';
 import LabelField from '@/components/elements/LabelField';
 import MultiLineField from '@/components/elements/MultiLineField';
-import MultiSelect from '@/components/elements/MultiSelect';
+import MultiSelect, {
+  type SelectOption,
+} from '@/components/elements/MultiSelect';
 import SingleLineField from '@/components/elements/SingleLineField';
 import SingleSelect from '@/components/elements/SingleSelect';
 import ProjectPriorityUI from '@/components/shared/projects/ProjectPriorityUI';
@@ -51,9 +52,9 @@ export default function ProjectForm({
   const { data: { users = [] } = {} } = useUsers();
   const { mutate: updateSavedColors } = useUpdateSavedColors();
 
-  const [savedColors, setSavedColors] = useState<string[]>([]);
-
   const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
+
+  const savedColors = useMemo(() => me?.savedColors ?? [], [me?.savedColors]);
 
   const allColors = useMemo(
     () => [...PROJECT_COLOR_PRESETS, ...savedColors],
@@ -67,28 +68,17 @@ export default function ProjectForm({
 
     const nextColors = [...savedColors, color.hex];
 
-    setSavedColors(nextColors);
-    debounceSavedColors(nextColors);
+    updateSavedColors(nextColors);
   };
-
-  const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
-    updateSavedColors(colors);
-  }, 500);
-
-  useEffect(() => {
-    if (me?.savedColors) {
-      setSavedColors(me.savedColors);
-    }
-  }, [me?.savedColors]);
 
   return (
     <div className="flex flex-wrap gap-6">
       {/* Title */}
       <div className="basis-full">
-        <LabelField id="projectTitle" text="Title" />
+        <LabelField id="project-title" text="Title" />
         <SingleLineField
           classNames={{}}
-          id="projectTitle"
+          id="project-title"
           type="text"
           placeholder="e.g. Project Title"
           value={draftProjectForm.title}
@@ -105,9 +95,10 @@ export default function ProjectForm({
       </div>
       {/* Description */}
       <div className="basis-full">
-        <LabelField id="projectDescription" text="Description" />
+        <LabelField id="project-description" text="Description" />
         <MultiLineField
           classNames={{}}
+          id="project-description"
           placeholder="e.g. brief description of your project..."
           value={draftProjectForm.description}
           onChange={(e) => {
@@ -123,7 +114,7 @@ export default function ProjectForm({
       </div>
       {/* Color */}
       <div className="basis-full">
-        <LabelField id="projectColor" text="Color" />
+        <LabelField id="project-color" text="Color" />
         <ColorSelector
           presetColors={allColors}
           value={draftProjectForm.primaryColor}
@@ -138,9 +129,9 @@ export default function ProjectForm({
       </div>
       {/* Status */}
       <div className="basis-[calc(50%-(24px/2))]">
-        <LabelField id="projectStatus" text="Status" />
+        <LabelField id="project-status" text="Status" />
         <SingleSelect
-          id="projectStatus"
+          id="project-status"
           placeholder="Select Status..."
           value={{
             id: draftProjectForm.status,
@@ -165,9 +156,9 @@ export default function ProjectForm({
       </div>
       {/* Priority */}
       <div className="basis-[calc(50%-(24px/2))]">
-        <LabelField id="projectPriority" text="Priority" />
+        <LabelField id="project-priority" text="Priority" />
         <SingleSelect
-          id="projectPriority"
+          id="project-priority"
           placeholder="Select Priority..."
           value={{
             id: draftProjectForm.priority,
@@ -192,8 +183,9 @@ export default function ProjectForm({
       </div>
       {/* Start Date */}
       <div className="basis-[calc(50%-(24px/2))]">
-        <LabelField id="projectStartDate" text="Start Date" />
+        <LabelField id="project-start-date" text="Start Date" />
         <DateTimePicker
+          id="project-start-date"
           type="date-time"
           placeholder="Select Start Date..."
           formatDate="MMM DD, YYYY"
@@ -211,8 +203,9 @@ export default function ProjectForm({
       </div>
       {/* End Date */}
       <div className="basis-[calc(50%-(24px/2))]">
-        <LabelField id="projectEndDate" text="End Date" />
+        <LabelField id="project-end-date" text="End Date" />
         <DateTimePicker
+          id="project-end-date"
           type="date-time"
           placeholder="Select End Date..."
           formatDate="MMM DD, YYYY"
@@ -230,9 +223,9 @@ export default function ProjectForm({
       </div>
       {/* Members */}
       <div className="w-full">
-        <LabelField id="projectMembers" text="Members" />
-        <MultiSelect
-          id="multiSelect"
+        <LabelField id="project-members" text="Members" />
+        <MultiSelect<User>
+          id="project-members"
           placeholder="Add Members..."
           searchable
           value={users
@@ -244,13 +237,15 @@ export default function ProjectForm({
               value: user.id,
               data: user,
             }))}
-          options={users.map((user: User) => ({
-            id: user.id,
-            image: user.imageUrl ?? '',
-            label: getFullName(user.firstName, user.lastName),
-            value: user.id,
-            data: user,
-          }))}
+          options={
+            users.map((user: User) => ({
+              id: user.id,
+              image: user.imageUrl ?? '',
+              label: getFullName(user.firstName, user.lastName),
+              value: user.id,
+              data: user,
+            })) as SelectOption<User>[]
+          }
           onChange={(selected) => {
             setDraftProjectForm((prev) => ({
               ...prev,

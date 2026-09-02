@@ -24,14 +24,12 @@ export default function ProjectDeleteModal({
   project,
 }: ProjectDeleteModalProps) {
   const toast = useToastStore();
-
   const deleteProject = useDeleteProject();
 
   const [confirmProjectName, setConfirmProjectName] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const isConfirmNameValid = confirmProjectName === project?.title;
-
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const handleDeleteProject = async () => {
     if (!project) return;
@@ -150,7 +148,7 @@ export default function ProjectDeleteModal({
             to confirm.
           </p>
           <SingleLineField
-            // className=""
+            id="project-name-confirmation"
             type="text"
             placeholder={`Type "${project?.title ?? 'title'}" to confirm`}
             value={confirmProjectName}

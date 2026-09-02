@@ -66,8 +66,6 @@ export default function Login() {
         email: loginForm.email,
         password: loginForm.password,
       });
-
-      // router.replace('/dashboard');
     } catch (err) {
       setErrorMessage(
         err instanceof Error ? err.message : 'Unable to sign in.',
@@ -136,7 +134,15 @@ export default function Login() {
           {/* Form */}
           <form className="flex flex-col gap-4" onSubmit={handleLogin}>
             {errorMessage ? (
-              <div className="rounded-lg border border-red-700 bg-red-950/70 px-4 py-3 text-sm text-red-200">
+              <div
+                className={clsx(
+                  'text-red-200 text-sm',
+                  'py-3 px-4',
+                  'rounded-lg',
+                  'bg-red-950/70',
+                  'border border-red-700',
+                )}
+              >
                 {errorMessage}
               </div>
             ) : null}

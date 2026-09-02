@@ -8,7 +8,7 @@ interface LabelFieldProps {
 
 export default function LabelField({
   className,
-  id,
+  id = 'label-field',
   text = 'Label',
 }: LabelFieldProps) {
   return (

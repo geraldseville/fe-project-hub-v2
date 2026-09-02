@@ -26,7 +26,7 @@ interface SegmentedTabProps {
 
 export default function SegmentedTab({
   classNames,
-  id,
+  id = 'segmented-tab',
   disabled = false,
   selected,
   options,
@@ -49,6 +49,7 @@ export default function SegmentedTab({
         disabled && 'is-disabled',
         classNames?.root,
       )}
+      id={id}
     >
       {options.map((tabItem) => {
         const isSelected = selected.id === tabItem.id;
@@ -66,7 +67,9 @@ export default function SegmentedTab({
               tabItem.className,
             )}
             key={tabItem.id}
+            id={`tab-item-${tabItem.id}`}
             type="button"
+            aria-label={tabItem.label || tabItem.id}
             disabled={disabled}
             onClick={() => onSelect(tabItem)}
           >
@@ -77,11 +80,11 @@ export default function SegmentedTab({
             {isSelected && (
               <motion.div
                 className={clsx(
-                  classNames?.tabIndicator,
                   'absolute z-[-1] inset-0',
                   'h-full',
                   'rounded',
                   'bg-[#8083FF]/20',
+                  classNames?.tabIndicator,
                 )}
                 layoutId={`active-view-${componentId}`}
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}

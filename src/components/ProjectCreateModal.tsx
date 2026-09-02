@@ -27,20 +27,14 @@ export default function ProjectCreateModal({
   onClose,
 }: ProjectCreateModalProps) {
   const router = useRouter();
-
   const toast = useToastStore();
-
   const createProject = useCreateProject();
-
-  const isCreatingProjectPending = createProject.isPending;
 
   const [draftProjectForm, setDraftProjectForm] =
     useState<ProjectFormInput>(blankProjectForm);
-
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const validationResult = validateProjectForm(draftProjectForm);
-
   const errors = hasSubmitted ? validationResult.errors : {};
 
   const handleCreateProject = async () => {
@@ -89,11 +83,12 @@ export default function ProjectCreateModal({
   return (
     <Modal
       classNames={{
-        root: clsx(isCreatingProjectPending && 'is-disabled opacity-100!'),
+        root: clsx(createProject.isPending && 'is-disabled opacity-100!'),
         content: 'max-w-5xl! rounded-lg bg-[#1E293B] border border-[#464554]',
       }}
       isOpen={isOpen}
       onClose={handleCancel}
+      aria-labelledby="modal-title"
     >
       <>
         {/* Head */}
@@ -107,26 +102,28 @@ export default function ProjectCreateModal({
           )}
         >
           <div className="flex-1 min-w-0">
-            <div
+            <h2
               className={clsx(
                 'font-hanken-grotesk font-semibold',
                 'text-[#DAE2FD] text-[24px] leading-tight',
               )}
+              id="modal-title"
             >
               Create Project
-            </div>
-            <div
+            </h2>
+            <h6
               className={clsx(
                 'font-inter',
                 'text-[#C7C4D7] leading-tight truncate',
               )}
             >
               Set the core parameters for your new collaborative space.
-            </div>
+            </h6>
           </div>
           <button
             className={clsx('flex justify-center items-center', 'w-8 h-8')}
             type="button"
+            aria-label="Close modal"
             onClick={onClose}
           >
             <IconClose1 className="min-w-3.5 w-3.5 h-3.5" />
@@ -155,13 +152,15 @@ export default function ProjectCreateModal({
             buttonStyle="secondary"
             type="button"
             text="Cancel"
+            aria-label="Project Cancel"
             onClick={handleCancel}
           />
           <Button
             className=""
             buttonStyle="primary"
             type="button"
-            text={isCreatingProjectPending ? 'Creating...' : 'Create Project'}
+            aria-label="Project Create"
+            text={createProject.isPending ? 'Creating...' : 'Create Project'}
             onClick={handleCreateProject}
           />
         </div>

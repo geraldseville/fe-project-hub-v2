@@ -63,13 +63,11 @@ export default function TaskUpdateDrawer({
   const { data: project, isPending: isProjectPending } = useProject(
     task?.projectId ?? '',
   );
+  const { mutate: updateSavedColors } = useUpdateSavedColors();
 
-  const updateSavedColors = useUpdateSavedColors();
   const updateTask = useUpdateTask();
   const createTaskComment = useCreateTaskComment();
   const openTaskDeleteModal = useUiStore((state) => state.openTaskDeleteModal);
-
-  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
 
   const [taskStatus, setTaskStatus] = useState<TaskStatus>();
   const [taskPriority, setTaskPriority] = useState<TaskPriority>();
@@ -85,7 +83,10 @@ export default function TaskUpdateDrawer({
     task?.description ?? '',
   );
   const [taskAddComment, setAddTaskComment] = useState<string>('');
-  const [savedColors, setSavedColors] = useState<string[]>([]);
+
+  const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
+
+  const savedColors = useMemo(() => me?.savedColors ?? [], [me?.savedColors]);
 
   const allColors = useMemo(
     () => [...COLOR_PRESETS, ...savedColors],
@@ -119,23 +120,12 @@ export default function TaskUpdateDrawer({
 
     const nextColors = [...savedColors, color.hex];
 
-    setSavedColors(nextColors);
-    debounceSavedColors(nextColors);
+    updateSavedColors(nextColors);
   };
-
-  const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
-    updateSavedColors.mutate(colors);
-  }, 1000);
 
   const handleCancel = () => {
     onClose();
   };
-
-  useEffect(() => {
-    if (me?.savedColors) {
-      setSavedColors(me.savedColors);
-    }
-  }, [me?.savedColors]);
 
   useEffect(() => {
     if (!task) return;
@@ -238,7 +228,7 @@ export default function TaskUpdateDrawer({
               {isProjectPending ? null : taskStatus ? (
                 <SingleSelect
                   classNames={{ optionSelected: 'border-l-transparent!' }}
-                  id="taskStatus"
+                  id="task-status"
                   placeholder="Select Status..."
                   value={{
                     id: taskStatus,
@@ -272,8 +262,8 @@ export default function TaskUpdateDrawer({
               {isProjectPending ? null : taskPriority ? (
                 <SingleSelect
                   classNames={{ optionSelected: 'border-l-transparent!' }}
-                  id="taskPriority"
-                  placeholder="Select Status..."
+                  id="task-priority"
+                  placeholder="Select Priority..."
                   value={{
                     id: taskPriority,
                     custom: <TaskPriorityUI priority={taskPriority} />,
@@ -355,7 +345,7 @@ export default function TaskUpdateDrawer({
               <LabelField className="min-w-28 w-28" text="Assignee" />
               {isProjectPending ? null : users ? (
                 <SingleSelect
-                  id="singleSelect"
+                  id="task-assignee"
                   placeholder={
                     taskAssigneeId ? 'Update Assignee...' : 'Add Assignee...'
                   }
@@ -434,13 +424,13 @@ export default function TaskUpdateDrawer({
         </div>
         {/* Task Activities */}
         <div className={clsx('pt-4 pb-4', 'border-t border-[#464554]')}>
-          <LabelField id="taskActivity" text="Activity & Comments" />
+          <LabelField id="task-activity" text="Activity & Comments" />
           <div className="relative mb-4 rounded-lg bg-[#060E20] border border-[#464554]">
             <MultiLineField
               classNames={{
                 input: 'min-h-24! border-none!',
               }}
-              id="taskActivity"
+              id="task-activity"
               placeholder="Write a comment..."
               value={taskAddComment}
               onChange={(e) => {

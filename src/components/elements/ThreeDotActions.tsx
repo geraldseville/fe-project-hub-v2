@@ -57,9 +57,7 @@ export default function ThreeDotActions({
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, { role: 'listbox' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
@@ -138,6 +136,7 @@ export default function ThreeDotActions({
                     'bg-transparent hover:bg-[#8083FF]/20',
                   )}
                   key={`action-${item.id}`}
+                  id={`three-dot-action-${item.id}`}
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();

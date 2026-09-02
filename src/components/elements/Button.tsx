@@ -8,6 +8,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   type?: 'submit' | 'button';
   icon?: React.ReactNode;
   text?: string;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
   disabled?: boolean;
   onClick?: () => void;
 }
@@ -20,6 +22,8 @@ export default function Button({
   text = 'button',
   onClick,
   disabled = false,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledby,
   ...restProps
 }: ButtonProps) {
   const buttonStyles = {
@@ -64,6 +68,8 @@ export default function Button({
         disabled && 'is-disabled',
       )}
       type={type}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
       onClick={onClick}
       disabled={disabled}
       {...restProps}

@@ -22,17 +22,17 @@ import SingleLineField from '@/components/elements/SingleLineField';
 import Avatar from '@/components/reusable/Avatar';
 import { IconAngleDown, IconClose1, IconSearch } from '@/components/svgs/icons';
 
-type SelectOption = {
+export type SelectOption<T = unknown> = {
   id: string;
   color?: string;
   icon?: React.ReactNode;
   image?: string;
   label: string;
   value: string;
-  data?: any;
+  data: T;
 };
 
-interface MultiSelectProps {
+interface MultiSelectProps<T = unknown> {
   classNames?: {
     root?: string;
     trigger?: string;
@@ -45,12 +45,12 @@ interface MultiSelectProps {
   placeholder?: string;
   searchable?: boolean;
   disabled?: boolean;
-  value?: SelectOption[] | null;
-  options?: SelectOption[];
-  onChange: (selected: SelectOption[]) => void;
+  value?: SelectOption<T>[] | null;
+  options?: SelectOption<T>[];
+  onChange: (selected: SelectOption<T>[]) => void;
 }
 
-export default function MultiSelect({
+export default function MultiSelect<T = unknown>({
   classNames,
   id,
   placeholder = 'Select...',
@@ -59,26 +59,24 @@ export default function MultiSelect({
   value,
   options = [],
   onChange,
-}: MultiSelectProps) {
+}: MultiSelectProps<T>) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
   const [searchValue, setSearchValue] = useState<string>('');
-
-  const filteredOptions = useMemo(() => {
-    if (!searchable) return options;
-
-    return options.filter((item: SelectOption) => {
-      return item.label.toLowerCase().includes(searchValue.toLowerCase());
-    });
-  }, [searchValue, options, searchable]);
 
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const hasValues = value && value.length > 0;
-
   const hasOptions = options.length > 0;
 
-  const handleSelect = (selectedValue: SelectOption) => {
+  const filteredOptions = useMemo(() => {
+    if (!searchable) return options;
+
+    return options.filter((item: SelectOption<T>) => {
+      return item.label.toLowerCase().includes(searchValue.toLowerCase());
+    });
+  }, [searchValue, options, searchable]);
+
+  const handleSelect = (selectedValue: SelectOption<T>) => {
     const currentValue = value ?? [];
     const isAlreadySelected = currentValue.some(
       (item) => item.id === selectedValue.id,
@@ -133,9 +131,7 @@ export default function MultiSelect({
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, { role: 'listbox' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
@@ -171,8 +167,8 @@ export default function MultiSelect({
           'bg-[#060E20]',
           'border border-[#464554]',
           'focus:outline-none focus:ring-1 focus:ring-white focus:ring-offset-0 focus:ring-offset-[#060E20]',
-          classNames?.trigger,
           disabled && 'is-disabled bg-[#222A3D]',
+          classNames?.trigger,
         )}
         ref={setReferenceRef}
         type="button"
@@ -231,7 +227,9 @@ export default function MultiSelect({
                   />
                 )}
                 {/* Label */}
-                <div className="text-white text-sm leading-tight truncate">
+                <div
+                  className={clsx('text-white text-sm leading-tight truncate')}
+                >
                   {item.label}
                 </div>
                 {/* Remove Button with stopPropagation */}
@@ -251,7 +249,13 @@ export default function MultiSelect({
               </div>
             ))
           ) : (
-            <div className="text-placeholder text-sm leading-tight truncate">
+            <div
+              className={clsx(
+                'italic',
+                'text-placeholder text-sm',
+                'leading-tight truncate',
+              )}
+            >
               {placeholder}
             </div>
           )}
@@ -294,7 +298,7 @@ export default function MultiSelect({
                     input:
                       'w-full rounded-none !border-none outline-none bg-[#171F33]',
                   }}
-                  id="multiSelectSearch"
+                  id={`multi-select-search-${id}`}
                   type="search"
                   ref={searchInputRef}
                   placeholder="Search..."
@@ -343,7 +347,9 @@ export default function MultiSelect({
                         classNames?.option,
                       )}
                       key={optionItem.id}
+                      id={`multi-select-${id}-${optionItem.id}`}
                       type="button"
+                      aria-label={`Select ${optionItem.label}`}
                       onClick={() => handleSelect(optionItem)}
                     >
                       {/* Color */}

@@ -23,16 +23,13 @@ export default function TaskDeleteModal({
   taskId,
 }: TaskDeleteModalProps) {
   const toast = useToastStore();
-
   const { data: task } = useTask(taskId);
-
   const deleteTask = useDeleteTask();
 
   const [confirmTaskName, setConfirmTaskName] = useState<string>('');
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const isConfirmNameValid = confirmTaskName === task?.title;
-
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   const handleDeleteTask = async () => {
     if (!task) return;
@@ -151,7 +148,7 @@ export default function TaskDeleteModal({
             to confirm.
           </p>
           <SingleLineField
-            // className=""
+            id="task-name-confirmation"
             type="text"
             placeholder={`Type "${task?.title ?? 'title'}" to confirm`}
             value={confirmTaskName}

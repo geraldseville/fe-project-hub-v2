@@ -33,7 +33,6 @@ export default function Sidebar({ navList, onNewProject }: SidebarProps) {
   const activeIndex = navList?.findIndex((item) =>
     pathname.includes(item.href),
   );
-
   const [activeMenuIndicator, setActiveMenuIndicator] = useState({
     top: 0,
     height: 36,

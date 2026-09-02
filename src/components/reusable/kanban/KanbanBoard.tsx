@@ -54,9 +54,7 @@ export default function KanbanBoard<T>({
   onAddCardClick,
 }: KanbanBoardProps<T>) {
   const [columns, setColumns] = useState<KanbanColumnData<T>[]>(initialColumns);
-
   const [activeItem, setActiveItem] = useState<T | null>(null);
-
   const [activeItemId, setActiveItemId] = useState<string | number | null>(
     null,
   );

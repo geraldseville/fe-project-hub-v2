@@ -33,18 +33,13 @@ export default function ImageStack({
       ? { src: img, alt: `Image ${index + 1}` }
       : { src: img.src, alt: img.alt || `Image ${index + 1}` },
   );
-
   const totalCount = normalizedImages.length;
-
   // Show maxDisplay items. If total exceeds maxDisplay, reserve last spot for remaining counter
   const hasMore = totalCount > maxDisplay;
-
   const visibleImagesCount = hasMore
     ? maxDisplay - 1
     : Math.min(totalCount, maxDisplay);
-
   const remainingCount = totalCount - visibleImagesCount;
-
   const visibleImages = normalizedImages.slice(0, visibleImagesCount);
 
   return (
@@ -53,13 +48,13 @@ export default function ImageStack({
       {visibleImages.map((img, idx) => (
         <div
           className={clsx(
-            className?.item,
             'relative overflow-hidden',
             'shrink-0',
             'rounded-full',
             'bg-gray-100',
             'border border-white',
             'shadow-sm',
+            className?.item,
           )}
           key={idx}
           style={{ width: `${size}px`, height: `${size}px` }}
@@ -76,7 +71,6 @@ export default function ImageStack({
           ) : (
             <div
               className={clsx(
-                className?.item,
                 'font-inter font-bold',
                 'text-white text-[12px]',
                 'relative',
@@ -86,6 +80,7 @@ export default function ImageStack({
                 'border border-white',
                 'shadow-sm',
                 'select-none',
+                className?.item,
               )}
               style={{ width: `${size}px`, height: `${size}px` }}
             >
@@ -98,7 +93,6 @@ export default function ImageStack({
       {hasMore && (
         <div
           className={clsx(
-            className?.item,
             'font-inter font-bold',
             'text-white text-[12px]',
             'relative',
@@ -108,6 +102,7 @@ export default function ImageStack({
             'border border-white',
             'shadow-sm',
             'select-none',
+            className?.item,
           )}
           style={{ width: `${size}px`, height: `${size}px` }}
         >
