@@ -59,9 +59,8 @@ export default function TaskCreateDrawer({
   const { data: { users = [], pagination } = {} } = useUsers();
 
   const createTask = useCreateTask();
-  const updateSavedColors = useUpdateSavedColors();
+  const { mutate: updateSavedColors } = useUpdateSavedColors();
 
-  const [savedColors, setSavedColors] = useState<string[]>([]);
   const [draftTaskForm, setDraftTaskForm] = useState<TaskFormInput>({
     ...blankTaskForm,
     ...(initialTask ?? {}),
@@ -73,14 +72,17 @@ export default function TaskCreateDrawer({
   const validationResult = validateTaskForm(draftTaskForm);
   const errors = hasSubmitted ? validationResult.errors : {};
 
+  // const [savedColors, setSavedColors] = useState<string[]>([]);
+  const savedColors = useMemo(() => me?.savedColors ?? [], [me?.savedColors]);
+
   const allColors = useMemo(
     () => [...COLOR_PRESETS, ...savedColors],
     [savedColors],
   );
 
-  const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
-    updateSavedColors.mutate(colors);
-  }, 1000);
+  // const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
+  //   updateSavedColors.mutate(colors);
+  // }, 1000);
 
   const handleAddColor = (color: SelectedColor) => {
     if (savedColors.includes(color.hex)) {
@@ -89,8 +91,10 @@ export default function TaskCreateDrawer({
 
     const nextColors = [...savedColors, color.hex];
 
-    setSavedColors(nextColors);
-    debounceSavedColors(nextColors);
+    // setSavedColors(nextColors);
+    // debounceSavedColors(nextColors);
+
+    updateSavedColors(nextColors);
   };
 
   const handleCreateTask = async () => {
@@ -131,11 +135,11 @@ export default function TaskCreateDrawer({
     onClose();
   };
 
-  useEffect(() => {
-    if (me?.savedColors) {
-      setSavedColors(me.savedColors);
-    }
-  }, [me?.savedColors]);
+  // useEffect(() => {
+  //   if (me?.savedColors) {
+  //     setSavedColors(me.savedColors);
+  //   }
+  // }, [me?.savedColors]);
 
   useEffect(() => {
     if (!projectId) return;
@@ -177,10 +181,10 @@ export default function TaskCreateDrawer({
         <div className="flex flex-wrap gap-6">
           {/* Title */}
           <div className="basis-full">
-            <LabelField id="taskTitle" text="Task Title" />
+            <LabelField id="task-title" text="Task Title" />
             <SingleLineField
               classNames={{}}
-              id="taskTitle"
+              id="task-title"
               type="text"
               placeholder="e.g. Task Title"
               value={draftTaskForm.title}
@@ -197,9 +201,9 @@ export default function TaskCreateDrawer({
           </div>
           {/* Description */}
           <div className="basis-full">
-            <LabelField id="taskDescription" text="Task Description" />
+            <LabelField id="task-description" text="Task Description" />
             <MultiLineField
-              classNames={{}}
+              id="task-description"
               placeholder="e.g. brief description of your task..."
               value={draftTaskForm?.description ?? ''}
               onChange={(e) => {
@@ -215,9 +219,9 @@ export default function TaskCreateDrawer({
           </div>
           {/* Status */}
           <div className="basis-full">
-            <LabelField id="taskStatus" text="Status" />
+            <LabelField id="task-status" text="Status" />
             <SingleSelect
-              id="taskStatus"
+              id="task-status"
               placeholder="Select Status..."
               value={{
                 id: draftTaskForm.status,
@@ -242,9 +246,9 @@ export default function TaskCreateDrawer({
           </div>
           {/* Priority */}
           <div className="basis-full">
-            <LabelField id="taskPriority" text="Priority" />
+            <LabelField id="task-priority" text="Priority" />
             <SingleSelect
-              id="taskPriority"
+              id="task-priority"
               placeholder="Select Priority..."
               value={{
                 id: draftTaskForm.priority,
@@ -269,8 +273,9 @@ export default function TaskCreateDrawer({
           </div>
           {/* Start Date */}
           <div className="basis-full">
-            <LabelField id="taskStartDate" text="Start Date" />
+            <LabelField id="task-start-date" text="Start Date" />
             <DateTimePicker
+              id="task-start-date"
               type="date-time"
               formatDate="MMM DD, YYYY"
               placeholder="Select Start Date..."
@@ -293,8 +298,9 @@ export default function TaskCreateDrawer({
           </div>
           {/* End Date */}
           <div className="basis-full">
-            <LabelField id="taskEndDate" text="End Date" />
+            <LabelField id="task-end-date" text="End Date" />
             <DateTimePicker
+              id="task-end-date"
               type="date-time"
               formatDate="MMM DD, YYYY"
               placeholder="Select End Date..."
@@ -317,7 +323,7 @@ export default function TaskCreateDrawer({
           </div>
           {/* Color */}
           <div className="basis-full">
-            <LabelField id="taskColor" text="Color" />
+            <LabelField id="task-color" text="Color" />
             <ColorSelector
               presetColors={allColors}
               value={draftTaskForm.primaryColor ?? ''}
@@ -333,9 +339,9 @@ export default function TaskCreateDrawer({
           </div>
           {/* Assignee */}
           <div className="basis-full">
-            <LabelField id="taskAssignee" text="Assignee" />
+            <LabelField id="task-assignee" text="Assignee" />
             <SingleSelect
-              id="singleSelect"
+              id="task-assignee"
               placeholder="Add Assignee..."
               searchable
               value={(() => {
