@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import clsx from 'clsx';
 
@@ -30,6 +30,14 @@ const WEEK_DAYS = 7;
 const EVENT_HEIGHT = 22;
 const EVENT_GAP = 2;
 const HEADER_HEIGHT = 34;
+const MAX_VISIBLE_EVENTS = 2;
+
+type MonthSegment<T> = {
+  event: CalendarEvent<T>;
+  start: number;
+  end: number;
+  lane: number;
+};
 
 export default function CalendarMonthView<T>({
   events = [],
@@ -47,6 +55,7 @@ export default function CalendarMonthView<T>({
   } | null>(null);
   const [draggedEventId, setDraggedEventId] = useState<string | null>(null);
   const [dropDayIndex, setDropDayIndex] = useState<number | null>(null);
+  const [overflowDayIndex, setOverflowDayIndex] = useState<number | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<MonthDrag<T> | null>(null);
 
@@ -96,6 +105,17 @@ export default function CalendarMonthView<T>({
     setDraggedEventId(null);
     setDropDayIndex(null);
   };
+
+  useEffect(() => {
+    if (overflowDayIndex === null) return;
+
+    const handleDocumentPointerDown = () => setOverflowDayIndex(null);
+    document.addEventListener('pointerdown', handleDocumentPointerDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handleDocumentPointerDown);
+    };
+  }, [overflowDayIndex]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
@@ -188,12 +208,26 @@ export default function CalendarMonthView<T>({
       return [{ event, start, end }];
     });
     const laneEnds: number[] = [];
-    return segments.map((segment) => {
+    const overflow = new Map<number, CalendarEvent<T>[]>();
+    const visibleSegments: MonthSegment<T>[] = [];
+
+    segments.forEach((segment) => {
       let lane = 0;
       while ((laneEnds[lane] ?? 0) > segment.start) lane += 1;
+      if (lane >= MAX_VISIBLE_EVENTS) {
+        for (let day = segment.start; day < segment.end; day += 1) {
+          const dayEvents = overflow.get(day) ?? [];
+          dayEvents.push(segment.event);
+          overflow.set(day, dayEvents);
+        }
+        return;
+      }
+
       laneEnds[lane] = segment.end;
-      return { ...segment, lane };
+      visibleSegments.push({ ...segment, lane });
     });
+
+    return { segments: visibleSegments, overflow };
   };
 
   return (
@@ -232,7 +266,7 @@ export default function CalendarMonthView<T>({
             <div
               key={day.format('YYYY-MM-DD')}
               className={clsx(
-                'relative min-h-0 overflow-hidden border-b border-r border-[#464554]/70 p-1',
+                'relative min-h-0 overflow-visible border-b border-r border-[#464554]/70 p-1',
                 isToday && 'bg-[#8083FF]/10',
                 selected && 'bg-[#7AA7FF]/20',
                 dropTarget && 'bg-[#8083FF]/20',
@@ -258,51 +292,130 @@ export default function CalendarMonthView<T>({
                   {day.format('D')}
                 </span>
               </div>
+              {getRowSegments(Math.floor(index / WEEK_DAYS)).overflow.get(
+                index % WEEK_DAYS,
+              )?.length ? (
+                <button
+                  className="absolute left-1 right-1 z-30 mt-1 truncate text-left font-inter text-[11px] text-[#AEB7FF] hover:text-white"
+                  type="button"
+                  onPointerDown={(pointerEvent) =>
+                    pointerEvent.stopPropagation()
+                  }
+                  onClick={(clickEvent) => {
+                    clickEvent.stopPropagation();
+                    setOverflowDayIndex(index);
+                  }}
+                  style={{
+                    top: `${HEADER_HEIGHT + MAX_VISIBLE_EVENTS * (EVENT_HEIGHT + EVENT_GAP) - 2}px`,
+                  }}
+                >
+                  +
+                  {
+                    getRowSegments(Math.floor(index / WEEK_DAYS)).overflow.get(
+                      index % WEEK_DAYS,
+                    )?.length
+                  }{' '}
+                  more
+                </button>
+              ) : null}
             </div>
           );
         })}
         {Array.from({ length: weekCount }, (_, rowIndex) =>
-          getRowSegments(rowIndex).map(({ event, start, end, lane }) => (
-            <div
-              key={`${event.id}-${rowIndex}`}
-              className={clsx(
-                'absolute z-20 min-w-0 overflow-hidden rounded-md px-1',
-                draggedEventId === event.id
-                  ? 'border border-dashed border-[#8083FF] bg-[#8083FF]/50 opacity-60'
-                  : 'border border-[#8083FF] bg-[#8083FF]/30 hover:bg-[#8083FF]/60',
-              )}
-              style={{
-                top: `calc(${(rowIndex * 100) / weekCount}% + ${HEADER_HEIGHT + lane * (EVENT_HEIGHT + EVENT_GAP)}px)`,
-                left: `calc(${(start * 100) / WEEK_DAYS}% + 2px)`,
-                width: `calc(${((end - start) * 100) / WEEK_DAYS}% - 4px)`,
-                height: `${EVENT_HEIGHT}px`,
-              }}
-              onPointerDown={(pointerEvent) => {
-                pointerEvent.stopPropagation();
-                if (pointerEvent.button !== 0) return;
-                pointerEvent.preventDefault();
-                const segmentStart = rowIndex * WEEK_DAYS + start;
-                dragRef.current = {
-                  event,
-                  startClientX: pointerEvent.clientX,
-                  startClientY: pointerEvent.clientY,
-                  startDayIndex: segmentStart,
-                };
-                setSelection(null);
-                setDraggedEventId(event.id);
-                setDropDayIndex(segmentStart);
-                gridRef.current?.setPointerCapture(pointerEvent.pointerId);
-              }}
-            >
-              {renderEvent ? (
-                renderEvent(event)
-              ) : (
-                <div className="truncate font-inter text-[11px] font-semibold leading-5">
-                  {event.title}
-                </div>
-              )}
+          getRowSegments(rowIndex).segments.map(
+            ({ event, start, end, lane }) => (
+              <div
+                key={`${event.id}-${rowIndex}`}
+                className={clsx(
+                  'absolute z-20 min-w-0 overflow-hidden rounded-md px-1',
+                  draggedEventId === event.id
+                    ? 'border border-dashed border-[#8083FF] bg-[#8083FF]/50 opacity-60'
+                    : 'border border-[#8083FF] bg-[#8083FF]/30 hover:bg-[#8083FF]/60',
+                )}
+                style={{
+                  top: `calc(${(rowIndex * 100) / weekCount}% + ${HEADER_HEIGHT + lane * (EVENT_HEIGHT + EVENT_GAP)}px)`,
+                  left: `calc(${(start * 100) / WEEK_DAYS}% + 2px)`,
+                  width: `calc(${((end - start) * 100) / WEEK_DAYS}% - 4px)`,
+                  height: `${EVENT_HEIGHT}px`,
+                }}
+                onPointerDown={(pointerEvent) => {
+                  pointerEvent.stopPropagation();
+                  if (pointerEvent.button !== 0) return;
+                  pointerEvent.preventDefault();
+                  const segmentStart = rowIndex * WEEK_DAYS + start;
+                  dragRef.current = {
+                    event,
+                    startClientX: pointerEvent.clientX,
+                    startClientY: pointerEvent.clientY,
+                    startDayIndex: segmentStart,
+                  };
+                  setSelection(null);
+                  setDraggedEventId(event.id);
+                  setDropDayIndex(segmentStart);
+                  gridRef.current?.setPointerCapture(pointerEvent.pointerId);
+                }}
+              >
+                {renderEvent ? (
+                  renderEvent(event)
+                ) : (
+                  <div className="truncate font-inter text-[11px] font-semibold leading-5">
+                    {event.title}
+                  </div>
+                )}
+              </div>
+            ),
+          ),
+        )}
+        {overflowDayIndex !== null && (
+          <div
+            className="absolute z-50 max-h-100 w-64 max-w-[calc(100%-16px)] overflow-y-auto rounded-md border border-[#464554] bg-[#131B2E] p-2 shadow-xl"
+            style={{
+              left: `calc(${((overflowDayIndex % WEEK_DAYS) * 100) / WEEK_DAYS}% + 4px)`,
+              top:
+                overflowDayIndex / WEEK_DAYS < weekCount / 2
+                  ? `calc(${(Math.floor(overflowDayIndex / WEEK_DAYS) * 100) / weekCount}% + ${HEADER_HEIGHT + MAX_VISIBLE_EVENTS * (EVENT_HEIGHT + EVENT_GAP) + 24}px)`
+                  : `calc(${((Math.floor(overflowDayIndex / WEEK_DAYS) + 1) * 100) / weekCount}% - 8px)`,
+              transform:
+                overflowDayIndex / WEEK_DAYS < weekCount / 2
+                  ? undefined
+                  : 'translateY(-100%)',
+            }}
+            onPointerDown={(pointerEvent) => pointerEvent.stopPropagation()}
+          >
+            <div className="mb-1 border-b border-[#464554] pb-1 font-inter text-xs text-[#908FA0]">
+              {calendarDays[overflowDayIndex].format('dddd, MMM D')}
             </div>
-          )),
+            {events
+              .filter((event) => {
+                const day = calendarDays[overflowDayIndex];
+                const start = calendarMoment(event.startDate, timezone);
+                const end = calendarMoment(event.endDate, timezone);
+                return (
+                  start.isBefore(day.clone().add(1, 'day')) && end.isAfter(day)
+                );
+              })
+              .map((event) => (
+                <div
+                  className="block w-full min-w-0 truncate rounded px-1 py-0.5 text-left font-inter text-[11px] text-[#C7C4D7] hover:bg-[#8083FF]/30"
+                  key={event.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setOverflowDayIndex(null);
+                    onEventClick?.(event);
+                  }}
+                  onKeyDown={(keyEvent) => {
+                    if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+                      keyEvent.preventDefault();
+                      setOverflowDayIndex(null);
+                      onEventClick?.(event);
+                    }
+                  }}
+                >
+                  {renderEvent ? renderEvent(event) : event.title}
+                </div>
+              ))}
+          </div>
         )}
       </div>
     </div>
