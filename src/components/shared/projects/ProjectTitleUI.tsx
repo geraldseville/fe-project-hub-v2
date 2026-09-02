@@ -9,7 +9,8 @@ export default function ProjectTitleUI({ title }: ProjectTitleUIProps) {
     <div
       className={clsx(
         'font-hanken-grotesk font-bold',
-        'text-[#DAE2FD] text-[16px] leading-tight truncate',
+        'text-[#DAE2FD] text-[16px]',
+        'leading-tight truncate',
       )}
     >
       {title}
