@@ -15,6 +15,8 @@ interface ModalProps {
   isOpen?: boolean;
   onClose: () => void;
   children?: React.ReactNode;
+  'aria-label'?: string;
+  'aria-labelledby'?: string;
 }
 
 export default function Modal({
@@ -22,6 +24,8 @@ export default function Modal({
   isOpen = false,
   onClose,
   children,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledby,
 }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -66,7 +70,7 @@ export default function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            aria-label="Close modal"
+            aria-label="Backdrop modal"
             onClick={onClose}
           />
 
@@ -84,6 +88,10 @@ export default function Modal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledby}
           >
             {children}
           </motion.div>
