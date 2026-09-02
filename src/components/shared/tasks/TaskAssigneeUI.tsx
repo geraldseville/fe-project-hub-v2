@@ -28,7 +28,6 @@ export default function TaskAssigneeUI({
 }: TaskAssigneeUIProps) {
   const assigneeFullName =
     getFullName(assignee?.firstName, assignee?.lastName) ?? 'Unassigned';
-
   const assigneeDisplayName =
     displayName === 'fullName'
       ? assigneeFullName
