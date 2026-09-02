@@ -117,16 +117,12 @@ function TaskActivityItem({
     ATTACHMENT_ADDED: IconNotes1,
     ATTACHMENT_REMOVED: IconNotes1,
   };
-
   const Icon = activityIcons[activity.type];
-
   const isCurrentUser = me?.id === activity.actor.id;
-
   const actorFullName = getFullName(
     activity.actor.firstName,
     activity.actor.lastName,
   );
-
   const actorId = activity.actorId;
   const actor = isCurrentUser ? 'You' : actorFullName;
 
@@ -195,9 +191,7 @@ function RenderActivityMessage({ activity }: { activity: TaskActivity }) {
   const { data: { users = [] } = {} } = useUsers();
 
   const timezone = me?.timezone ?? DEFAULT_TIMEZONE;
-
   const timeFormat = getTimeFormat(me?.timeFormat);
-
   const from = activity.metadata?.from;
   const to = activity.metadata?.to;
 
