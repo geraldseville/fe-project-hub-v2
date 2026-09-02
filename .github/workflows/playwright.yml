@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      BASE_URL: https://fe-project-hub-v2.vercel.app
+      PLAYWRIGHT_TEST_BASE_URL: https://fe-project-hub-v2.vercel.app
       PLAYWRIGHT_USER_EMAIL: ${{ secrets.PLAYWRIGHT_USER_EMAIL }}
       PLAYWRIGHT_USER_PASSWORD: ${{ secrets.PLAYWRIGHT_USER_PASSWORD }}
 
