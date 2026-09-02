@@ -1,14 +1,13 @@
 import { expect, test } from '@playwright/test';
 
-const userEmail = 'sabrinacarpenter@gmail.com';
-const userPass = 'it%196LkK9CevgAl';
+import { USER_EMAIL, USER_PASS } from '../auth.setup';
 
 test('login user successfully', async ({ page }) => {
   await page.goto('/auth/login');
 
-  await page.getByLabel('Email Address').fill(userEmail);
+  await page.getByLabel('Email Address').fill(USER_EMAIL);
 
-  await page.getByLabel('Password', { exact: true }).fill(userPass);
+  await page.getByLabel('Password', { exact: true }).fill(USER_PASS);
 
   await page.getByText('Stay signed up for 30 days').click();
 
@@ -24,7 +23,7 @@ test('login user successfully', async ({ page }) => {
 test('login user with wrong credentials', async ({ page }) => {
   await page.goto('/auth/login');
 
-  await page.getByLabel('Email Address').fill(userEmail);
+  await page.getByLabel('Email Address').fill(USER_EMAIL);
 
   await page
     .getByLabel('Password', { exact: true })
