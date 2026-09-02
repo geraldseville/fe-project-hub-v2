@@ -53,7 +53,6 @@ export default function Pagination({
   };
 
   const pageNumbers = getPageNumbers();
-
   const firstItemIndex = (pagination.page - 1) * pagination.limit;
   const lastItemIndex = Math.min(
     pagination.page * pagination.limit,
