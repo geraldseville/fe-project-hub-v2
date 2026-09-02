@@ -55,7 +55,16 @@ export default function CalendarBoard<T>({
           onCreateSelect={onCreateSelect}
         />
       ) : view === 'month' ? (
-        <CalendarMonthView />
+        <CalendarMonthView
+          events={events}
+          date={date}
+          timezone={timezone}
+          is12hrFormat={is12hrFormat}
+          renderEvent={renderEvent}
+          onEventClick={onEventClick}
+          onEventDragEnd={onEventDragEnd}
+          onCreateSelect={onCreateSelect}
+        />
       ) : null}
     </>
   );
