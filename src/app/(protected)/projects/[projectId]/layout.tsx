@@ -83,6 +83,7 @@ export default function ProjectLayout({
             tabItemSelected: 'text-[#060e20]!',
             tabIndicator: 'bg-[#c0c1ff]!',
           }}
+          id="project-layout-tabs"
           selected={{ id: activeTab.toLowerCase(), label: activeTab }}
           options={derivedTabs}
           onSelect={(selected) => {
