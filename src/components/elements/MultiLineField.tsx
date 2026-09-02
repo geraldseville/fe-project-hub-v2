@@ -7,6 +7,7 @@ interface MultiLineFieldProps extends TextareaHTMLAttributes<HTMLTextAreaElement
     root?: string;
     input?: string;
   };
+  id?: string;
   placeholder?: string;
   disabled?: boolean;
   value: string | number;
@@ -15,6 +16,7 @@ interface MultiLineFieldProps extends TextareaHTMLAttributes<HTMLTextAreaElement
 
 export default function MultiLineField({
   classNames,
+  id = 'multi-line-field',
   placeholder = 'Multiline Field',
   disabled = false,
   value,
@@ -25,8 +27,7 @@ export default function MultiLineField({
     <div className={clsx(classNames?.root, 'relative')}>
       <textarea
         className={clsx(
-          classNames?.input,
-          !value && 'placeholder:italic',
+          'placeholder:italic placeholder:text-placeholder',
           'block',
           'min-w-[200px] w-full min-h-[120px] h-[120px] resize-y',
           'py-2 px-4',
@@ -34,7 +35,9 @@ export default function MultiLineField({
           disabled ? 'bg-[#222A3D]' : 'bg-[#060E20]',
           'border border-[#464554]',
           disabled && 'is-disabled',
+          classNames?.input,
         )}
+        id={id}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
