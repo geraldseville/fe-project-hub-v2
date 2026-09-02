@@ -1,18 +1,17 @@
 import { expect, test } from '@playwright/test';
 
-const userEmail = 'sabrinacarpenter@gmail.com';
-const userPass = 'it%196LkK9CevgAl';
+import { USER_EMAIL, USER_PASS } from '../auth.setup';
 
 test('create user but already exists', async ({ page }) => {
   await page.goto('/auth/register');
 
   await page.getByLabel('Full Name').fill('Sabrina Carpenter');
 
-  await page.getByLabel('Email Address').fill(userEmail);
+  await page.getByLabel('Email Address').fill(USER_EMAIL);
 
-  await page.getByLabel('Password', { exact: true }).fill(userPass);
+  await page.getByLabel('Password', { exact: true }).fill(USER_PASS);
 
-  await page.getByLabel('Confirm Password').fill(userPass);
+  await page.getByLabel('Confirm Password').fill(USER_PASS);
 
   await page.locator('label[for="agreeTerms"]').click();
 
