@@ -1,5 +1,3 @@
-import React from 'react';
-
 import clsx from 'clsx';
 
 import { IconCheck1 } from '@/components/svgs/icons';
@@ -17,7 +15,7 @@ interface InputCheckboxProps {
 
 export default function InputCheckbox({
   classNames,
-  id,
+  id = 'input-checkbox',
   type = 'checkbox',
   disabled,
   value,
