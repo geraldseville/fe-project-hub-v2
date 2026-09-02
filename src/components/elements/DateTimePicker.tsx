@@ -85,7 +85,7 @@ interface DateTimePickerProps {
 
 export default function DateTimePicker({
   classNames,
-  id,
+  id = 'date-time-picker',
   type = 'date-time',
   formatDate = 'MM/DD/YYYY',
   formatTime = 'hh:mm A',
@@ -381,9 +381,7 @@ export default function DateTimePicker({
   });
 
   const click = useClick(context);
-
   const dismiss = useDismiss(context);
-
   const role = useRole(context, { role: 'listbox' });
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
@@ -479,7 +477,14 @@ export default function DateTimePicker({
             {displayString}
           </span>
         ) : (
-          <span className="text-placeholder text-left truncate block flex-1 min-w-0">
+          <span
+            className={clsx(
+              'italic',
+              'text-placeholder text-left truncate',
+              'block',
+              'flex-1 min-w-0',
+            )}
+          >
             {placeholder}
           </span>
         )}
@@ -536,7 +541,7 @@ export default function DateTimePicker({
                   root: 'mb-3 bg-[#0f172b]/70! border-[#0f172b]/70!',
                   tabIndicator: '',
                 }}
-                id="dateTimeTab"
+                id="date-time-tab"
                 selected={{
                   id: activeTab,
                   icon:
@@ -587,6 +592,13 @@ export default function DateTimePicker({
                       'hover:bg-slate-100 dark:hover:bg-slate-800',
                     )}
                     type="button"
+                    aria-label={
+                      view === 'days'
+                        ? 'Select month and year'
+                        : view === 'months'
+                          ? 'Select year'
+                          : 'Year range'
+                    }
                     onClick={() => {
                       if (view === 'days') {
                         setView('months');
@@ -613,6 +625,13 @@ export default function DateTimePicker({
                         'hover:bg-slate-100 dark:hover:bg-slate-800',
                       )}
                       type="button"
+                      aria-label={`Prev ${
+                        view === 'days'
+                          ? 'month'
+                          : view === 'months'
+                            ? 'year'
+                            : '12-year period'
+                      }`}
                       onClick={() => navigateHeader('prev')}
                     >
                       <IconCaretLeft className="w-[16px] h-[16px]" />
@@ -627,6 +646,13 @@ export default function DateTimePicker({
                         'hover:bg-slate-100 dark:hover:bg-slate-800',
                       )}
                       type="button"
+                      aria-label={`Next ${
+                        view === 'days'
+                          ? 'month'
+                          : view === 'months'
+                            ? 'year'
+                            : '12-year period'
+                      }`}
                       onClick={() => navigateHeader('next')}
                     >
                       <IconCaretRight className="min-w-4 w-4 h-4" />
@@ -689,6 +715,7 @@ export default function DateTimePicker({
                             )}
                             key={`day-${idx}-${item.day}`}
                             type="button"
+                            aria-label={item.momentObj.format('MMMM DD, YYYY')}
                             onClick={() => handleSelectDay(item.momentObj)}
                           >
                             {formattedDayText}
@@ -806,6 +833,7 @@ export default function DateTimePicker({
                           )}
                           key={`hour-${hour}`}
                           type="button"
+                          aria-label={`Select hour ${hour.toString().padStart(2, '0')}`}
                           onClick={() => handleHourChange(hour)}
                         >
                           {hour
@@ -851,6 +879,7 @@ export default function DateTimePicker({
                           ref={isSelectedMinute ? selectedMinuteRef : null}
                           key={`minute-${minute}`}
                           type="button"
+                          aria-label={`Select minute ${minute.toString().padStart(2, '0')}`}
                           onClick={() => handleMinuteChange(minute)}
                         >
                           {minute.toString().padStart(2, '0')}
@@ -869,7 +898,7 @@ export default function DateTimePicker({
                         'text-[12px] max-w-24! min-w-24! w-24! h-[28px]! text-white',
                       tabIndicator: 'bg-slate-900',
                     }}
-                    id="12hourFormat"
+                    id="12-hour-format-toggle"
                     selected={
                       activeAnchor.hour() < 12
                         ? { id: 'AM', label: 'AM' }
