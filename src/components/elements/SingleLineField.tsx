@@ -21,6 +21,7 @@ interface SingleLineFieldProps extends Omit<
     root?: string;
     input?: string;
   };
+  id?: string;
   type?: 'text' | 'email' | 'password' | 'search';
   icon?: ReactNode;
   iconPosition?: 'left' | 'right';
@@ -33,6 +34,7 @@ const SingleLineField = forwardRef<HTMLInputElement, SingleLineFieldProps>(
   function SingleLineField(
     {
       classNames,
+      id = 'single-line-field',
       type = 'text',
       placeholder = 'Singleline Field',
       icon,
@@ -58,7 +60,7 @@ const SingleLineField = forwardRef<HTMLInputElement, SingleLineFieldProps>(
       type === 'password' || (iconPosition === 'right' && !!icon);
 
     return (
-      <div className={clsx(classNames?.root, 'relative', 'h-[47px]')}>
+      <div className={clsx('relative', 'h-[47px]', classNames?.root)}>
         {hasLeftIcon && (
           <div
             className={clsx(
@@ -72,9 +74,8 @@ const SingleLineField = forwardRef<HTMLInputElement, SingleLineFieldProps>(
         )}
         <input
           className={clsx(
-            classNames?.input,
             'text-sm',
-            'placeholder:text-placeholder',
+            'placeholder:italic placeholder:text-placeholder',
             'min-w-[200px] w-full h-full',
             'py-2 px-4',
             hasLeftIcon && 'pl-[47px]',
@@ -84,8 +85,10 @@ const SingleLineField = forwardRef<HTMLInputElement, SingleLineFieldProps>(
             disabled && 'bg-[#222A3D]',
             'border border-[#464554]',
             disabled && 'is-disabled',
+            classNames?.input,
           )}
           ref={ref}
+          id={id}
           type={inputType}
           placeholder={placeholder}
           disabled={disabled}
