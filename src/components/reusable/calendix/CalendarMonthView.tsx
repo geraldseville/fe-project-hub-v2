@@ -58,6 +58,7 @@ export default function CalendarMonthView<T>({
   const [overflowDayIndex, setOverflowDayIndex] = useState<number | null>(null);
 
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const overflowRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<MonthDrag<T> | null>(null);
 
   const monthStart = calendarMoment(date, timezone).startOf('month');
@@ -223,7 +224,11 @@ export default function CalendarMonthView<T>({
   useEffect(() => {
     if (overflowDayIndex === null) return;
 
-    const handleDocumentPointerDown = () => setOverflowDayIndex(null);
+    const handleDocumentPointerDown = (event: PointerEvent) => {
+      if (overflowRef.current?.contains(event.target as Node)) return;
+
+      setOverflowDayIndex(null);
+    };
     document.addEventListener('pointerdown', handleDocumentPointerDown);
 
     return () => {
@@ -423,6 +428,7 @@ export default function CalendarMonthView<T>({
               'border border-[#464554]',
               'shadow-xl',
             )}
+            ref={overflowRef}
             style={{
               left: `calc(${((overflowDayIndex % WEEK_DAYS) * 100) / WEEK_DAYS}% + 4px)`,
               top:
@@ -466,6 +472,7 @@ export default function CalendarMonthView<T>({
                       'min-w-0 w-full',
                       'rounded',
                       'hover:bg-[#8083FF]/30',
+                      'cursor-pointer',
                     )}
                     key={event.id}
                     role="button"
