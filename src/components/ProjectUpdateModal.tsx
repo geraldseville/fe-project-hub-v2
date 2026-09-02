@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { useUpdateProject } from '@/hooks/mutations/useUpdateProject';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
+import type { ProjectFormInput } from '@/validators/project.validator';
 import {
   blankProjectForm,
   validateProjectForm,
@@ -29,15 +30,13 @@ export default function ProjectUpdateModal({
   project,
 }: ProjectEditModalProps) {
   const toast = useToastStore();
-
   const updateProject = useUpdateProject();
 
-  const [draftProjectForm, setDraftProjectForm] = useState(blankProjectForm);
-
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [draftProjectForm, setDraftProjectForm] =
+    useState<ProjectFormInput>(blankProjectForm);
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
   const validationResult = validateProjectForm(draftProjectForm);
-
   const errors = hasSubmitted ? validationResult.errors : {};
 
   const handleUpdateProject = async () => {
@@ -70,9 +69,7 @@ export default function ProjectUpdateModal({
       );
     } finally {
       setDraftProjectForm(blankProjectForm);
-
       setHasSubmitted(false);
-
       onClose();
     }
   };
@@ -110,40 +107,41 @@ export default function ProjectUpdateModal({
       }}
       isOpen={isOpen}
       onClose={handleCancel}
+      aria-labelledby="modal-title"
     >
       <>
         {/* Head */}
         <div
           className={clsx(
             'flex justify-between items-center gap-4',
-            'h-[85px]',
+            'shrink-0 h-[85px]',
             'py-4 px-6',
             'rounded-t-[inherit]',
             'bg-[#2D3449]',
           )}
         >
           <div className="flex-1 min-w-0">
-            <div
+            <h2
               className={clsx(
                 'font-hanken-grotesk font-semibold',
                 'text-[#DAE2FD] text-[24px] leading-tight',
               )}
+              id="modal-title"
             >
               Update Project Details
-            </div>
+            </h2>
           </div>
           <button
             className={clsx('flex justify-center items-center', 'w-8 h-8')}
             type="button"
+            aria-label="Close modal"
             onClick={onClose}
           >
             <IconClose1 className="min-w-3.5 w-3.5 h-3.5" />
           </button>
         </div>
         {/* Body */}
-        <div
-          className={clsx('overflow-auto', 'h-[calc(100%-(85px+75px))]', 'p-6')}
-        >
+        <div className={clsx('overflow-y-auto', 'flex-1', 'p-6')}>
           <ProjectForm
             draftProjectForm={draftProjectForm}
             setDraftProjectForm={setDraftProjectForm}
@@ -154,7 +152,7 @@ export default function ProjectUpdateModal({
         <div
           className={clsx(
             'flex justify-end items-center gap-4',
-            'h-[75px]',
+            'shrink-0 h-[75px]',
             'py-4 px-6',
             'rounded-b-[inherit]',
             'bg-[#131B2E]/50',
@@ -165,12 +163,14 @@ export default function ProjectUpdateModal({
             buttonStyle="secondary"
             type="button"
             text="Cancel"
+            aria-label="Project Cancel"
             onClick={handleCancel}
           />
           <Button
             className=""
             buttonStyle="primary"
             type="button"
+            aria-label="Project Update"
             text={updateProject.isPending ? 'Updating...' : 'Update Project'}
             onClick={handleUpdateProject}
           />
