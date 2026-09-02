@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { USER_EMAIL, USER_PASS } from '../auth.setup';
+import { USER_EMAIL, USER_FULL_NAME, USER_PASS } from '../auth.setup';
 
 test('create user but already exists', async ({ page }) => {
   await page.goto('/auth/register');
 
-  await page.getByLabel('Full Name').fill('Sabrina Carpenter');
+  await page.getByLabel('Full Name').fill(USER_FULL_NAME);
 
   await page.getByLabel('Email Address').fill(USER_EMAIL);
 
@@ -13,7 +13,7 @@ test('create user but already exists', async ({ page }) => {
 
   await page.getByLabel('Confirm Password').fill(USER_PASS);
 
-  await page.locator('label[for="agreeTerms"]').click();
+  await page.locator('label[for="agree-terms"]').click();
 
   await page
     .getByRole('button', {
@@ -43,7 +43,7 @@ test('create user then redirect to dashboard', async ({ page }) => {
 
   await page.getByLabel('Confirm Password').fill(password);
 
-  await page.locator('label[for="agreeTerms"]').click();
+  await page.locator('label[for="agree-terms"]').click();
 
   await page
     .getByRole('button', {

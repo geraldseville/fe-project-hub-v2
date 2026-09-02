@@ -144,7 +144,7 @@ test('user can create a required fields for project', async ({ page }) => {
 
   await dialog.locator('button[aria-label="Project Create"]').click();
 
-  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
+  await expect(page).toHaveURL(/\/projects\/[^/]+\/overview$/);
 
   await expect(
     page.getByText('Project Overview', { exact: true }),
@@ -243,7 +243,7 @@ test('user can create a project with all fields filled', async ({ page }) => {
 
   await dialog.locator('button[aria-label="Project Create"]').click();
 
-  await expect(page).toHaveURL(/\/projects\/[^/]+$/);
+  await expect(page).toHaveURL(/\/projects\/[^/]+\/overview$/);
 
   await expect(
     page.getByText('Project Overview', { exact: true }),
