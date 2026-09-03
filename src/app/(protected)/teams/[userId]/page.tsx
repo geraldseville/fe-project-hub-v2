@@ -16,23 +16,32 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { userId } = await params;
 
-  const cookieStore = await cookies();
+  try {
+    const cookieStore = await cookies();
 
-  const response = await apiClient<{ user: User }>(`/users/${userId}`, {
-    method: 'GET',
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
+    const response = await apiClient<{ user: User }>(`/users/${userId}`, {
+      method: 'GET',
+      headers: {
+        Cookie: cookieStore.toString(),
+      },
+    });
 
-  const user = response.data?.user ?? null;
+    const user = response.data?.user ?? null;
 
-  const userFullName = getFullName(user?.firstName, user?.lastName);
+    const userFullName = getFullName(user?.firstName, user?.lastName);
 
-  return {
-    title: userFullName ? `Teams | ${userFullName}` : 'Teams',
-    description: 'Teams List',
-  };
+    return {
+      title: userFullName ? `Teams | ${userFullName}` : 'Teams',
+      description: 'Teams List',
+    };
+  } catch (error) {
+    console.error('Team metadata error:', error);
+
+    return {
+      title: 'Teams',
+      description: 'Teams List',
+    };
+  }
 }
 
 export default function Page() {
