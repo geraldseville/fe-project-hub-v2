@@ -12,7 +12,9 @@ import { useUser } from '@/hooks/queries/useUser';
 
 import { DEFAULT_TIMEZONE, readableTimezone } from '@/utils/date-time';
 import { PROJECT_DEFAULT_COLOR } from '@/utils/project.utils';
-import { getFullName } from '@/utils/user.utils';
+import { getFullName, SOCIAL_CONFIG } from '@/utils/user.utils';
+
+import type { Social } from '@/types/user.types';
 
 import AppShellHead from '@/components/AppShellHead';
 import CopyToClipboard from '@/components/elements/CopyToClipboard';
@@ -30,6 +32,7 @@ import {
   IconCircleFilled,
   IconFolder1,
   IconProfileDetails,
+  IconShare2,
 } from '@/components/svgs/icons';
 
 export default function TeamPage() {
@@ -42,6 +45,7 @@ export default function TeamPage() {
   const joinedDate = momentTimezone(user?.createdAt)
     .tz(timezone)
     .format('MMM DD, YYYY');
+  const socials = user?.socials ?? {};
 
   const [myProjectType, setMyProjectType] = useState<'Owned' | 'Assigned'>(
     'Owned',
@@ -267,7 +271,7 @@ export default function TeamPage() {
           <div
             className={clsx(
               'flex flex-col gap-4',
-              'basis-[305px] min-w-[305px]',
+              'basis-[420px] min-w-[420px]',
             )}
           >
             {/* Details */}
@@ -317,6 +321,57 @@ export default function TeamPage() {
                   </span>{' '}
                   {joinedDate}
                 </div>
+              </div>
+            </div>
+            {/* Socials */}
+            <div
+              className={clsx(
+                'w-full',
+                'p-6',
+                'rounded-lg',
+                'bg-[#131B2E]',
+                'border border-[#464554]',
+              )}
+            >
+              <div
+                className={clsx(
+                  'flex flex-row justify-start items-center gap-2',
+                  'mb-6 pb-4',
+                  'border-b border-[#464554]',
+                )}
+              >
+                <IconShare2 className="w-auto h-3.5" />
+                <div className="font-hanken-grotesk text-forground">
+                  Socials
+                </div>
+              </div>
+              <div className="flex flex-col gap-4">
+                {Object.entries(socials).map(([key, value]) => {
+                  const social = key as Social;
+                  const label = SOCIAL_CONFIG[social].label;
+                  const Icon = SOCIAL_CONFIG[social].icon;
+
+                  return (
+                    <Link
+                      className="flex justify-start items-center gap-4"
+                      key={social}
+                      href={value}
+                      target="_blank"
+                    >
+                      <div
+                        className={clsx(
+                          'flex justify-center items-center',
+                          'min-w-10 w-10 h-10',
+                          'rounded-sm',
+                          'bg-[#DAE2FD]/20',
+                        )}
+                      >
+                        <Icon className="min-w-3.5 w-3.5 h-3.5" />
+                      </div>
+                      <div className="">{label}</div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
