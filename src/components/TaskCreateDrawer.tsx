@@ -6,7 +6,6 @@ import { useCreateTask } from '@/hooks/mutations/useCreateTask';
 import { useUpdateSavedColors } from '@/hooks/mutations/useUpdateSavedColors';
 import { useMe } from '@/hooks/queries/useMe';
 import { useUsers } from '@/hooks/queries/useUsers';
-import { useDebouncedCallback } from '@/hooks/ui/useDebounceCallback';
 import { useToastStore } from '@/hooks/ui/useToastStore';
 
 import { COLOR_PRESETS } from '@/utils/color.utils';
@@ -56,7 +55,7 @@ export default function TaskCreateDrawer({
   const toast = useToastStore();
 
   const { data: me } = useMe();
-  const { data: { users = [], pagination } = {} } = useUsers();
+  const { data: { users = [] } = {} } = useUsers();
 
   const createTask = useCreateTask();
   const { mutate: updateSavedColors } = useUpdateSavedColors();
@@ -72,7 +71,6 @@ export default function TaskCreateDrawer({
   const validationResult = validateTaskForm(draftTaskForm);
   const errors = hasSubmitted ? validationResult.errors : {};
 
-  // const [savedColors, setSavedColors] = useState<string[]>([]);
   const savedColors = useMemo(() => me?.savedColors ?? [], [me?.savedColors]);
 
   const allColors = useMemo(
@@ -80,19 +78,12 @@ export default function TaskCreateDrawer({
     [savedColors],
   );
 
-  // const debounceSavedColors = useDebouncedCallback((colors: string[]) => {
-  //   updateSavedColors.mutate(colors);
-  // }, 1000);
-
   const handleAddColor = (color: SelectedColor) => {
     if (savedColors.includes(color.hex)) {
       return;
     }
 
     const nextColors = [...savedColors, color.hex];
-
-    // setSavedColors(nextColors);
-    // debounceSavedColors(nextColors);
 
     updateSavedColors(nextColors);
   };
@@ -134,12 +125,6 @@ export default function TaskCreateDrawer({
     setHasSubmitted(false);
     onClose();
   };
-
-  // useEffect(() => {
-  //   if (me?.savedColors) {
-  //     setSavedColors(me.savedColors);
-  //   }
-  // }, [me?.savedColors]);
 
   useEffect(() => {
     if (!projectId) return;
