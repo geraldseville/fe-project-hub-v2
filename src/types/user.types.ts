@@ -14,16 +14,17 @@ export type AuthRegisterDto = {
 };
 
 export type Social =
-  | 'github'
-  | 'linkedin'
-  | 'figma'
-  | 'twitter'
   | 'facebook'
+  | 'figma'
+  | 'github'
   | 'instagram'
-  | 'youtube'
-  | 'telegram'
+  | 'linkedin'
   | 'pinterest'
-  | 'website';
+  | 'spotify'
+  | 'telegram'
+  | 'twitter'
+  | 'website'
+  | 'youtube';
 
 export type UserSocial = Partial<Record<Social, string>>;
 
