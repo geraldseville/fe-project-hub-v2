@@ -13,6 +13,20 @@ export type AuthRegisterDto = {
   lastName: string;
 };
 
+export type Social =
+  | 'github'
+  | 'linkedin'
+  | 'figma'
+  | 'twitter'
+  | 'facebook'
+  | 'instagram'
+  | 'youtube'
+  | 'telegram'
+  | 'pinterest'
+  | 'website';
+
+export type UserSocial = Partial<Record<Social, string>>;
+
 export type TimeFormat = 'H12' | 'H24';
 
 export type User = {
@@ -20,9 +34,10 @@ export type User = {
   email: string;
   firstName: string | null;
   lastName: string | null;
-  imageUrl: string | null;
   role: string | null;
   bio: string | null;
+  imageUrl: string | null;
+  socials: UserSocial;
   timezone: string | null;
   timeFormat: TimeFormat;
   savedColors: string[];
@@ -43,6 +58,7 @@ export type UserDto = {
   role?: string | null;
   bio?: string | null;
   imageUrl?: string | null;
+  socials?: UserSocial;
   timezone?: string | null;
   timeFormat?: TimeFormat;
   savedColors?: string[];
