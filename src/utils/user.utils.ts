@@ -8,51 +8,56 @@ import {
   IconInstagram1,
   IconLinkedIn1,
   IconPinterest1,
+  IconSpotify1,
   IconTelegram1,
   IconX1,
   IconYoutube1,
 } from '@/components/svgs/icons';
 
 export const SOCIAL_CONFIG = {
-  github: {
-    label: 'GitHub',
-    icon: IconGithub1,
-  },
-  linkedin: {
-    label: 'LinkedIn',
-    icon: IconLinkedIn1,
+  facebook: {
+    label: 'Facebook',
+    icon: IconFacebook1,
   },
   figma: {
     label: 'Figma',
     icon: IconFigma1,
   },
-  twitter: {
-    label: 'X',
-    icon: IconX1,
-  },
-  facebook: {
-    label: 'Facebook',
-    icon: IconFacebook1,
+  github: {
+    label: 'GitHub',
+    icon: IconGithub1,
   },
   instagram: {
     label: 'Instagram',
     icon: IconInstagram1,
   },
-  youtube: {
-    label: 'YouTube',
-    icon: IconYoutube1,
-  },
-  telegram: {
-    label: 'Telegram',
-    icon: IconTelegram1,
+  linkedin: {
+    label: 'LinkedIn',
+    icon: IconLinkedIn1,
   },
   pinterest: {
     label: 'Pinterest',
     icon: IconPinterest1,
   },
+  spotify: {
+    label: 'Spotify',
+    icon: IconSpotify1,
+  },
+  telegram: {
+    label: 'Telegram',
+    icon: IconTelegram1,
+  },
+  twitter: {
+    label: 'X',
+    icon: IconX1,
+  },
   website: {
     label: 'Website',
     icon: IconGlobe,
+  },
+  youtube: {
+    label: 'YouTube',
+    icon: IconYoutube1,
   },
 } satisfies Record<Social, { label: string; icon: React.ComponentType }>;
 

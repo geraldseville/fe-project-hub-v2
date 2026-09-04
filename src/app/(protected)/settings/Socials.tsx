@@ -241,6 +241,7 @@ export default function Socials() {
               buttonStyle="secondary"
               type="button"
               text="Add Social"
+              disabled={!!!selectedSocial}
               onClick={handleAddSocial}
             />
           </div>

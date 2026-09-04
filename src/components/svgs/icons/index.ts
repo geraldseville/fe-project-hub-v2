@@ -108,6 +108,7 @@ export { default as IconInstagram1 } from './socials/IconInstagram1';
 export { default as IconInstagram2 } from './socials/IconInstagram2';
 export { default as IconLinkedIn1 } from './socials/IconLinkedIn1';
 export { default as IconPinterest1 } from './socials/IconPinterest1';
+export { default as IconSpotify1 } from './socials/IconSpotify1';
 export { default as IconTelegram1 } from './socials/IconTelegram1';
 export { default as IconTiktok1 } from './socials/IconTiktok1';
 export { default as IconX1 } from './socials/IconX1';
