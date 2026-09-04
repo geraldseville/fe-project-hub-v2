@@ -14,6 +14,7 @@ import ChangePassword from './ChangePassword';
 import DateAndTime from './DateAndTime';
 import DeleteAccount from './DeleteAccount';
 import ProfileImage from './ProfileImage';
+import Socials from './Socials';
 
 export default function SettingsPage() {
   const { data: me } = useMe();
@@ -74,6 +75,7 @@ export default function SettingsPage() {
         <ChangePassword />
         {/* Date And Time */}
         <DateAndTime />
+        <Socials />
         {/* My Colors */}
         <div
           className={clsx(
